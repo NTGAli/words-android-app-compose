@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">My Words</string>
+    <string name="workout_report">Workout Report</string>
+    <string name="words">Words</string>
+    <string name="my_words">My Words</string>
+    <string name="add_new">Add new word</string>
+    <string name="word">Word</string>
+    <string name="pronunciation">pronunciation</string>
+    <string name="type">type</string>
+    <string name="definition">definition</string>
+    <string name="example">example</string>
+
+
+    <string name="err_word_required">word required.</string>
+    <string name="err_type_required">select a type.</string>
+    <string name="err_example_required">add at least a example.</string>
+    <string name="err_word_already_exist">this word alreay exist</string>
+
+</resources>
