@@ -4,6 +4,7 @@ enum class Screens {
 
     HomeScreen,
     AddEditScreen,
+    WordDetailScreen,
 
 
 }

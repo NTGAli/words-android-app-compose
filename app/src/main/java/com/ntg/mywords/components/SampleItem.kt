@@ -18,15 +18,17 @@ import com.ntg.mywords.ui.theme.*
 @Composable
 fun SampleItem(
     modifier: Modifier = Modifier,
+    id: Int? = null,
     title: String,
     painter: Painter? = null,
-    onClick:(String)  -> Unit ={},
+    onClick:((String, Int?)  -> Unit)? = null,
+
 ) {
 
     Box(modifier = modifier
         .fillMaxWidth()
         .clickable(
-            onClick = { onClick.invoke(title) },
+            onClick = { onClick?.invoke(title, id) },
             indication = rememberRipple(
                 color = Secondary300
             ),
@@ -35,7 +37,7 @@ fun SampleItem(
 
     ){
         Row {
-            Text(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp).weight(1f),text = title, style = FontMedium16(Secondary700))
+            Text(modifier = Modifier.padding(vertical = 16.dp).weight(1f),text = title, style = FontMedium16(Secondary700))
             if (painter != null){
                 Image(modifier= Modifier.align(Alignment.CenterVertically),painter = painter, contentDescription = "imageSampleItem")
             }

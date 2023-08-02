@@ -1,11 +1,13 @@
 package com.ntg.mywords.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,15 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
-import com.ntg.mywords.components.Appbar
-import com.ntg.mywords.components.CustomButton
-import com.ntg.mywords.components.EditText
-import com.ntg.mywords.components.SampleItem
+import com.ntg.mywords.components.*
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Success
 import com.ntg.mywords.model.components.ButtonSize
@@ -61,45 +59,57 @@ fun AddEditWordScreen(navController: NavController, wordViewModel: WordViewModel
 
         }
         , bottomBar = {
-
-            Column(
-                modifier = Modifier
-                    .padding(start = 32.dp, end = 32.dp)
-                    .background(Color.White)
-            ) {
-                Divider(Modifier.padding(bottom = 16.dp), color = Secondary100)
-                CustomButton(
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    text = "button",
-                    size = ButtonSize.XL
-                ){
-
-
-                    val result = notEmptyOrNull(wordData.word, context.getString(R.string.err_word_required))
-                        .then { notEmptyOrNull(wordData.type, context.getString(R.string.err_type_required)) }
-                        .then { notEmptyOrNull(wordData.example.toString(), context.getString(R.string.err_example_required)) }
-                        .then { notFalse(!wordViewModel.checkIfExist(wordData.word.orEmpty(), wordData.type.orEmpty()), context.getString(R.string.err_word_already_exist)) }
-
-                    when(result){
-
-                        is Success -> {
-                            wordViewModel.addNewWord(wordData)
-                        }
-
-                        is Failure -> {
-                            context.toast(result.errorMessage)
-                        }
-
-                    }
-
-
-                }
-
+            BottomBarContent {
+                addWord(wordData, wordViewModel, context, navController)
             }
-
         }
     )
 
+}
+
+
+@Composable
+private fun BottomBarContent(onClick: () -> Unit){
+    Column(
+        modifier = Modifier
+            .padding(start = 32.dp, end = 32.dp)
+            .background(Color.White)
+    ) {
+        Divider(Modifier.padding(bottom = 16.dp), color = Secondary100)
+        CustomButton(
+            modifier = Modifier.padding(bottom = 16.dp),
+            text = "button",
+            size = ButtonSize.XL
+        ){
+            onClick.invoke()
+        }
+
+    }
+}
+
+private fun addWord(
+    wordData: Word,
+    wordViewModel: WordViewModel,
+    context: Context,
+    navController: NavController
+) {
+    val result = notEmptyOrNull(wordData.word, context.getString(R.string.err_word_required))
+        .then { notEmptyOrNull(wordData.type, context.getString(R.string.err_type_required)) }
+        .then { notEmptyOrNull(wordData.example.toString(), context.getString(R.string.err_example_required)) }
+        .then { notFalse(!wordViewModel.checkIfExist(wordData.word.orEmpty(), wordData.type.orEmpty()), context.getString(R.string.err_word_already_exist)) }
+
+    when(result){
+
+        is Success -> {
+            wordViewModel.addNewWord(wordData)
+            navController.popBackStack()
+        }
+
+        is Failure -> {
+            context.toast(result.errorMessage)
+        }
+
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,7 +145,8 @@ private fun Content(paddingValues: PaddingValues, wordData:(Word) -> Unit) {
             pronunciation = pronunciation.value,
             definition = definition.value,
             example = exampleList,
-            dateCreated = System.currentTimeMillis()
+            dateCreated = System.currentTimeMillis(),
+            lastRevisionTime = System.currentTimeMillis()
         )
     )
 
@@ -152,6 +163,16 @@ private fun Content(paddingValues: PaddingValues, wordData:(Word) -> Unit) {
 
     val scope = rememberCoroutineScope()
 
+    val phonetics = listOf<String>(
+        "ɛ",
+        "æ",
+        "ʌ",
+        "ə",
+        "ɚ",
+        "ʊ",
+
+
+    )
 
     val typeWordItems = arrayListOf(
         "noun",
@@ -175,8 +196,8 @@ private fun Content(paddingValues: PaddingValues, wordData:(Word) -> Unit) {
             LazyColumn(Modifier.padding(6.dp)) {
 
                 items(typeWordItems) {
-                    SampleItem(title = it) {
-                        type.value = it
+                    SampleItem(title = it) { title, _ ->
+                        type.value = title
                         scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
                             if (!bottomSheetState.isVisible) {
                                 openBottomSheet = false
@@ -212,6 +233,22 @@ private fun Content(paddingValues: PaddingValues, wordData:(Word) -> Unit) {
                 text = pronunciation,
                 label = stringResource(R.string.pronunciation)
             )
+
+
+        }
+
+
+        item {
+            LazyRow{
+                items(phonetics){
+                    ItemText(modifier= Modifier.padding(end = 8.dp, top = 8.dp),text = it, onClick = {
+                        pronunciation.value = pronunciation.value+it
+                    })
+                }
+            }
+        }
+
+        item {
             EditText(
                 Modifier
                     .padding(top = 8.dp)
@@ -242,13 +279,12 @@ private fun Content(paddingValues: PaddingValues, wordData:(Word) -> Unit) {
                     }
                 }
             )
-
         }
 
         items(exampleList){
             timber("LIST_DATA", "$exampleList")
-            SampleItem(title = it, painter = painterResource(id = R.drawable.chart_full)){
-                exampleList.remove(it)
+            SampleItem(title = it){ title, _ ->
+                exampleList.remove(title)
             }
         }
 
