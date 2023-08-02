@@ -20,6 +20,7 @@ class WordViewModel @Inject constructor(
 
     private var isExist = false
     private var myWords: LiveData<List<Word>> = MutableLiveData()
+    private var word: LiveData<Word> = MutableLiveData()
 
 
 
@@ -31,13 +32,26 @@ class WordViewModel @Inject constructor(
 
     }
 
-    fun getMyWords():LiveData<List<Word>>  {
-//        var allProviders by mutableStateListOf<List<Word>>()
+    fun editWord(id: Int?, word: Word) {
+        viewModelScope.launch {
+            wordDao.update(word)
+        }
+    }
 
+    fun getMyWords():LiveData<List<Word>>  {
         viewModelScope.launch {
             myWords = wordDao.getAllWords()
         }
         return myWords
+
+    }
+
+    fun findWord(id: Int?):LiveData<Word>?{
+        if (id == -1) return null
+        viewModelScope.launch {
+            word = wordDao.findWord(id)
+        }
+        return word
 
     }
 

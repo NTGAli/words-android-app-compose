@@ -17,6 +17,9 @@ interface WordDao {
     @Query("SELECT * FROM Word ORDER BY id DESC")
     fun getAllWords(): LiveData<List<Word>>
 
+    @Query("SELECT * FROM Word WHERE id =:id")
+    fun findWord(id: Int?): LiveData<Word>
+
     @Query("SELECT EXISTS(SELECT * FROM Word WHERE word =:word AND type =:type)")
     suspend fun isExist(word: String, type: String): Boolean
 

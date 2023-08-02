@@ -18,6 +18,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
@@ -29,6 +30,7 @@ import com.ntg.mywords.ui.theme.FontBold14
 import com.ntg.mywords.ui.theme.Primary200
 import com.ntg.mywords.ui.theme.Secondary900
 import com.ntg.mywords.util.getDaysBetweenTimestamps
+import com.ntg.mywords.util.getStateRevision
 import com.ntg.mywords.util.orDefault
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.WordViewModel
@@ -49,7 +51,7 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel)
+            Content(paddingValues = innerPadding, wordViewModel, navController)
 
         }, floatingActionButton = {
             FloatingActionButton(
@@ -67,7 +69,7 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 
 
 @Composable
-private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel) {
+private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, navController: NavController) {
 
     val wordsList: State<List<Word>?> = wordViewModel.getMyWords().observeAsState()
 
@@ -140,13 +142,13 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel) 
 
         items(wordsList.value.orEmpty()){word ->
 
-
-            timber("akljdlkwjdlkwdlkjwl ${word.word} :: ${getDaysBetweenTimestamps(word.lastRevisionTime.orDefault(),System.currentTimeMillis())}")
-
-
             val painter = getStateRevision(word.revisionCount, word.lastRevisionTime)
 
-            SampleItem(modifier = Modifier.padding(horizontal = 16.dp),title = word.word.toString(),painter = painter){ title , id ->
+            SampleItem(modifier = Modifier.padding(horizontal = 16.dp),title = word.word.toString(), id = word.id, painter = painter){ title , id ->
+
+                timber("kawljdlkajwdlkjawlkdj $id")
+
+                navController.navigate(Screens.AddEditScreen.name+"?wordId=$id")
 
             }
         }
@@ -157,85 +159,4 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel) 
 
 }
 
-@Composable
-fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 
-    val diffTime = getDaysBetweenTimestamps(lsatRevisionTime.orDefault(),System.currentTimeMillis())
-
-
-    return when(revisionCount){
-
-        0 -> {
-            when(diffTime){
-
-                in 0..1 -> {
-                    painterResource(id = R.drawable.chart_full)
-                }
-
-                2 ->{
-                    painterResource(id = R.drawable.chart_medium)
-                }
-
-                else -> {
-                    painterResource(id = R.drawable.chart_low)
-                }
-
-            }
-        }
-
-        1 -> {
-            when(diffTime){
-
-                in 1..5 -> {
-                    painterResource(id = R.drawable.chart_full)
-                }
-
-                in 6..11 -> {
-                    painterResource(id = R.drawable.chart_medium)
-                }
-
-                else -> {
-                    painterResource(id = R.drawable.chart_low)
-                }
-
-            }
-        }
-
-        2 -> {
-            when (diffTime){
-
-                in 1..10 ->{
-                    painterResource(id = R.drawable.chart_full)
-                }
-
-                in 10..15 -> {
-                    painterResource(id = R.drawable.chart_medium)
-                }
-
-                else -> {
-                    painterResource(id = R.drawable.chart_low)
-                }
-            }
-        }
-
-        else -> {
-
-            when(diffTime){
-
-                in 1 .. (revisionCount * 7) ->{
-                    painterResource(id = R.drawable.chart_full)
-                }
-
-                in (revisionCount *7) .. (revisionCount + 10) -> {
-                    painterResource(id = R.drawable.chart_medium)
-                }
-
-                else -> {
-                    painterResource(id = R.drawable.chart_low)
-                }
-
-            }
-
-        }
-    }
-}

@@ -3,9 +3,11 @@ package com.ntg.mywords.nav
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.ntg.mywords.screens.AddEditWordScreen
 import com.ntg.mywords.screens.HomeScreen
 import com.ntg.mywords.screens.WordDetailScreen
@@ -29,8 +31,16 @@ fun AppNavHost(
             HomeScreen(navController, wordViewModel)
         }
 
-        composable(Screens.AddEditScreen.name) {
-            AddEditWordScreen(navController, wordViewModel)
+//        composable(Screens.AddEditScreen.name) {
+//            AddEditWordScreen(navController, wordViewModel)
+//        }
+
+        composable(Screens.AddEditScreen.name+"?wordId={wordId}",
+            arguments = listOf(navArgument("wordId")
+            { type = NavType.IntType
+            defaultValue = -1}))
+        {backStackEntry ->
+            AddEditWordScreen(navController, wordViewModel,backStackEntry.arguments?.getInt("wordId"))
         }
 
         composable(Screens.WordDetailScreen.name) {
