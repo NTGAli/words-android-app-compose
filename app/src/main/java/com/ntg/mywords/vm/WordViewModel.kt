@@ -1,11 +1,15 @@
 package com.ntg.mywords.vm
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.mywords.db.WordDao
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,12 +19,25 @@ class WordViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var isExist = false
+    private var myWords: LiveData<List<Word>> = MutableLiveData()
+
+
 
     fun addNewWord(word: Word) {
 
         viewModelScope.launch {
             wordDao.insert(word)
         }
+
+    }
+
+    fun getMyWords():LiveData<List<Word>>  {
+//        var allProviders by mutableStateListOf<List<Word>>()
+
+        viewModelScope.launch {
+            myWords = wordDao.getAllWords()
+        }
+        return myWords
 
     }
 

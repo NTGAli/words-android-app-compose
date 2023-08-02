@@ -10,8 +10,11 @@ import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
 import com.ntg.mywords.model.Success
 import timber.log.Timber
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 fun Float?.orZero() = this ?: 0f
+fun Long?.orDefault() = this ?: 0L
 fun Boolean?.orFalse() = this?: false
 
 fun timber(msg: String) {
@@ -42,3 +45,21 @@ fun notFalse(
 ): Result<String> =
     if (value.orFalse()) Success(value.toString())
 else Failure(errorMessage)
+
+
+fun Long.calculateRevisionStatus(numberOfRevision: Int){
+
+    val todayUnix = System.currentTimeMillis()
+
+//    if ()
+
+}
+
+fun getDaysBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
+    val startDate = Date(startTimeStamp)
+    val endDate = Date(endTimeStamp)
+
+    val differenceMillis = endDate.time - startDate.time
+
+    return TimeUnit.MILLISECONDS.toDays(differenceMillis).toInt()
+}

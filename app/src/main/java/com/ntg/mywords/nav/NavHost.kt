@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ntg.mywords.screens.AddEditWordScreen
 import com.ntg.mywords.screens.HomeScreen
+import com.ntg.mywords.screens.WordDetailScreen
 import com.ntg.mywords.vm.WordViewModel
 
 @Composable
@@ -25,11 +26,15 @@ fun AppNavHost(
         startDestination = startDestination
     ) {
         composable(Screens.HomeScreen.name) {
-            HomeScreen(navController)
+            HomeScreen(navController, wordViewModel)
         }
 
         composable(Screens.AddEditScreen.name) {
             AddEditWordScreen(navController, wordViewModel)
+        }
+
+        composable(Screens.WordDetailScreen.name) {
+            WordDetailScreen(navController = navController, wordViewModel = wordViewModel)
         }
     }
 

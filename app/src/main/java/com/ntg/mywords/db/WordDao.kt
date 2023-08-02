@@ -14,7 +14,7 @@ interface WordDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(word: Word)
 
-    @Query("SELECT * FROM Word")
+    @Query("SELECT * FROM Word ORDER BY id DESC")
     fun getAllWords(): LiveData<List<Word>>
 
     @Query("SELECT EXISTS(SELECT * FROM Word WHERE word =:word AND type =:type)")

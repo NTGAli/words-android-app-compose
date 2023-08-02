@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.ntg.mywords.model.db.Word
 
-@Database(entities = [Word::class], version = 1)
+@Database(entities = [Word::class], version = 2)
 @TypeConverters(ExamplesConverters::class)
 abstract class AppDB: RoomDatabase()  {
 

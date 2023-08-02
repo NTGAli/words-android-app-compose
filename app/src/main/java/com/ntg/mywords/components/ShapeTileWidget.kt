@@ -45,7 +45,8 @@ fun ShapeTileWidget(
             )
 
     ) {
-        Row(modifier = Modifier.padding(8.dp)) {
+        Row(modifier = Modifier.align(Alignment.Center)
+            .padding(horizontal = 8.dp)) {
 
             Box(
                 modifier = Modifier

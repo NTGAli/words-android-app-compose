@@ -27,6 +27,7 @@ class AppModule {
             AppDB::class.java,
             DATABASE_NAME
         )
+            .fallbackToDestructiveMigration()
 //            .addTypeConverter(ExamplesConverters::class.java)
             .build()
 

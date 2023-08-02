@@ -16,7 +16,7 @@ data class Word (
     val example: List<String>? = null,
     val dateCreated: Long? = null,
     val revisionCount: Int = 0,
-    val lsatRevisionTime: Long? = null
+    val lastRevisionTime: Long? = null
 
 
         )
