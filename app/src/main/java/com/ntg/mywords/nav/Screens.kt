@@ -5,6 +5,8 @@ enum class Screens {
     HomeScreen,
     AddEditScreen,
     WordDetailScreen,
+    AllWordsScreen,
+    RevisionScreen,
 
 
 }
