@@ -50,13 +50,17 @@ fun ShapeTileWidget(
 
             Box(
                 modifier = Modifier
+                    .padding(vertical = 10.dp)
+                    .aspectRatio(1f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White)
-                    .align(Alignment.CenterVertically)
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
+
             ) {
 
                 Image(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(8.dp)
+                        .fillMaxSize(),
                     painter = painter,
                     contentDescription = "img"
                 )
