@@ -4,16 +4,20 @@
     <string name="words">Words</string>
     <string name="my_words">My Words</string>
     <string name="add_new">Add new word</string>
-    <string name="word">Word</string>
+    <string name="word">word</string>
     <string name="pronunciation">pronunciation</string>
     <string name="type">type</string>
     <string name="definition">definition</string>
     <string name="example">example</string>
+    <string name="all_words_format">All Words (%s)</string>
 
 
     <string name="err_word_required">word required.</string>
     <string name="err_type_required">select a type.</string>
     <string name="err_example_required">add at least a example.</string>
     <string name="err_word_already_exist">this word alreay exist</string>
+    <string name="translation">translation</string>
+    <string name="revision">revision</string>
+    <string name="do_you_remeber_this_word">Do you remember this word?</string>
 
 </resources>

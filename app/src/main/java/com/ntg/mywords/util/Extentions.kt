@@ -4,10 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
 import com.ntg.mywords.R
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
@@ -18,7 +15,8 @@ import java.util.concurrent.TimeUnit
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
-fun Boolean?.orFalse() = this?: false
+fun Int?.orZero() = this ?: 0
+fun Boolean?.orFalse() = this ?: false
 
 fun timber(msg: String) {
     Timber.d(msg)
@@ -28,7 +26,7 @@ fun timber(title: String, msg: String) {
     Timber.d("$title ----------> $msg")
 }
 
-fun Context.toast(msg: String){
+fun Context.toast(msg: String) {
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
 
@@ -47,10 +45,10 @@ fun notFalse(
     errorMessage: String = "error!"
 ): Result<String> =
     if (value.orFalse()) Success(value.toString())
-else Failure(errorMessage)
+    else Failure(errorMessage)
 
 
-fun Long.calculateRevisionStatus(numberOfRevision: Int){
+fun Long.calculateRevisionStatus(numberOfRevision: Int) {
 
     val todayUnix = System.currentTimeMillis()
 
@@ -68,21 +66,22 @@ fun getDaysBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
 }
 
 @Composable
-fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
+fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 
-    val diffTime = getDaysBetweenTimestamps(lsatRevisionTime.orDefault(),System.currentTimeMillis())
+    val diffTime =
+        getDaysBetweenTimestamps(lsatRevisionTime.orDefault(), System.currentTimeMillis())
 
 
-    return when(revisionCount){
+    return when (revisionCount) {
 
         0 -> {
-            when(diffTime){
+            when (diffTime) {
 
                 in 0..1 -> {
                     painterResource(id = R.drawable.chart_full)
                 }
 
-                2 ->{
+                2 -> {
                     painterResource(id = R.drawable.chart_medium)
                 }
 
@@ -94,9 +93,9 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
         }
 
         1 -> {
-            when(diffTime){
+            when (diffTime) {
 
-                in 1..5 -> {
+                in 0..5 -> {
                     painterResource(id = R.drawable.chart_full)
                 }
 
@@ -112,9 +111,9 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
         }
 
         2 -> {
-            when (diffTime){
+            when (diffTime) {
 
-                in 1..10 ->{
+                in 0..10 -> {
                     painterResource(id = R.drawable.chart_full)
                 }
 
@@ -130,13 +129,13 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 
         else -> {
 
-            when(diffTime){
+            when (diffTime) {
 
-                in 1 .. (revisionCount * 7) ->{
+                in 0..(revisionCount * 7) -> {
                     painterResource(id = R.drawable.chart_full)
                 }
 
-                in (revisionCount *7) .. (revisionCount + 10) -> {
+                in (revisionCount * 7)..(revisionCount + 10) -> {
                     painterResource(id = R.drawable.chart_medium)
                 }
 
@@ -148,4 +147,96 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 
         }
     }
+}
+
+fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Int {
+
+    val diffTime =
+        getDaysBetweenTimestamps(lsatRevisionTime.orDefault(), System.currentTimeMillis())
+
+
+    return when (revisionCount) {
+
+        0 -> {
+            when (diffTime) {
+
+                in 0..1 -> {
+                    1
+                }
+
+                2 -> {
+                    2
+                }
+
+                else -> {
+                    3
+                }
+
+            }
+        }
+
+        1 -> {
+            when (diffTime) {
+
+                in 0..5 -> {
+                    1
+                }
+
+                in 6..11 -> {
+                    2
+                }
+
+                else -> {
+                    3
+                }
+
+            }
+        }
+
+        2 -> {
+            when (diffTime) {
+
+                in 0..10 -> {
+                    1
+                }
+
+                in 10..15 -> {
+                    2
+                }
+
+                else -> {
+                    3
+                }
+            }
+        }
+
+        else -> {
+
+            when (diffTime) {
+
+                in 0..(revisionCount * 7) -> {
+                    1
+                }
+
+                in (revisionCount * 7)..(revisionCount + 10) -> {
+                    2
+                }
+
+                else -> {
+                    3
+                }
+
+            }
+
+        }
+    }
+}
+
+
+fun Int.getUnixTimeNDaysAgo(): Long {
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.DAY_OF_YEAR, -this)
+
+    val date = calendar.time
+    return date.time
 }

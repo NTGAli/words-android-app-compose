@@ -67,6 +67,7 @@ fun AddEditWordScreen(
                 paddingValues = innerPadding,
                 id = wordId,
                 word = mutableStateOf(word?.value?.word ?: ""),
+                translation = mutableStateOf(word?.value?.translation ?: ""),
                 type = mutableStateOf(word?.value?.type ?: ""),
                 pronunciation = mutableStateOf(word?.value?.pronunciation ?: ""),
                 definition = mutableStateOf(word?.value?.definition ?: ""),
@@ -127,7 +128,7 @@ private fun submitWord(
                 !wordViewModel.checkIfExist(
                     wordData.word.orEmpty(),
                     wordData.type.orEmpty()
-                ), context.getString(R.string.err_word_already_exist)
+                ) || isEdit, context.getString(R.string.err_word_already_exist)
             )
         }
 
@@ -156,6 +157,7 @@ private fun Content(
     paddingValues: PaddingValues,
     id: Int? = null,
     word: MutableState<String> = remember { mutableStateOf("") },
+    translation: MutableState<String> = remember { mutableStateOf("") },
     pronunciation: MutableState<String> = remember { mutableStateOf("") },
     type: MutableState<String> = remember { mutableStateOf("") },
     definition: MutableState<String> = remember { mutableStateOf("") },
@@ -165,46 +167,24 @@ private fun Content(
     wordData: (Word) -> Unit
 ) {
 
-    val a = remember { mutableStateListOf<String>() }
-
-    timber("awsejfhkjehskjfhekjf --")
-
-//    val word = remember {
-//        mutableStateOf(wordForEdit?.word.orEmpty())
-//    }
-//    val pronunciation = remember {
-//        mutableStateOf(wordForEdit?.pronunciation.orEmpty())
-//    }
-//    val type = remember {
-//        mutableStateOf(wordForEdit?.type.orEmpty())
-//    }
-//    val definition = remember {
-//        mutableStateOf(wordForEdit?.definition.orEmpty())
-//    }
     val example = remember {
         mutableStateOf("")
     }
-//
     val exampleList = remember {
         mutableStateListOf<String>()
     }
-
     if (exampleList.isEmpty()){
         exampleListWord.forEach{
             exampleList.add(it)
         }
     }
 
-
-
-
-
-
     wordData(
         Word(
             if (id != null && id != -1) id else 0,
             word = word.value,
             type = type.value,
+            translation = translation.value,
             pronunciation = pronunciation.value,
             definition = definition.value,
             example = exampleList,
@@ -233,8 +213,6 @@ private fun Content(
         "ə",
         "ɚ",
         "ʊ",
-
-
         )
 
     val typeWordItems = arrayListOf(
@@ -288,6 +266,11 @@ private fun Content(
             EditText(
                 Modifier
                     .fillMaxWidth(), text = word, label = stringResource(R.string.word)
+            )
+            EditText(
+                Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth(), text = translation, label = stringResource(R.string.translation)
             )
             EditText(
                 Modifier

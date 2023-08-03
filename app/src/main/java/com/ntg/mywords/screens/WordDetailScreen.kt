@@ -120,8 +120,22 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
         }
 
         item {
+            if (word?.translation.orEmpty().isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(top = 8.dp),
+                    text = word?.translation.orEmpty(),
+                    style = fontMedium16(Secondary600)
+                )
+            }
+
+        }
+
+        item {
             if (word?.pronunciation != null) {
-                Row(modifier = Modifier.padding(top = 24.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = {
                     }) {
                         Icon(
@@ -152,8 +166,12 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
 
         }
 
-        items(word?.example.orEmpty()){
-            Text(modifier = Modifier.padding(start = 8.dp), text = it, style = fontRegular14(Secondary700))
+        items(word?.example.orEmpty()) {
+            Text(
+                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp),
+                text = it,
+                style = fontRegular14(Secondary700)
+            )
         }
 
     }

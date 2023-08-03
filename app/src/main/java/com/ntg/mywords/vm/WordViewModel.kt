@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.mywords.db.WordDao
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.util.getUnixTimeNDaysAgo
 import com.ntg.mywords.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,9 +21,16 @@ class WordViewModel @Inject constructor(
 
     private var isExist = false
     private var myWords: LiveData<List<Word>> = MutableLiveData()
+    private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
+    var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
 
 
+    fun searchOnWords(query: String){
+        viewModelScope.launch {
+            searchedWord.value = wordDao.search(query)
+        }
+    }
 
     fun addNewWord(word: Word) {
 
@@ -45,6 +53,8 @@ class WordViewModel @Inject constructor(
         return myWords
 
     }
+
+    fun recentWords(daysAgo: Int) =wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis())
 
     fun findWord(id: Int?):LiveData<Word>?{
         if (id == -1) return null

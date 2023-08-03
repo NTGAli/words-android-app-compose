@@ -1,6 +1,7 @@
 package com.ntg.mywords.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,8 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
-import com.ntg.mywords.ui.theme.Secondary500
+import com.ntg.mywords.ui.theme.*
 
 @Composable
 fun CustomButton(
@@ -25,6 +27,7 @@ fun CustomButton(
     text: String,
     type:ButtonType = ButtonType.Primary,
     size: ButtonSize = ButtonSize.MD,
+    style: ButtonStyle = ButtonStyle.Contained,
     roundCorner: Dp = 8.dp,
     paddingLeft: Dp = 0.dp,
     paddingRight: Dp = 0.dp,
@@ -43,6 +46,7 @@ fun CustomButton(
 
     var textColor = Color.White
     var background = Secondary500
+    var borderColor = Secondary500
 
     when (size){
 
@@ -83,14 +87,121 @@ fun CustomButton(
     when (type){
 
         ButtonType.Primary -> {
-            background = Secondary500
-            textColor = Color.White
+
+            when(style){
+                ButtonStyle.Contained -> {
+                    background = Primary500
+                    borderColor = Primary500
+                    textColor = Color.White
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = Primary500
+                    textColor = Primary500
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = Primary500
+                }
+            }
+
         }
-        ButtonType.Success -> {}
-        ButtonType.Secondary -> {}
-        ButtonType.Warning -> {}
-        ButtonType.Danger -> {}
-        ButtonType.Info -> {}
+        ButtonType.Success -> {
+            when(style){
+                ButtonStyle.Contained -> {
+                    background = Success500
+                    borderColor = Success500
+                    textColor = Color.White
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = Success500
+                    textColor = Success500
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = Success500
+                }
+            }
+        }
+        ButtonType.Secondary -> {
+            when(style){
+                ButtonStyle.Contained -> {
+                    background = Secondary500
+                    borderColor = Secondary500
+                    textColor = Color.White
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = Secondary500
+                    textColor = Secondary500
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = Secondary500
+                }
+            }
+        }
+        ButtonType.Warning -> {
+            when(style){
+                ButtonStyle.Contained -> {
+                    background = Warning500
+                    borderColor = Warning500
+                    textColor = Color.White
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = Warning500
+                    textColor = Warning500
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = Warning500
+                }
+            }
+        }
+        ButtonType.Danger -> {
+            when(style){
+                ButtonStyle.Contained -> {
+                    background = Danger500
+                    borderColor = Danger500
+                    textColor = Color.White
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = Danger500
+                    textColor = Danger500
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = Danger500
+                }
+            }
+        }
+        ButtonType.Info -> {
+            when(style){
+                ButtonStyle.Contained -> {
+                    background = Info500
+                    borderColor = Info500
+                    textColor = Color.White
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = Info500
+                    textColor = Info500
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = Info500
+                }
+            }
+        }
 
     }
 
@@ -100,6 +211,7 @@ fun CustomButton(
         .fillMaxWidth()
         .clip(RoundedCornerShape(roundCorner))
         .background(background)
+        .border(width = 2.dp, color = borderColor)
         .clickable {
                    onClick()
         },
@@ -108,7 +220,7 @@ fun CustomButton(
 
         Row(modifier = Modifier.align(Alignment.Center)) {
 
-            Text(modifier = Modifier.padding(start = left, top = top, end = right, bottom = bottom), text = text)
+            Text(modifier = Modifier.padding(start = left, top = top, end = right, bottom = bottom), text = text, color = textColor)
 
         }
 
