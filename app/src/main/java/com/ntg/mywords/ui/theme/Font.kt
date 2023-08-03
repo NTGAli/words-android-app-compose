@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntg.mywords.R
 
@@ -38,7 +37,7 @@ fun FontRegular12(color: Color = Secondary100) = TextStyle(
 
 
 
-fun FontRegular14(color: Color = Secondary100) = TextStyle(
+fun fontRegular14(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Normal,
     fontSize = 14.sp,
@@ -47,14 +46,14 @@ fun FontRegular14(color: Color = Secondary100) = TextStyle(
 
 // Medium
 
-fun FontMedium10(color: Color = Secondary100) = TextStyle(
+fun fontMedium10(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Medium,
     fontSize = 10.sp,
     color = color
 )
 
-fun FontMedium12(color: Color = Secondary100) = TextStyle(
+fun fontMedium12(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Medium,
     fontSize = 12.sp,
@@ -62,17 +61,24 @@ fun FontMedium12(color: Color = Secondary100) = TextStyle(
 )
 
 
-fun FontMedium14(color: Color = Secondary100) = TextStyle(
+fun fontMedium14(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     color = color
 )
 
-fun FontMedium16(color: Color = Secondary100) = TextStyle(
+fun fontMedium16(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Medium,
     fontSize = 16.sp,
+    color = color
+)
+
+fun fontMedium24(color: Color = Secondary100) = TextStyle(
+    fontFamily = mFont,
+    fontWeight = FontWeight.Medium,
+    fontSize = 24.sp,
     color = color
 )
 

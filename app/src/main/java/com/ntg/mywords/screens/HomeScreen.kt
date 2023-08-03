@@ -26,9 +26,7 @@ import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
-import com.ntg.mywords.ui.theme.FontBold14
-import com.ntg.mywords.ui.theme.Primary200
-import com.ntg.mywords.ui.theme.Secondary900
+import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.getDaysBetweenTimestamps
 import com.ntg.mywords.util.getStateRevision
 import com.ntg.mywords.util.orDefault
@@ -103,8 +101,8 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, 
                     modifier = Modifier
                         .weight(1f)
                         .padding(4.dp), title = "title", subTitle = "14", painter = painterResource(
-                        id = R.drawable.ic_new
-                    )
+                        id = R.drawable.icons8_w_1
+                    ), imageTint = Primary500
                 )
             }
 
@@ -116,8 +114,9 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, 
                     title = "12 words",
                     subTitle = "last 7d ago",
                     painter = painterResource(
-                        id = R.drawable.ic_new
-                    )
+                        id = R.drawable.icons8_eye_1
+                    ),
+                    imageTint = Warning500
                 ) {
 
                 }
@@ -126,8 +125,9 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, 
                     modifier = Modifier
                         .weight(1f)
                         .padding(4.dp), title = "title", subTitle = "14", painter = painterResource(
-                        id = R.drawable.ic_new
-                    )
+                        id = R.drawable.icons8_clock_1_1
+                    ),
+                    imageTint = Secondary500
                 )
             }
 
@@ -148,7 +148,8 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, 
 
                 timber("kawljdlkajwdlkjawlkdj $id")
 
-                navController.navigate(Screens.AddEditScreen.name+"?wordId=$id")
+                navController.navigate(Screens.WordDetailScreen.name+"?wordId=$id")
+//                navController.navigate(Screens.AddEditScreen.name+"?wordId=$id")
 
             }
         }

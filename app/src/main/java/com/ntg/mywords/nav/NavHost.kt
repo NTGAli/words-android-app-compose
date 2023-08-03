@@ -43,8 +43,11 @@ fun AppNavHost(
             AddEditWordScreen(navController, wordViewModel,backStackEntry.arguments?.getInt("wordId"))
         }
 
-        composable(Screens.WordDetailScreen.name) {
-            WordDetailScreen(navController = navController, wordViewModel = wordViewModel)
+        composable(Screens.WordDetailScreen.name+"?wordId={wordId}",
+            arguments = listOf(navArgument("wordId")
+            { type = NavType.IntType
+                defaultValue = -1})) {backStackEntry ->
+            WordDetailScreen(navController = navController, wordViewModel = wordViewModel,backStackEntry.arguments?.getInt("wordId"))
         }
     }
 
