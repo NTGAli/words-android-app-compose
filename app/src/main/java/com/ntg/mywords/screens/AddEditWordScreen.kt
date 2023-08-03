@@ -65,16 +65,7 @@ fun AddEditWordScreen(
             val word = wordViewModel.findWord(wordId)?.observeAsState()
             Content(
                 paddingValues = innerPadding,
-                id = wordId,
-                word = mutableStateOf(word?.value?.word ?: ""),
-                translation = mutableStateOf(word?.value?.translation ?: ""),
-                type = mutableStateOf(word?.value?.type ?: ""),
-                pronunciation = mutableStateOf(word?.value?.pronunciation ?: ""),
-                definition = mutableStateOf(word?.value?.definition ?: ""),
-                exampleListWord = word?.value?.example.orEmpty(),
-                lastRevision = word?.value?.lastRevisionTime ?: System.currentTimeMillis(),
-                dateCreated = word?.value?.dateCreated ?: System.currentTimeMillis(),
-
+                wordEdit = word?.value,
             ) {
                 wordData = it
             }
@@ -155,41 +146,66 @@ private fun submitWord(
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
-    id: Int? = null,
-    word: MutableState<String> = remember { mutableStateOf("") },
-    translation: MutableState<String> = remember { mutableStateOf("") },
-    pronunciation: MutableState<String> = remember { mutableStateOf("") },
-    type: MutableState<String> = remember { mutableStateOf("") },
-    definition: MutableState<String> = remember { mutableStateOf("") },
-    exampleListWord: List<String> = listOf(),
-    lastRevision: Long = System.currentTimeMillis(),
-    dateCreated: Long = System.currentTimeMillis(),
+    wordEdit: Word?,
     wordData: (Word) -> Unit
 ) {
+
+    val word = remember {
+        mutableStateOf("")
+    }
+
+    val translation = remember {
+        mutableStateOf("")
+    }
+
+    val pronunciation = remember {
+        mutableStateOf("")
+    }
+
+    val type = remember {
+        mutableStateOf("")
+    }
+
+    val definition = remember {
+        mutableStateOf("")
+    }
 
     val example = remember {
         mutableStateOf("")
     }
+
+    val applyEdit = remember {
+        mutableStateOf(false)
+    }
+
     val exampleList = remember {
         mutableStateListOf<String>()
     }
-    if (exampleList.isEmpty()){
-        exampleListWord.forEach{
+
+
+    if (wordEdit != null && !applyEdit.value){
+        word.value = wordEdit.word.orEmpty()
+        translation.value = wordEdit.translation.orEmpty()
+        type.value = wordEdit.type.orEmpty()
+        definition.value = wordEdit.definition.orEmpty()
+        wordEdit.example?.forEach{
             exampleList.add(it)
         }
+        applyEdit.value = true
+
     }
 
     wordData(
         Word(
-            if (id != null && id != -1) id else 0,
+            if (wordEdit?.id != null && wordEdit.id != -1) wordEdit.id else 0,
             word = word.value,
             type = type.value,
             translation = translation.value,
             pronunciation = pronunciation.value,
             definition = definition.value,
             example = exampleList,
-            dateCreated = dateCreated,
-            lastRevisionTime = lastRevision
+            dateCreated = wordEdit?.dateCreated ?: System.currentTimeMillis(),
+            lastRevisionTime = wordEdit?.lastRevisionTime ?: System.currentTimeMillis()
         )
     )
 
