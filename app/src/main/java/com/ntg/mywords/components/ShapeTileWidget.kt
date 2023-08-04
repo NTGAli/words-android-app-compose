@@ -73,7 +73,7 @@ fun ShapeTileWidget(
 
                 Column {
                     Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = FontBold12(Secondary800))
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = FontRegular12(Secondary500))
+                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(Secondary500))
 
                 }
 

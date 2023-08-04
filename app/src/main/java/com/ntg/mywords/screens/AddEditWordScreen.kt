@@ -2,10 +2,7 @@ package com.ntg.mywords.screens
 
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -26,6 +23,7 @@ import com.ntg.mywords.components.*
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Success
 import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.then
 import com.ntg.mywords.ui.theme.Secondary100
@@ -166,6 +164,14 @@ private fun Content(
         mutableStateOf("")
     }
 
+    val pastSimple = remember {
+        mutableStateOf("")
+    }
+
+    val pastParticiple = remember {
+        mutableStateOf("")
+    }
+
     val definition = remember {
         mutableStateOf("")
     }
@@ -187,6 +193,9 @@ private fun Content(
         word.value = wordEdit.word.orEmpty()
         translation.value = wordEdit.translation.orEmpty()
         type.value = wordEdit.type.orEmpty()
+        pronunciation.value = wordEdit.pronunciation.orEmpty()
+        pastSimple.value = wordEdit.verbForms?.pastSimple.orEmpty()
+        pastParticiple.value = wordEdit.verbForms?.pastParticiple.orEmpty()
         definition.value = wordEdit.definition.orEmpty()
         wordEdit.example?.forEach{
             exampleList.add(it)
@@ -200,6 +209,10 @@ private fun Content(
             if (wordEdit?.id != null && wordEdit.id != -1) wordEdit.id else 0,
             word = word.value,
             type = type.value,
+            verbForms= VerbForms(
+                pastSimple = pastSimple.value,
+                pastParticiple = pastParticiple.value
+            ),
             translation = translation.value,
             pronunciation = pronunciation.value,
             definition = definition.value,
@@ -325,6 +338,15 @@ private fun Content(
                     openBottomSheet = true
                 }
             )
+
+
+            if (type.value == "verb"){
+                Row(modifier = Modifier.padding(top = 4.dp)) {
+                    EditText(modifier = Modifier.weight(1f).padding(end = 4.dp), text = pastSimple, label = stringResource(id = R.string.past_simple))
+                    EditText(modifier = Modifier.weight(1f).padding(start = 4.dp), text = pastParticiple, label = stringResource(id = R.string.past_simple))
+                }
+            }
+
             EditText(
                 Modifier
                     .padding(top = 8.dp)

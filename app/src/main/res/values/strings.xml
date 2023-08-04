@@ -10,6 +10,7 @@
     <string name="definition">definition</string>
     <string name="example">example</string>
     <string name="all_words_format">All Words (%s)</string>
+    <string name="context_colon_form">%s :</string>
 
 
     <string name="err_word_required">word required.</string>
@@ -19,5 +20,8 @@
     <string name="translation">translation</string>
     <string name="revision">revision</string>
     <string name="do_you_remeber_this_word">Do you remember this word?</string>
+    <string name="past_simple">past simple</string>
+    <string name="verb_forms">verb forms</string>
+    <string name="past_participle">past participle</string>
 
 </resources>

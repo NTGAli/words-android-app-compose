@@ -5,8 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.ntg.mywords.model.db.Word
 
-@Database(entities = [Word::class], version = 3)
-@TypeConverters(ExamplesConverters::class)
+@Database(entities = [Word::class], version = 6)
+@TypeConverters(ExamplesConverters::class, VerbFormsConverter::class)
 abstract class AppDB: RoomDatabase()  {
 
     abstract fun wordDao(): WordDao

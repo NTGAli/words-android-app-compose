@@ -29,7 +29,6 @@ import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.getStateRevision
-import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -143,7 +142,7 @@ private fun Content(
                             .padding(horizontal = 16.dp)
                             .align(Alignment.Start),
                         text = word.definition.orEmpty(),
-                        style = FontRegular12(Secondary900)
+                        style = fontRegular12(Secondary900)
                     )
 
                 }
