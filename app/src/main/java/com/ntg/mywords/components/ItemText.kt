@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -33,21 +34,22 @@ fun ItemText(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Secondary100)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .wrapContentSize()
             .clickable(
                 onClick = {
                     onClick.invoke(text)
                 },
                 indication = rememberRipple(
-                    color = Secondary500
+                    color = Secondary500,
+                    radius = 8.dp
                 ),
                 interactionSource = remember { MutableInteractionSource() }
             )
 
     ) {
 
-        Text(modifier = Modifier.align(Alignment.Center).padding(8.dp),text = text, style = FontBold12(Secondary800))
+        Text(modifier = Modifier.align(Alignment.Center).padding(8.dp),text = text, style = FontBold12(MaterialTheme.colorScheme.onSurfaceVariant))
 
     }
 

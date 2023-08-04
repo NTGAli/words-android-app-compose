@@ -24,11 +24,18 @@ class WordViewModel @Inject constructor(
     private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
+    var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
 
 
     fun searchOnWords(query: String){
         viewModelScope.launch {
             searchedWord.value = wordDao.search(query)
+        }
+    }
+
+    fun searchOnRecentWords(query: String){
+        viewModelScope.launch {
+            searchedRecentWord.value = wordDao.searchOnRecent(query, 7.getUnixTimeNDaysAgo(), System.currentTimeMillis())
         }
     }
 
@@ -43,6 +50,12 @@ class WordViewModel @Inject constructor(
     fun editWord(id: Int?, word: Word) {
         viewModelScope.launch {
             wordDao.update(word)
+        }
+    }
+
+    fun deleteWord(word: Word) {
+        viewModelScope.launch {
+            wordDao.delete(word)
         }
     }
 

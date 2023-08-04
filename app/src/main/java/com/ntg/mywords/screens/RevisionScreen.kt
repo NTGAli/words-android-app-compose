@@ -41,7 +41,8 @@ fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel) {
         topBar = {
             Appbar(
                 title = stringResource(R.string.revision),
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                navigationOnClick = { navController.popBackStack() }
             )
         },
         content = { innerPadding ->

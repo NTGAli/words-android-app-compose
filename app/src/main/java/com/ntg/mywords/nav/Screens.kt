@@ -7,6 +7,7 @@ enum class Screens {
     WordDetailScreen,
     AllWordsScreen,
     RevisionScreen,
+    RecentWordScreen,
 
 
 }

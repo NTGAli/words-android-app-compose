@@ -24,13 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
-import com.ntg.mywords.model.components.AppbarItem
-import com.ntg.mywords.model.components.PopupItem
-import com.ntg.mywords.model.components.TextWithContext
+import com.ntg.mywords.components.CustomButton
+import com.ntg.mywords.model.components.*
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.vm.WordViewModel
+import dagger.hilt.android.scopes.ViewModelScoped
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +49,9 @@ fun WordDetailScreen(navController: NavController, wordViewModel: WordViewModel,
                 navController = navController,
                 title = word?.value?.word.orEmpty(),
                 scrollBehavior,
-                wordId ?: -1
+                wordId ?: -1,
+                wordViewModel,
+                word?.value
             )
         },
         content = { innerPadding ->
@@ -64,8 +66,19 @@ private fun setupAppbar(
     navController: NavController,
     title: String,
     scrollBehavior: TopAppBarScrollBehavior,
-    wordId: Int
+    wordId: Int,
+    wordViewModel: WordViewModel,
+    word: Word?
 ) {
+
+    var openBottomSheet by remember {
+        mutableStateOf(false)
+    }
+    val skipPartiallyExpanded by remember { mutableStateOf(true) }
+
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = skipPartiallyExpanded
+    )
 
     Appbar(
         title = title,
@@ -90,10 +103,36 @@ private fun setupAppbar(
             if (it == 1) {
                 navController.navigate(Screens.AddEditScreen.name + "?wordId=$wordId")
             } else {
-
+                openBottomSheet = true
             }
         }
     )
+
+
+    if (openBottomSheet){
+        ModalBottomSheet(onDismissRequest = { openBottomSheet = false },
+            sheetState = bottomSheetState) {
+
+            Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp)) {
+                Text(text = "Are you sure you want to delete this word?", style = fontMedium14(
+                    MaterialTheme.colorScheme.onBackground))
+
+                Row(modifier = Modifier.padding(top = 16.dp)) {
+                    CustomButton(modifier = Modifier.weight(1f).padding(end = 4.dp), text = "no", type = ButtonType.Secondary, style = ButtonStyle.Outline){
+                        openBottomSheet = false
+                    }
+                    CustomButton(modifier = Modifier.weight(1f).padding(start = 4.dp), text = "yes", type = ButtonType.Danger){
+                        wordViewModel.deleteWord(word ?: Word())
+                        openBottomSheet = false
+                        navController.popBackStack()
+                    }
+                }
+            }
+
+
+        }
+    }
+
 }
 
 @Composable
@@ -110,11 +149,11 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                 modifier = Modifier.padding(top = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = word?.word.orEmpty(), style = fontMedium24(Secondary900))
+                Text(text = word?.word.orEmpty(), style = fontMedium24(MaterialTheme.colorScheme.onBackground))
                 Text(
                     modifier = Modifier.padding(start = 24.dp),
                     text = word?.type.orEmpty(),
-                    style = fontMedium14(Secondary500)
+                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
         }
@@ -124,7 +163,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                 Text(
                     modifier = Modifier.padding(top = 8.dp),
                     text = word?.translation.orEmpty(),
-                    style = fontMedium16(Secondary600)
+                    style = fontMedium16(MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
 
@@ -200,7 +239,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                         modifier = Modifier.padding(start = 16.dp),
                         text = word.pronunciation,
                         style = fontMedium14(
-                            Secondary800
+                            MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -212,7 +251,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                 modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
                 text = word?.definition.orEmpty(),
                 style = fontRegular14(
-                    Secondary900
+                    MaterialTheme.colorScheme.onBackground
                 )
             )
 
@@ -222,7 +261,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
             Text(
                 modifier = Modifier.padding(start = 8.dp, bottom = 4.dp),
                 text = it,
-                style = fontRegular14(Secondary700)
+                style = fontRegular14(MaterialTheme.colorScheme.onBackground)
             )
         }
 
