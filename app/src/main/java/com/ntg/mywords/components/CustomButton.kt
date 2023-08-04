@@ -210,8 +210,8 @@ fun CustomButton(
     Box(modifier = modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(roundCorner))
+        .border(width = 2.dp, color = borderColor, shape = RoundedCornerShape(roundCorner))
         .background(background)
-        .border(width = 2.dp, color = borderColor)
         .clickable {
                    onClick()
         },

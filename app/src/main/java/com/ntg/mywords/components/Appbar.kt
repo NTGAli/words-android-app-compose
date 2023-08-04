@@ -5,13 +5,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.model.components.PopupItem
@@ -44,7 +53,6 @@ fun Appbar(
 //
 //    enableSearchBar2 = enableSearchbar
 
-    Box {
 
         if (enableSearchbar.value) {
             SearchBar(onQueryChange = {onQueryChange.invoke(it)}, onDismiss = { enableSearchbar.value = false })
@@ -56,13 +64,13 @@ fun Appbar(
                         Text(
                             title,
                             maxLines = 1,
-                            style = FontBold14(titleColor)
+                            style = FontBold14(MaterialTheme.colorScheme.onBackground)
                         )
                     },
                     navigationIcon = {
                         if (enableNavigation) {
 
-                            IconButton(onClick = { /* doSomething() */ }) {
+                            IconButton(onClick = { navigationOnClick.invoke() }) {
                                 Icon(
                                     imageVector = Icons.Rounded.KeyboardArrowLeft,
                                     contentDescription = "navigation",
@@ -91,20 +99,20 @@ fun Appbar(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        color
+//                        MaterialTheme.colorScheme.background
                     ),
-                    scrollBehavior = scrollBehavior
+                    scrollBehavior = scrollBehavior,
+                    windowInsets = TopAppBarDefaults.windowInsets
                 )
 
                 if (scrollBehavior?.state?.contentOffset.orZero() < -25f) {
-                    Divider(Modifier.height(1.dp), color = Secondary100)
+                    Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.surfaceVariant)
                 }
 
             }
 
         }
 
-    }
 
 
 }
@@ -159,23 +167,41 @@ fun Popup(popupItems: List<PopupItem>, onClick: (Int) -> Unit) {
 fun SearchBar(onQueryChange: (String) -> Unit, onDismiss: () -> Unit) {
     var text by remember { mutableStateOf("") }
 
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
+
+
     TextField(
+        modifier = Modifier.fillMaxWidth()
+            .focusRequester(focusRequester)
+            ,
         value = text,
         onValueChange = {
             text = it
             onQueryChange.invoke(it)
         },
-        maxLines = 1,
+        singleLine = true,
+        textStyle = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                focusManager.clearFocus()
+            }
+        ),
         leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-        modifier = Modifier.fillMaxWidth(),
         colors = TextFieldDefaults.textFieldColors(
-            cursorColor = Primary500,
-            focusedLeadingIconColor = Secondary700,
-            containerColor = Color.White,
-            focusedTextColor = Secondary700
+//            cursorColor = Primary500,
+//            focusedLeadingIconColor = Secondary700,
+//            containerColor = Color.White,
+//            focusedTextColor = Secondary800,
+//            unfocusedTextColor = Secondary500,
+//            focusedIndicatorColor = Primary500,
+//            unfocusedIndicatorColor = Secondary500
         ),
         trailingIcon = {
             IconButton(onClick = {
+                onQueryChange("")
                 onDismiss()
             }) {
                 Icon(
@@ -186,4 +212,8 @@ fun SearchBar(onQueryChange: (String) -> Unit, onDismiss: () -> Unit) {
             }
         }
     )
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 }

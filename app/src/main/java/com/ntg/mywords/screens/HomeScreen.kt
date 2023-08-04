@@ -100,7 +100,7 @@ private fun Content(
                 modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 12.dp),
                 text = stringResource(R.string.workout_report),
                 style = FontBold14(
-                    Secondary900
+                    MaterialTheme.colorScheme.onBackground
                 )
             )
 
@@ -113,8 +113,10 @@ private fun Content(
                     subTitle = "last 7d ago",
                     painter = painterResource(
                         id = R.drawable.ic_new
-                    )
+                    ),
+                    imageTint = Success500
                 ) {
+                    navController.navigate(Screens.RecentWordScreen.name)
 
                 }
 
@@ -157,7 +159,7 @@ private fun Content(
             Text(
                 modifier = Modifier.padding(top = 28.dp, start = 16.dp),
                 text = stringResource(R.string.words),
-                style = FontBold14(Secondary900)
+                style = FontBold14(MaterialTheme.colorScheme.onBackground)
             )
 
         }

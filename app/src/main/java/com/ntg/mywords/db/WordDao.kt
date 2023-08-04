@@ -14,6 +14,9 @@ interface WordDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(word: Word)
 
+    @Delete
+    suspend fun delete(word: Word)
+
     @Query("SELECT * FROM Word ORDER BY id DESC")
     fun getAllWords(): LiveData<List<Word>>
 
@@ -29,4 +32,7 @@ interface WordDao {
 
     @Query("SELECT * FROM Word WHERE word LIKE '%' || :query || '%'")
     suspend fun search(query: String): List<Word>
+
+    @Query("SELECT * FROM Word WHERE word LIKE '%' || :query || '%' AND (dateCreated BETWEEN :start AND :end)")
+    suspend fun searchOnRecent(query: String, start: Long, end: Long): List<Word>
 }

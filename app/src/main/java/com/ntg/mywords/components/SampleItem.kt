@@ -4,12 +4,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.ui.theme.*
@@ -26,6 +29,7 @@ fun SampleItem(
 
     Box(modifier = modifier
         .fillMaxWidth()
+        .clip(RoundedCornerShape(8.dp))
         .clickable(
             onClick = { onClick?.invoke(title, id) },
             indication = rememberRipple(
@@ -36,7 +40,7 @@ fun SampleItem(
 
     ){
         Row {
-            Text(modifier = Modifier.padding(vertical = 16.dp).weight(1f),text = title, style = fontMedium16(Secondary700))
+            Text(modifier = Modifier.padding(vertical = 16.dp).padding(horizontal = 4.dp).weight(1f),text = title, style = fontMedium16(MaterialTheme.colorScheme.onSurfaceVariant))
             if (painter != null){
                 Image(modifier= Modifier.align(Alignment.CenterVertically),painter = painter, contentDescription = "imageSampleItem")
             }

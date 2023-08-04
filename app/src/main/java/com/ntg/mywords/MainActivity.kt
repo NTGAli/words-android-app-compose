@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.nav.AppNavHost
-import com.ntg.mywords.ui.theme.MyWordsTheme
+import com.ntg.mywords.ui.theme.AppTheme
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyWordsTheme {
+            AppTheme {
 
                 AppNavHost(wordViewModel = wordViewModel)
 
@@ -67,7 +67,7 @@ fun Greeting(name: String) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    MyWordsTheme {
+    AppTheme {
         Greeting("Android")
     }
 }

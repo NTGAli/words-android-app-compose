@@ -44,7 +44,7 @@ fun EditText(
             }
         },
         readOnly = readOnly,
-        textStyle = fontRegular14(Secondary900),
+        textStyle = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant),
         enabled = enabled,
         shape = RoundedCornerShape(8.dp),
         trailingIcon = {
@@ -60,11 +60,13 @@ fun EditText(
             }
         },
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Primary500,
-            unfocusedBorderColor = Secondary700,
-            focusedLabelColor = FocusLabel,
-            cursorColor = Primary500,
-            focusedLeadingIconColor = Danger050
+//            focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+//            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+//            focusedBorderColor = Primary500,
+//            unfocusedBorderColor = Secondary700,
+//            focusedLabelColor = FocusLabel,
+//            cursorColor = Primary500,
+//            focusedLeadingIconColor = Danger050
         ),
         interactionSource = remember { MutableInteractionSource() }
             .also { interactionSource ->

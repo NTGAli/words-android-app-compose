@@ -52,7 +52,8 @@ fun AddEditWordScreen(
         topBar = {
             Appbar(
                 title = stringResource(R.string.add_new),
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                navigationOnClick = { navController.popBackStack() }
             )
         },
         content = { innerPadding ->
@@ -83,9 +84,8 @@ private fun BottomBarContent(onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(start = 32.dp, end = 32.dp)
-            .background(Color.White)
     ) {
-        Divider(Modifier.padding(bottom = 16.dp), color = Secondary100)
+        Divider(Modifier.padding(bottom = 16.dp), color = MaterialTheme.colorScheme.surfaceVariant)
         CustomButton(
             modifier = Modifier.padding(bottom = 16.dp),
             text = "button",
@@ -189,7 +189,7 @@ private fun Content(
     }
 
 
-    if (wordEdit != null && !applyEdit.value){
+    if (wordEdit != null && !applyEdit.value) {
         word.value = wordEdit.word.orEmpty()
         translation.value = wordEdit.translation.orEmpty()
         type.value = wordEdit.type.orEmpty()
@@ -197,7 +197,7 @@ private fun Content(
         pastSimple.value = wordEdit.verbForms?.pastSimple.orEmpty()
         pastParticiple.value = wordEdit.verbForms?.pastParticiple.orEmpty()
         definition.value = wordEdit.definition.orEmpty()
-        wordEdit.example?.forEach{
+        wordEdit.example?.forEach {
             exampleList.add(it)
         }
         applyEdit.value = true
@@ -209,7 +209,7 @@ private fun Content(
             if (wordEdit?.id != null && wordEdit.id != -1) wordEdit.id else 0,
             word = word.value,
             type = type.value,
-            verbForms= VerbForms(
+            verbForms = VerbForms(
                 pastSimple = pastSimple.value,
                 pastParticiple = pastParticiple.value
             ),
@@ -242,7 +242,7 @@ private fun Content(
         "ə",
         "ɚ",
         "ʊ",
-        )
+    )
 
     val typeWordItems = arrayListOf(
         "noun",
@@ -299,7 +299,9 @@ private fun Content(
             EditText(
                 Modifier
                     .padding(top = 8.dp)
-                    .fillMaxWidth(), text = translation, label = stringResource(R.string.translation)
+                    .fillMaxWidth(),
+                text = translation,
+                label = stringResource(R.string.translation)
             )
             EditText(
                 Modifier
@@ -340,10 +342,22 @@ private fun Content(
             )
 
 
-            if (type.value == "verb"){
+            if (type.value == "verb") {
                 Row(modifier = Modifier.padding(top = 4.dp)) {
-                    EditText(modifier = Modifier.weight(1f).padding(end = 4.dp), text = pastSimple, label = stringResource(id = R.string.past_simple))
-                    EditText(modifier = Modifier.weight(1f).padding(start = 4.dp), text = pastParticiple, label = stringResource(id = R.string.past_simple))
+                    EditText(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        text = pastSimple,
+                        label = stringResource(id = R.string.past_simple)
+                    )
+                    EditText(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp),
+                        text = pastParticiple,
+                        label = stringResource(id = R.string.past_simple)
+                    )
                 }
             }
 

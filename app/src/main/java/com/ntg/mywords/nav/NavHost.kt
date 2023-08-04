@@ -33,6 +33,10 @@ fun AppNavHost(
             AllWordsScreen(navController, wordViewModel)
         }
 
+        composable(Screens.RecentWordScreen.name) {
+            RecentWordScreen(navController, wordViewModel)
+        }
+
         composable(Screens.RevisionScreen.name) {
             RevisionScreen(navController, wordViewModel)
         }
