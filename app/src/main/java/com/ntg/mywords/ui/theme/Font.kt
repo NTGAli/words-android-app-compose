@@ -28,7 +28,7 @@ fun FontRegular10(color: Color = Secondary100) = TextStyle(
     color = color
 )
 
-fun FontRegular12(color: Color = Secondary100) = TextStyle(
+fun fontRegular12(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Normal,
     fontSize = 12.sp,
