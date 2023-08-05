@@ -30,6 +30,7 @@ import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.nav.AppNavHost
 import com.ntg.mywords.ui.theme.AppTheme
 import com.ntg.mywords.util.timber
+import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,13 +40,14 @@ class MainActivity : ComponentActivity() {
 
 
     private val wordViewModel: WordViewModel by viewModels()
+    private val calendarViewModel: CalendarViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             AppTheme {
 
-                AppNavHost(wordViewModel = wordViewModel)
+                AppNavHost(wordViewModel = wordViewModel, calendarViewModel = calendarViewModel)
 
             }
 

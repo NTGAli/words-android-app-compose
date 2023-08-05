@@ -1,0 +1,24 @@
+package com.ntg.mywords.db.converters
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.room.TypeConverter
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+class DateConverter {
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @TypeConverter
+    fun fromString(value: String?): LocalDate? {
+        return value?.let {
+            LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @TypeConverter
+    fun toString(date: LocalDate?): String? {
+        return date?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+    }
+}

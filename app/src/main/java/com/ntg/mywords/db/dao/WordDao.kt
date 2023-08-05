@@ -1,4 +1,4 @@
-package com.ntg.mywords.db
+package com.ntg.mywords.db.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*

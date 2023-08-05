@@ -153,7 +153,9 @@ private fun Content(
                         id = R.drawable.icons8_clock_1_1
                     ),
                     imageTint = Secondary500
-                )
+                ){
+                    navController.navigate(Screens.TimeScreen.name)
+                }
             }
 
             Text(

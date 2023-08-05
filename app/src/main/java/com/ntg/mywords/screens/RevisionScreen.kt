@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
@@ -28,6 +29,7 @@ import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
+import com.ntg.mywords.util.OnLifecycleEvent
 import com.ntg.mywords.util.getStateRevision
 import com.ntg.mywords.vm.WordViewModel
 
@@ -61,6 +63,7 @@ fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel) {
         }
     )
 
+    HandleLifecycle()
 }
 
 @Composable
@@ -151,14 +154,18 @@ private fun Content(
             }
 
             item {
-                CustomButton(modifier = Modifier.padding(top = 16.dp).padding(horizontal = 24.dp), text = "yes", style = ButtonStyle.Contained, type = ButtonType.Success, size = ButtonSize.MD){
+                CustomButton(modifier = Modifier
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 24.dp), text = "yes", style = ButtonStyle.Contained, type = ButtonType.Success, size = ButtonSize.MD){
                     word.revisionCount = word.revisionCount + 1
                     word.lastRevisionTime = System.currentTimeMillis()
                     wordViewModel.editWord(word.id, word)
                     rejectedList.add(word)
                 }
 
-                CustomButton(modifier = Modifier.padding(top = 16.dp).padding(horizontal = 24.dp), text = "no", style = ButtonStyle.TextOnly, type = ButtonType.Danger, size = ButtonSize.MD){
+                CustomButton(modifier = Modifier
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 24.dp), text = "no", style = ButtonStyle.TextOnly, type = ButtonType.Danger, size = ButtonSize.MD){
                     rejectedList.add(word)
                 }
             }
@@ -167,6 +174,15 @@ private fun Content(
     }else{
         rejectedList.clear()
     }
+}
 
-
+@Composable
+fun HandleLifecycle(){
+    OnLifecycleEvent { owner, event ->
+        when (event) {
+            Lifecycle.Event.ON_RESUME -> { /* stuff */ }
+            Lifecycle.Event.ON_STOP -> { /* other stuff */ }
+            else -> {}
+        }
+    }
 }
