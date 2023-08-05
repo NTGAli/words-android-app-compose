@@ -24,5 +24,7 @@
     <string name="past_simple">past simple</string>
     <string name="verb_forms">verb forms</string>
     <string name="past_participle">past participle</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
 
 </resources>

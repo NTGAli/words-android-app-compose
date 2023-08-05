@@ -1,5 +1,7 @@
 package com.ntg.mywords.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,19 +25,23 @@ import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.CustomButton
+import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
+import com.ntg.mywords.model.db.SpendTime
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.OnLifecycleEvent
 import com.ntg.mywords.util.getStateRevision
+import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel) {
+fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel, calendarViewModel: CalendarViewModel) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -63,7 +69,9 @@ fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel) {
         }
     )
 
-    HandleLifecycle()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        HandleLifecycle(calendarViewModel)
+    }
 }
 
 @Composable
@@ -156,7 +164,7 @@ private fun Content(
             item {
                 CustomButton(modifier = Modifier
                     .padding(top = 16.dp)
-                    .padding(horizontal = 24.dp), text = "yes", style = ButtonStyle.Contained, type = ButtonType.Success, size = ButtonSize.MD){
+                    .padding(horizontal = 24.dp), text = stringResource(R.string.yes), style = ButtonStyle.Contained, type = ButtonType.Success, size = ButtonSize.MD){
                     word.revisionCount = word.revisionCount + 1
                     word.lastRevisionTime = System.currentTimeMillis()
                     wordViewModel.editWord(word.id, word)
@@ -165,7 +173,7 @@ private fun Content(
 
                 CustomButton(modifier = Modifier
                     .padding(top = 16.dp)
-                    .padding(horizontal = 24.dp), text = "no", style = ButtonStyle.TextOnly, type = ButtonType.Danger, size = ButtonSize.MD){
+                    .padding(horizontal = 24.dp), text = stringResource(R.string.no), style = ButtonStyle.TextOnly, type = ButtonType.Danger, size = ButtonSize.MD){
                     rejectedList.add(word)
                 }
             }
@@ -176,12 +184,35 @@ private fun Content(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HandleLifecycle(){
+private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
     OnLifecycleEvent { owner, event ->
         when (event) {
-            Lifecycle.Event.ON_RESUME -> { /* stuff */ }
-            Lifecycle.Event.ON_STOP -> { /* other stuff */ }
+            Lifecycle.Event.ON_START -> {
+                calendarViewModel.stopLastTime()
+                calendarViewModel.insertSpendTime(
+                    SpendTime(
+                        id = 0,
+                        date = LocalDate.now(),
+                        startUnix = System.currentTimeMillis(),
+                        endUnix = null,
+                        type = SpendTimeType.Revision.ordinal
+                    )
+                )
+            }
+            Lifecycle.Event.ON_STOP -> {
+                calendarViewModel.stopLastTime()
+                calendarViewModel.insertSpendTime(
+                    SpendTime(
+                        id = 0,
+                        date = LocalDate.now(),
+                        startUnix = System.currentTimeMillis(),
+                        endUnix = null,
+                        type = SpendTimeType.Learning.ordinal
+                    )
+                )
+            }
             else -> {}
         }
     }

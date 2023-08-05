@@ -3,6 +3,7 @@ package com.ntg.mywords.di
 import android.content.Context
 import androidx.room.Room
 import com.ntg.mywords.db.AppDB
+import com.ntg.mywords.db.dao.SpendTimeDao
 import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.util.Constant.DATABASE_NAME
 import dagger.Module
@@ -37,6 +38,12 @@ class AppModule {
     @Singleton
     fun provideWordDao(appDB: AppDB): WordDao {
         return appDB.wordDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpendTimeDao(appDB: AppDB): SpendTimeDao {
+        return appDB.spendTime()
     }
 
 

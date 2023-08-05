@@ -1,5 +1,6 @@
 package com.ntg.mywords.screens
 
+import android.os.Bundle
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem

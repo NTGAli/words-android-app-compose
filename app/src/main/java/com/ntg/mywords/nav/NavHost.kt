@@ -1,13 +1,12 @@
 package com.ntg.mywords.nav
 
+import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.ntg.mywords.screens.*
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
@@ -19,7 +18,16 @@ fun AppNavHost(
     startDestination: String = Screens.HomeScreen.name,
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
+    onDestinationChangedListener:(NavController, NavDestination, Bundle?) -> Unit
 ) {
+
+    navController.addOnDestinationChangedListener { controller, destination, arguments ->
+        onDestinationChangedListener(
+            controller,
+            destination,
+            arguments
+        )
+    }
 
 
     NavHost(
@@ -45,22 +53,38 @@ fun AppNavHost(
 
 
         composable(Screens.RevisionScreen.name) {
-            RevisionScreen(navController, wordViewModel)
+            RevisionScreen(navController, wordViewModel, calendarViewModel)
         }
 
-        composable(Screens.AddEditScreen.name+"?wordId={wordId}",
+        composable(
+            Screens.AddEditScreen.name + "?wordId={wordId}",
             arguments = listOf(navArgument("wordId")
-            { type = NavType.IntType
-            defaultValue = -1}))
-        {backStackEntry ->
-            AddEditWordScreen(navController, wordViewModel,backStackEntry.arguments?.getInt("wordId"))
+            {
+                type = NavType.IntType
+                defaultValue = -1
+            })
+        )
+        { backStackEntry ->
+            AddEditWordScreen(
+                navController,
+                wordViewModel,
+                backStackEntry.arguments?.getInt("wordId")
+            )
         }
 
-        composable(Screens.WordDetailScreen.name+"?wordId={wordId}",
+        composable(
+            Screens.WordDetailScreen.name + "?wordId={wordId}",
             arguments = listOf(navArgument("wordId")
-            { type = NavType.IntType
-                defaultValue = -1})) {backStackEntry ->
-            WordDetailScreen(navController = navController, wordViewModel = wordViewModel,backStackEntry.arguments?.getInt("wordId"))
+            {
+                type = NavType.IntType
+                defaultValue = -1
+            })
+        ) { backStackEntry ->
+            WordDetailScreen(
+                navController = navController,
+                wordViewModel = wordViewModel,
+                backStackEntry.arguments?.getInt("wordId")
+            )
         }
     }
 
