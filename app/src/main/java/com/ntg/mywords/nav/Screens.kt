@@ -8,6 +8,7 @@ enum class Screens {
     AllWordsScreen,
     RevisionScreen,
     RecentWordScreen,
+    TimeScreen,
 
 
 }

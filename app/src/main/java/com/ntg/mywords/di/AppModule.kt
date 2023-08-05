@@ -3,8 +3,7 @@ package com.ntg.mywords.di
 import android.content.Context
 import androidx.room.Room
 import com.ntg.mywords.db.AppDB
-import com.ntg.mywords.db.ExamplesConverters
-import com.ntg.mywords.db.WordDao
+import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.util.Constant.DATABASE_NAME
 import dagger.Module
 import dagger.Provides
@@ -36,7 +35,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideWordDao(appDB: AppDB): WordDao{
+    fun provideWordDao(appDB: AppDB): WordDao {
         return appDB.wordDao()
     }
 

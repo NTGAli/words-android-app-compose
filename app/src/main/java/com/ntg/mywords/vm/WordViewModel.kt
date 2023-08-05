@@ -1,16 +1,14 @@
 package com.ntg.mywords.vm
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ntg.mywords.db.WordDao
+import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.util.getUnixTimeNDaysAgo
 import com.ntg.mywords.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

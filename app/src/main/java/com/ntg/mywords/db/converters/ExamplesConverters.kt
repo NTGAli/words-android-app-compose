@@ -1,6 +1,5 @@
-package com.ntg.mywords.db
+package com.ntg.mywords.db.converters
 
-import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.ntg.mywords.util.Constant.SEPARATOR
 

@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ntg.mywords.screens.*
+import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
 
 @Composable
@@ -16,7 +17,8 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: String = Screens.HomeScreen.name,
-    wordViewModel: WordViewModel
+    wordViewModel: WordViewModel,
+    calendarViewModel: CalendarViewModel,
 ) {
 
 
@@ -36,6 +38,11 @@ fun AppNavHost(
         composable(Screens.RecentWordScreen.name) {
             RecentWordScreen(navController, wordViewModel)
         }
+
+        composable(Screens.TimeScreen.name) {
+            TimeScreen(navController, wordViewModel, calendarViewModel)
+        }
+
 
         composable(Screens.RevisionScreen.name) {
             RevisionScreen(navController, wordViewModel)
