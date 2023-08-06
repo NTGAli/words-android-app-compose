@@ -9,11 +9,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -26,6 +23,7 @@ import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
+import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
@@ -88,6 +86,10 @@ private fun Content(
                 mutableStateOf(0)
             }
 
+            var totalTime = 0L
+
+
+
             recentWordCount.value = wordViewModel.recentWords(7).observeAsState().value.orZero()
             needToReviewCount.value = wordViewModel.getMyWords().observeAsState().value?.filter {
                 getStateRevision(
@@ -95,7 +97,22 @@ private fun Content(
                     it.lastRevisionTime
                 ) == 2 || getStateRevision(it.revisionCount, it.lastRevisionTime) == 3
             }.orEmpty().size
-            numberOfAllWords.value = wordViewModel.getMyWords().observeAsState().value.orEmpty().size
+            numberOfAllWords.value =
+                wordViewModel.getMyWords().observeAsState().value.orEmpty().size
+            val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty().toMutableStateList()
+
+            timeSpent.forEach {
+                if (it.startUnix != null && it.endUnix != null){
+                    totalTime += getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())
+                }
+            }
+
+//            wordViewModel.getAllValidTimeSpent().observeAsState().value?.forEach {
+//                if (it.startUnix != null && it.endUnix != null) {
+//                    timeSpent.value += getSecBetweenTimestamps(it.startUnix, it.endUnix!!)
+//                    timber("TTTTTTTTTTTTTTTTTTTTTTTTTTTTT :: ${timeSpent.value} -- ${getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())}")
+//                }
+//            }
             timber("kalwjdklwjadkjwaldkjw ${7.getUnixTimeNDaysAgo()} --- ${System.currentTimeMillis()} --- ${recentWordCount.value}")
 
             Text(
@@ -125,10 +142,14 @@ private fun Content(
                 ShapeTileWidget(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(4.dp), title = "${numberOfAllWords.value} words", subTitle = "total", painter = painterResource(
+                        .padding(4.dp),
+                    title = "${numberOfAllWords.value} words",
+                    subTitle = "total",
+                    painter = painterResource(
                         id = R.drawable.icons8_w_1
-                    ), imageTint = Primary500
-                ){
+                    ),
+                    imageTint = Primary500
+                ) {
                     navController.navigate(Screens.AllWordsScreen.name)
                 }
             }
@@ -151,11 +172,14 @@ private fun Content(
                 ShapeTileWidget(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(4.dp), title = "title", subTitle = "14", painter = painterResource(
+                        .padding(4.dp),
+                    title = totalTime.formatTime(),
+                    subTitle = stringResource(R.string.time_spent),
+                    painter = painterResource(
                         id = R.drawable.icons8_clock_1_1
                     ),
                     imageTint = Secondary500
-                ){
+                ) {
                     navController.navigate(Screens.TimeScreen.name)
                 }
             }

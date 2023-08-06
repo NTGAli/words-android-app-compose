@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import java.time.LocalDate
 
 @Entity
-data class SpendTime(
+data class TimeSpent(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val date: LocalDate? = null,

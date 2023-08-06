@@ -29,7 +29,7 @@ import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
-import com.ntg.mywords.model.db.SpendTime
+import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
@@ -192,7 +192,7 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
             Lifecycle.Event.ON_START -> {
                 calendarViewModel.stopLastTime()
                 calendarViewModel.insertSpendTime(
-                    SpendTime(
+                    TimeSpent(
                         id = 0,
                         date = LocalDate.now(),
                         startUnix = System.currentTimeMillis(),
@@ -204,7 +204,7 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
             Lifecycle.Event.ON_STOP -> {
                 calendarViewModel.stopLastTime()
                 calendarViewModel.insertSpendTime(
-                    SpendTime(
+                    TimeSpent(
                         id = 0,
                         date = LocalDate.now(),
                         startUnix = System.currentTimeMillis(),

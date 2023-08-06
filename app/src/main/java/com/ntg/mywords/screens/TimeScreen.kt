@@ -2,9 +2,14 @@ package com.ntg.mywords.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -15,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -31,11 +37,11 @@ import com.ntg.mywords.model.CalendarDataSource
 import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.model.components.CalendarUiModel
 import com.ntg.mywords.nav.Screens
-import com.ntg.mywords.ui.theme.Primary200
-import com.ntg.mywords.util.OnLifecycleEvent
-import com.ntg.mywords.util.timber
+import com.ntg.mywords.ui.theme.*
+import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -55,7 +61,7 @@ fun TimeScreen(navController: NavController, wordViewModel: WordViewModel, calen
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             Appbar(
-                title = stringResource(R.string.recent_words_format,numberOfAllWords),
+                title = stringResource(R.string.time),
                 scrollBehavior = scrollBehavior,
                 actions = listOf(
                     AppbarItem(
@@ -101,20 +107,74 @@ fun TimeScreen(navController: NavController, wordViewModel: WordViewModel, calen
 @Composable
 private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, navController: NavController, calendarViewModel: CalendarViewModel){
     val list = calendarViewModel.finalData.observeAsState().value.orEmpty()
-    timber("laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+    val dateTime = remember {
+        mutableStateOf(LocalDate.now())
+    }
+
+    var totalTime = 0L
+    var learningDays = 0
+
+    timber("laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ${calendarViewModel.getDataFromDate(dateTime.value).observeAsState().value}")
+
+    val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty().toMutableStateList()
+
+    timeSpent.forEach {
+        if (it.startUnix != null && it.endUnix != null){
+            totalTime += getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())
+        }
+    }
+
+    learningDays = timeSpent.distinctBy { it.date }.size
 
 
+    LazyColumn(modifier = Modifier.padding(paddingValues)){
 
-    LazyRow(modifier = Modifier.padding(paddingValues)) {
-
-        items(list){date ->
-            ContentItem(date){
-                timber("akwjdlkjawlkdjlawkjdlkwjadlkjwalkdjlakwjdlwkjd ")
-                calendarViewModel.selectDate(it)
+        item {
+            var visible by remember {
+                mutableStateOf(false)
             }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(width = 2.dp, color = if (visible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(16.dp))
+
+                    .clickable {
+                        visible = !visible
+                    }
+            ) {
+                Text(modifier = Modifier.padding(top = 16.dp, start = 16.dp), text = stringResource(id = R.string.learning), style = fontMedium14(MaterialTheme.colorScheme.primary))
+                Text(modifier = Modifier.padding(top = 8.dp, start = 16.dp), text = totalTime.formatTime(), style = fontMedium16(MaterialTheme.colorScheme.onBackground))
+                Text(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp, start = 16.dp), text = stringResource(id = R.string.days_format, learningDays), style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant))
+
+
+                AnimatedVisibility(visible = visible) {
+
+                    LazyRow(modifier = Modifier.padding(bottom = 16.dp)) {
+
+                        items(list){date ->
+                            ContentItem(date){
+                                timber("akwjdlkjawlkdjlawkjdlkwjadlkjwalkdjlakwjdlwkjd ")
+                                calendarViewModel.selectDate(it)
+                                dateTime.value = it.date
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+
         }
 
     }
+
+
 
 }
 
@@ -123,7 +183,6 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ContentItem(date: CalendarUiModel.Date, onClick:(CalendarUiModel.Date) -> Unit) {
-    timber("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM ${date.isSelected}")
     Card(
         modifier = Modifier
             .padding(vertical = 4.dp, horizontal = 4.dp)
@@ -134,7 +193,7 @@ fun ContentItem(date: CalendarUiModel.Date, onClick:(CalendarUiModel.Date) -> Un
             containerColor = if (date.isSelected) {
                 MaterialTheme.colorScheme.primary
             } else {
-                MaterialTheme.colorScheme.secondary
+                MaterialTheme.colorScheme.surfaceVariant
             }
         ),
         onClick = {
@@ -151,7 +210,12 @@ fun ContentItem(date: CalendarUiModel.Date, onClick:(CalendarUiModel.Date) -> Un
             Text(
                 text = date.day, // day "Mon", "Tue"
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = if (date.isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
             Text(
                 text = date.date.dayOfMonth.toString(), // date "15", "16"
