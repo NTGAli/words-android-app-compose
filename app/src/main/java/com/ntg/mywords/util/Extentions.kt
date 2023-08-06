@@ -71,6 +71,15 @@ fun getDaysBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
     return TimeUnit.MILLISECONDS.toDays(differenceMillis).toInt()
 }
 
+fun getSecBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
+    val startDate = Date(startTimeStamp)
+    val endDate = Date(endTimeStamp)
+
+    val differenceMillis = endDate.time - startDate.time
+
+    return TimeUnit.MILLISECONDS.toSeconds(differenceMillis).toInt()
+}
+
 @Composable
 fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 
@@ -262,5 +271,22 @@ fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) ->
         onDispose {
             lifecycle.removeObserver(observer)
         }
+    }
+}
+
+fun Long.formatTime(): String {
+    val minute = 60L
+    val hour = minute * 60
+    val day = hour * 24
+    val month = day * 30
+    val year = month * 12
+
+    return when {
+        this < minute -> "$this seconds"
+        this < hour -> "${this / minute} minutes"
+        this < day -> "${this/ hour} hours"
+        this < month -> "${this / day} days"
+        this < year -> "${this / month} months"
+        else -> "${this / year} years"
     }
 }

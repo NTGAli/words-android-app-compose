@@ -3,6 +3,7 @@ package com.ntg.mywords.model
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.ntg.mywords.model.components.CalendarUiModel
+import com.ntg.mywords.util.timber
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -19,18 +20,26 @@ class CalendarDataSource {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): CalendarUiModel {
-        val firstDayOfWeek = startDate.with(DayOfWeek.MONDAY)
-        val endDayOfWeek = firstDayOfWeek.plusDays(365)
-        val visibleDates = getDatesBetween(firstDayOfWeek, endDayOfWeek)
-        return toUiModel(visibleDates, lastSelectedDate)
+    fun getData(): CalendarUiModel {
+
+        val currentDate = LocalDate.now()
+        val tenDaysAgo = currentDate.minusDays(365)
+
+        val list = arrayListOf<CalendarUiModel.Date>()
+
+        var currentDateIterator = currentDate
+        while (!currentDateIterator.isBefore(tenDaysAgo)) {
+            list.add(CalendarUiModel.Date(currentDateIterator, isSelected = currentDateIterator == currentDate, isToday = currentDateIterator == currentDate))
+            currentDateIterator = currentDateIterator.minusDays(1)
+        }
+        return CalendarUiModel(CalendarUiModel.Date(LocalDate.now(), true, isToday = true), list)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getDatesBetween(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
-        val numOfDays = ChronoUnit.DAYS.between(startDate, endDate)
+        val numOfDays = ChronoUnit.DAYS.between(endDate, startDate)
         return Stream.iterate(startDate) { date ->
-            date.plusDays(/* daysToAdd = */ 1)
+            date.minusDays( 1)
         }
             .limit(numOfDays)
             .collect(Collectors.toList())

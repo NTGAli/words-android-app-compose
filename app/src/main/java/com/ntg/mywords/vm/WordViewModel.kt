@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.WordDao
+import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.util.getUnixTimeNDaysAgo
 import com.ntg.mywords.util.timber
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WordViewModel @Inject constructor(
-    private val wordDao: WordDao
+    private val wordDao: WordDao,
+    private val timeSpentDao: TimeSpentDao
 ) : ViewModel() {
 
     private var isExist = false
@@ -23,6 +26,8 @@ class WordViewModel @Inject constructor(
     private var word: LiveData<Word> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
+    private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
+
 
 
     fun searchOnWords(query: String){
@@ -82,6 +87,13 @@ class WordViewModel @Inject constructor(
         }
         timber("checkIfExist", isExist.toString())
         return isExist
+    }
+
+    fun getAllValidTimeSpent(): LiveData<List<TimeSpent>> {
+        viewModelScope.launch {
+            allValidTimeSpent = timeSpentDao.getAllValidTime()
+        }
+        return allValidTimeSpent
     }
 
 

@@ -9,11 +9,10 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import com.ntg.mywords.model.SpendTimeType
-import com.ntg.mywords.model.db.SpendTime
+import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.nav.AppNavHost
 import com.ntg.mywords.ui.theme.AppTheme
 import com.ntg.mywords.util.OnLifecycleEvent
@@ -58,7 +57,7 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
         when (event) {
             Lifecycle.Event.ON_START -> {
                 calendarViewModel.insertSpendTime(
-                    SpendTime(
+                    TimeSpent(
                         id = 0,
                         date = LocalDate.now(),
                         startUnix = System.currentTimeMillis(),
