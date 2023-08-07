@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -90,19 +91,19 @@ fun CustomButton(
 
             when(style){
                 ButtonStyle.Contained -> {
-                    background = Primary500
-                    borderColor = Primary500
-                    textColor = Color.White
+                    background = MaterialTheme.colorScheme.primaryContainer
+                    borderColor = MaterialTheme.colorScheme.primaryContainer
+                    textColor = MaterialTheme.colorScheme.onPrimaryContainer
                 }
                 ButtonStyle.Outline -> {
                     background = Color.Transparent
-                    borderColor = Primary500
-                    textColor = Primary500
+                    borderColor = MaterialTheme.colorScheme.primaryContainer
+                    textColor = MaterialTheme.colorScheme.onPrimaryContainer
                 }
                 ButtonStyle.TextOnly -> {
                     background = Color.Transparent
                     borderColor = Color.Transparent
-                    textColor = Primary500
+                    textColor = MaterialTheme.colorScheme.onPrimaryContainer
                 }
             }
 

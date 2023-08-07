@@ -13,9 +13,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -23,6 +27,8 @@ import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
+import com.ntg.mywords.db.AppDatabaseBackup
+import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
@@ -34,6 +40,8 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 
+    val context = LocalContext.current
+
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -41,7 +49,17 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
             Appbar(
                 title = stringResource(R.string.my_words),
                 enableNavigation = false,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                actions = listOf(
+                    AppbarItem(
+                        id = 0,
+                        imageVector = ImageVector.vectorResource(id = R.drawable.data_backup)
+                    )
+                ),
+                actionOnClick = {
+                    AppDatabaseBackup.backupDatabase(context, Constant.DATABASE_NAME)
+
+                }
             )
         },
         content = { innerPadding ->

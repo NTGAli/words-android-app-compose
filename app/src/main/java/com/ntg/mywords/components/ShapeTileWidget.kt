@@ -1,13 +1,11 @@
 package com.ntg.mywords.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -77,7 +75,7 @@ fun ShapeTileWidget(
             contentAlignment = Alignment.Center) {
 
                 Column {
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = FontBold12(MaterialTheme.colorScheme.onPrimaryContainer))
+                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = fontBold12(MaterialTheme.colorScheme.onPrimaryContainer))
                     Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(MaterialTheme.colorScheme.onPrimaryContainer))
 
                 }

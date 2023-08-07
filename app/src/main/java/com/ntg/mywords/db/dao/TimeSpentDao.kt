@@ -23,11 +23,14 @@ interface TimeSpentDao {
     @Query("SELECT * FROM TimeSpent WHERE startUnix IS NOT NULL AND endUnix IS NOT NULL")
     fun getAllValidTime(): LiveData<List<TimeSpent>>
 
+    @Query("SELECT * FROM TimeSpent WHERE type = :type AND startUnix IS NOT NULL AND endUnix IS NOT NULL")
+    fun getAllValidTimesBaseType(type: Int): LiveData<List<TimeSpent>>
+
     @Query("SELECT * FROM TimeSpent WHERE type = 0 AND (startUnix IS NOT NULL AND endUnix IS NOT NULL)")
     fun getAllValidLearningTime(): LiveData<List<TimeSpent>>
 
-    @Query("SELECT * FROM TimeSpent WHERE date = :date AND (startUnix IS NOT NULL AND endUnix IS NOT NULL)")
-    fun getDtaOfDate(date: LocalDate): LiveData<List<TimeSpent>>
+    @Query("SELECT * FROM TimeSpent WHERE type = :type AND date = :date AND (startUnix IS NOT NULL AND endUnix IS NOT NULL)")
+    fun getDtaOfDate(date: LocalDate, type: Int): LiveData<List<TimeSpent>>
 
 
 //    @Query("SELECT * FROM SpendTime WHERE ")
