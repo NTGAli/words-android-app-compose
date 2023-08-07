@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,11 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.ntg.mywords.ui.theme.FontBold12
-import com.ntg.mywords.ui.theme.Secondary100
+import com.ntg.mywords.ui.theme.fontBold12
 import com.ntg.mywords.ui.theme.Secondary500
-import com.ntg.mywords.ui.theme.Secondary800
-import org.w3c.dom.Text
 
 @Composable
 fun ItemText(
@@ -49,7 +45,7 @@ fun ItemText(
 
     ) {
 
-        Text(modifier = Modifier.align(Alignment.Center).padding(8.dp),text = text, style = FontBold12(MaterialTheme.colorScheme.onSurfaceVariant))
+        Text(modifier = Modifier.align(Alignment.Center).padding(8.dp),text = text, style = fontBold12(MaterialTheme.colorScheme.onSurfaceVariant))
 
     }
 

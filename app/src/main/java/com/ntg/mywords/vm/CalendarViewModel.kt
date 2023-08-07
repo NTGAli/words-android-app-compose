@@ -33,6 +33,8 @@ class CalendarViewModel @Inject constructor(
     var finalData: MutableLiveData<List<CalendarUiModel.Date>> =
         MutableLiveData(calendarUiModel.visibleDates)
     private var allValidLearningTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
+    private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
+
 
 
 
@@ -70,11 +72,18 @@ class CalendarViewModel @Inject constructor(
         finalData.value = calendarUiModel.visibleDates
     }
 
-    fun getDataFromDate(date: LocalDate): LiveData<List<TimeSpent>> {
+    fun getDataFromDate(date: LocalDate, type: Int): LiveData<List<TimeSpent>> {
         viewModelScope.launch {
-            listOfTime = timeSpentDao.getDtaOfDate(date)
+            listOfTime = timeSpentDao.getDtaOfDate(date, type)
         }
         return listOfTime
+    }
+
+    fun getValidTimesSpentBaseType(type: Int): LiveData<List<TimeSpent>> {
+        viewModelScope.launch {
+            allValidTimeSpent = timeSpentDao.getAllValidTimesBaseType(type)
+        }
+        return allValidTimeSpent
     }
 
     fun getAllValidLearningTimeSpent(): LiveData<List<TimeSpent>> {

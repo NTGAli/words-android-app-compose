@@ -16,6 +16,7 @@ import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
 import com.ntg.mywords.model.Success
 import timber.log.Timber
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -289,4 +290,19 @@ fun Long.formatTime(): String {
         this < year -> "${this / month} months"
         else -> "${this / year} years"
     }
+}
+
+fun Long.unixTimeToClock(): String {
+    val date = Date(this)
+    val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+//    format.timeZone = TimeZone.getTimeZone("UTC")
+    return format.format(date)
+}
+
+fun Long.secondsToClock(): String {
+    val hours = this / 3600
+    val minutes = (this % 3600) / 60
+    val remainingSeconds = this % 60
+
+    return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }

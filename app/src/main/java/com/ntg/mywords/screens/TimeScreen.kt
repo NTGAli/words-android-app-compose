@@ -3,6 +3,7 @@ package com.ntg.mywords.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -33,8 +35,12 @@ import androidx.lifecycle.OnLifecycleEvent
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
+import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.model.CalendarDataSource
+import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.components.AppbarItem
+import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.CalendarUiModel
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
@@ -48,14 +54,10 @@ import java.time.format.FormatStyle
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeScreen(navController: NavController, wordViewModel: WordViewModel, calendarViewModel: CalendarViewModel) {
-
-    val numberOfAllWords = wordViewModel.getMyWords().observeAsState().value.orEmpty().size
-    val enableSearchBar = remember { mutableStateOf(false) }
-
-
-    wordViewModel.searchOnRecentWords("")
-
+fun TimeScreen(
+    navController: NavController,
+    calendarViewModel: CalendarViewModel
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -63,32 +65,15 @@ fun TimeScreen(navController: NavController, wordViewModel: WordViewModel, calen
             Appbar(
                 title = stringResource(R.string.time),
                 scrollBehavior = scrollBehavior,
-                actions = listOf(
-                    AppbarItem(
-                        id = 0,
-                        imageVector = Icons.Rounded.Search
-                    )
-                ),
-                actionOnClick = {
-                    enableSearchBar.value = true
-                },
-                enableSearchbar = enableSearchBar,
-                onQueryChange = {query ->
-                    wordViewModel.searchOnRecentWords(query)
-                },
                 navigationOnClick = { navController.popBackStack() }
             )
         },
         content = { innerPadding ->
-
-
-
-//            Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-//                Header(data = calendarUiModel)
-                Content(paddingValues = innerPadding, wordViewModel, navController, calendarViewModel = calendarViewModel)
-
-//            }
-
+            Content(
+                paddingValues = innerPadding,
+                navController,
+                calendarViewModel = calendarViewModel
+            )
 
         }, floatingActionButton = {
             FloatingActionButton(
@@ -105,75 +90,168 @@ fun TimeScreen(navController: NavController, wordViewModel: WordViewModel, calen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, navController: NavController, calendarViewModel: CalendarViewModel){
-    val list = calendarViewModel.finalData.observeAsState().value.orEmpty()
+private fun Content(
+    paddingValues: PaddingValues,
+    navController: NavController,
+    calendarViewModel: CalendarViewModel
+) {
+
+    LazyColumn(Modifier.padding(paddingValues)) {
+
+        item {
+            TimeContentItem(
+                calendarViewModel = calendarViewModel,
+                spendTimeType = SpendTimeType.Learning.ordinal
+            )
+        }
+
+        item {
+            TimeContentItem(
+                calendarViewModel = calendarViewModel,
+                spendTimeType = SpendTimeType.Revision.ordinal
+            )
+        }
+
+
+    }
+
+}
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun TimeContentItem(
+    calendarViewModel: CalendarViewModel,
+    spendTimeType: Int
+) {
+    val list = calendarViewModel.finalData.observeAsState().value.orEmpty().toMutableList()
+
+    timber("LLLLLLLLLLLLLLLLLLLLLLLLLLLLL $list")
 
     val dateTime = remember {
         mutableStateOf(LocalDate.now())
     }
 
+    list.forEach { it.isSelected = it.date == dateTime.value }
+
     var totalTime = 0L
+    var totalTimeOfDate = 0L
     var learningDays = 0
 
-    timber("laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ${calendarViewModel.getDataFromDate(dateTime.value).observeAsState().value}")
 
-    val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty().toMutableStateList()
+    val timeOfDate =
+        calendarViewModel.getDataFromDate(dateTime.value, spendTimeType).observeAsState().value
+
+    val timeSpent =
+        calendarViewModel.getValidTimesSpentBaseType(spendTimeType).observeAsState().value.orEmpty()
+            .toMutableStateList()
 
     timeSpent.forEach {
-        if (it.startUnix != null && it.endUnix != null){
+        if (it.startUnix != null && it.endUnix != null) {
             totalTime += getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())
+        }
+    }
+
+    timeOfDate.orEmpty().forEach {
+        if (it.startUnix != null && it.endUnix != null) {
+            totalTimeOfDate += getSecBetweenTimestamps(
+                it.startUnix.orDefault(),
+                it.endUnix.orDefault()
+            )
         }
     }
 
     learningDays = timeSpent.distinctBy { it.date }.size
 
 
-    LazyColumn(modifier = Modifier.padding(paddingValues)){
+    var visible by remember {
+        mutableStateOf(false)
+    }
 
-        item {
-            var visible by remember {
-                mutableStateOf(false)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .border(
+                width = 2.dp,
+                color = if (visible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(16.dp)
+            )
+
+            .clickable {
+                visible = !visible
             }
+    ) {
+        Text(
+            modifier = Modifier.padding(top = 16.dp, start = 16.dp),
+            text = if (spendTimeType == SpendTimeType.Learning.ordinal) stringResource(id = R.string.learning)
+            else stringResource(id = R.string.revision),
+            style = fontMedium14(MaterialTheme.colorScheme.primary)
+        )
+        Text(
+            modifier = Modifier.padding(top = 8.dp, start = 16.dp),
+            text = totalTime.formatTime(),
+            style = fontMedium16(MaterialTheme.colorScheme.onBackground)
+        )
+        Text(
+            modifier = Modifier.padding(top = 8.dp, bottom = 16.dp, start = 16.dp),
+            text = stringResource(id = R.string.days_format, learningDays),
+            style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(width = 2.dp, color = if (visible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(16.dp))
 
-                    .clickable {
-                        visible = !visible
-                    }
-            ) {
-                Text(modifier = Modifier.padding(top = 16.dp, start = 16.dp), text = stringResource(id = R.string.learning), style = fontMedium14(MaterialTheme.colorScheme.primary))
-                Text(modifier = Modifier.padding(top = 8.dp, start = 16.dp), text = totalTime.formatTime(), style = fontMedium16(MaterialTheme.colorScheme.onBackground))
-                Text(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp, start = 16.dp), text = stringResource(id = R.string.days_format, learningDays), style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant))
+        AnimatedVisibility(visible = visible) {
 
+            Column {
+                LazyRow(modifier = Modifier.padding(bottom = 24.dp)) {
 
-                AnimatedVisibility(visible = visible) {
-
-                    LazyRow(modifier = Modifier.padding(bottom = 16.dp)) {
-
-                        items(list){date ->
-                            ContentItem(date){
-                                timber("akwjdlkjawlkdjlawkjdlkwjadlkjwalkdjlakwjdlwkjd ")
-                                calendarViewModel.selectDate(it)
-                                dateTime.value = it.date
-                            }
+                    items(list) { date ->
+                        ContentItem(date) {
+//                            calendarViewModel.selectDate(it)
+                            dateTime.value = it.date
                         }
-
                     }
 
                 }
+
+                timeOfDate.orEmpty().forEach {
+                    if (it.startUnix != null && it.endUnix != null) {
+                        Text(
+                            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
+                            text = stringResource(
+                                id = R.string.format_hyphen,
+                                it.startUnix.orDefault().unixTimeToClock(),
+                                it.endUnix.orDefault().unixTimeToClock()
+                            ),
+                            style = fontMedium12(MaterialTheme.colorScheme.onBackground)
+                        )
+                    }
+
+                }
+
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                )
+
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, bottom = 24.dp),
+                    text = stringResource(
+                        id = R.string.total_format,
+                        totalTimeOfDate.secondsToClock()
+                    ),
+                    style = fontBold12(MaterialTheme.colorScheme.onBackground)
+                )
 
             }
 
         }
 
     }
-
 
 
 }
@@ -182,11 +260,10 @@ private fun Content(paddingValues: PaddingValues, wordViewModel: WordViewModel, 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ContentItem(date: CalendarUiModel.Date, onClick:(CalendarUiModel.Date) -> Unit) {
+fun ContentItem(date: CalendarUiModel.Date, onClick: (CalendarUiModel.Date) -> Unit) {
     Card(
         modifier = Modifier
-            .padding(vertical = 4.dp, horizontal = 4.dp)
-        ,
+            .padding(vertical = 4.dp, horizontal = 4.dp),
         colors = CardDefaults.cardColors(
             // background colors of the selected date
             // and the non-selected date are different

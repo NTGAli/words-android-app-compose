@@ -48,7 +48,7 @@ fun AppNavHost(
         }
 
         composable(Screens.TimeScreen.name) {
-            TimeScreen(navController, wordViewModel, calendarViewModel)
+            TimeScreen(navController, calendarViewModel)
         }
 
 

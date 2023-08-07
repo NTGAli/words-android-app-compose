@@ -91,7 +91,7 @@ fun FontBold10(color: Color = Secondary100) = TextStyle(
     color = color
 )
 
-fun FontBold12(color: Color = Secondary100) = TextStyle(
+fun fontBold12(color: Color = Secondary100) = TextStyle(
     fontFamily = mFont,
     fontWeight = FontWeight.Bold,
     fontSize = 12.sp,

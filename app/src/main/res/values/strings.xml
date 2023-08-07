@@ -29,5 +29,8 @@
     <string name="time_spent">time spent</string>
     <string name="time">Time</string>
     <string name="learning">Learning</string>
+    <string name="format_hyphen">%s - %s</string>
+    <string name="total_format">total: %s</string>
+    <string name="show_more">show more</string>
 
 </resources>
