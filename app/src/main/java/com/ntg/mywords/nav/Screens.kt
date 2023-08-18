@@ -9,6 +9,8 @@ enum class Screens {
     RevisionScreen,
     RecentWordScreen,
     TimeScreen,
+    SettingScreen,
+    BackupAndRestoreScreen
 
 
 }

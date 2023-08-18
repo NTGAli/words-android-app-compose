@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ntg.mywords.screens.*
+import com.ntg.mywords.screens.setting.BackupAndRestoreScreen
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
 
@@ -49,6 +50,14 @@ fun AppNavHost(
 
         composable(Screens.TimeScreen.name) {
             TimeScreen(navController, calendarViewModel)
+        }
+
+        composable(Screens.SettingScreen.name) {
+            SettingScreen(navController)
+        }
+
+        composable(Screens.BackupAndRestoreScreen.name) {
+            BackupAndRestoreScreen(navController)
         }
 
 

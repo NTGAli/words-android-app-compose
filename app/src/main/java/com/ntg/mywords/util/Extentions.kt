@@ -1,5 +1,6 @@
 package com.ntg.mywords.util
 
+import android.Manifest
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -11,6 +12,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.rememberPermissionState
 import com.ntg.mywords.R
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
@@ -306,3 +309,4 @@ fun Long.secondsToClock(): String {
 
     return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }
+
