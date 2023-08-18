@@ -1,9 +1,6 @@
 package com.ntg.mywords.screens
 
-import android.os.Bundle
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,20 +13,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
-import com.ntg.mywords.db.AppDatabaseBackup
 import com.ntg.mywords.model.components.AppbarItem
-import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
@@ -53,11 +46,12 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
                 actions = listOf(
                     AppbarItem(
                         id = 0,
-                        imageVector = ImageVector.vectorResource(id = R.drawable.data_backup)
+                        imageVector = ImageVector.vectorResource(id = R.drawable.settings)
                     )
                 ),
                 actionOnClick = {
-                    AppDatabaseBackup.backupDatabase(context, Constant.DATABASE_NAME)
+                    navController.navigate(Screens.SettingScreen.name)
+//                    AppDatabaseBackup.backupDatabase(context, Constant.DATABASE_NAME)
 
                 }
             )
@@ -81,12 +75,39 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
     wordViewModel: WordViewModel,
     navController: NavController
 ) {
+
+    val modalBottomSheetState =
+        rememberBottomSheetScaffoldState(SheetState(skipPartiallyExpanded = false))
+    val scope = rememberCoroutineScope()
+
+//    BoxWithConstraints() {
+//        val maxHeight = maxHeight
+//        val sheetHeight = maxHeight / 4.dp
+//        BottomSheetScaffold(
+//            modifier = Modifier,
+//            scaffoldState = modalBottomSheetState,
+//            sheetContent = {
+//
+//            },
+//            containerColor = Color.White,
+//            sheetPeekHeight = 51.dp
+//        ) {
+//            Box(modifier = Modifier
+//                .height(900.dp)) {
+//
+//                Column(Modifier.background(MaterialTheme.colorScheme.primary).fillMaxSize()) {
+//
+//                }
+//            }
+//        }
+//    }
 
     val wordsList: State<List<Word>?> = wordViewModel.getMyWords().observeAsState()
 
@@ -136,7 +157,7 @@ private fun Content(
             Text(
                 modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 12.dp),
                 text = stringResource(R.string.workout_report),
-                style = FontBold14(
+                style = fontBold14(
                     MaterialTheme.colorScheme.onBackground
                 )
             )
@@ -205,7 +226,7 @@ private fun Content(
             Text(
                 modifier = Modifier.padding(top = 28.dp, start = 16.dp),
                 text = stringResource(R.string.words),
-                style = FontBold14(MaterialTheme.colorScheme.onBackground)
+                style = fontBold14(MaterialTheme.colorScheme.onBackground)
             )
 
         }

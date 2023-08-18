@@ -32,5 +32,11 @@
     <string name="format_hyphen">%s - %s</string>
     <string name="total_format">total: %s</string>
     <string name="show_more">show more</string>
+    <string name="backup">backup</string>
+    <string name="setting">setting</string>
+    <string name="backup_and_restore"><![CDATA[backup & restore]]></string>
+    <string name="settings">settings</string>
+    <string name="backup_on_storage">on phone storage</string>
+    <string name="backup_on_server">on server</string>
 
 </resources>

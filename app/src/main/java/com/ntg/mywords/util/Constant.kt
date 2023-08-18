@@ -6,6 +6,7 @@ object Constant {
 
     const val DATABASE_NAME = "word-database"
     const val SEPARATOR = ","
+    const val DICTIONARY_API_URL = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
 
 
 
