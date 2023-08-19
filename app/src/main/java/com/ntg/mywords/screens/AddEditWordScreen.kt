@@ -12,19 +12,24 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.ntg.mywords.R
+import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.*
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Success
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
 import com.ntg.mywords.ui.theme.Secondary100
 import com.ntg.mywords.util.notEmptyOrNull
@@ -62,6 +67,7 @@ fun AddEditWordScreen(
             Content(
                 paddingValues = innerPadding,
                 wordEdit = word?.value,
+                wordViewModel = wordViewModel
             ) {
                 wordData = it
             }
@@ -142,6 +148,7 @@ private fun submitWord(
 private fun Content(
     paddingValues: PaddingValues,
     wordEdit: Word?,
+    wordViewModel: WordViewModel,
     wordData: (Word) -> Unit
 ) {
 
@@ -181,9 +188,15 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    val fetchDataWord = remember {
+        mutableStateOf(false)
+    }
+
     val exampleList = remember {
         mutableStateListOf<String>()
     }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
 
 
     if (wordEdit != null && !applyEdit.value) {
@@ -232,7 +245,7 @@ private fun Content(
 
     val scope = rememberCoroutineScope()
 
-    val phonetics = listOf<String>(
+    val phonetics = listOf(
         "ɛ",
         "æ",
         "ʌ",
@@ -278,6 +291,25 @@ private fun Content(
     }
 
 
+    if (fetchDataWord.value){
+        wordViewModel.getDataWord(word.value).observe(lifecycleOwner){
+            when(it){
+                is NetworkResult.Error -> {
+                    timber("WORD_DATA :: ERR ${it.message}")
+                }
+                is NetworkResult.Loading -> {
+                    timber("WORD_DATA ::  LD")
+                }
+                is NetworkResult.Success -> {
+                    timber("WORD_DATA :: ${it.data}")
+                    pronunciation.value = it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
+                }
+            }
+
+        }
+        fetchDataWord.value = false
+    }
+
 
     LazyColumn(
         modifier = Modifier.padding(
@@ -293,39 +325,7 @@ private fun Content(
                 Modifier
                     .fillMaxWidth(), text = word, label = stringResource(R.string.word)
             )
-            EditText(
-                Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(),
-                text = translation,
-                label = stringResource(R.string.translation)
-            )
-            EditText(
-                Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(),
-                text = pronunciation,
-                label = stringResource(R.string.pronunciation)
-            )
 
-
-        }
-
-
-        item {
-            LazyRow {
-                items(phonetics) {
-                    ItemText(
-                        modifier = Modifier.padding(end = 8.dp, top = 8.dp),
-                        text = it,
-                        onClick = {
-                            pronunciation.value = pronunciation.value + it
-                        })
-                }
-            }
-        }
-
-        item {
             EditText(
                 Modifier
                     .padding(top = 8.dp)
@@ -361,6 +361,45 @@ private fun Content(
             EditText(
                 Modifier
                     .padding(top = 8.dp)
+                    .fillMaxWidth(),
+                text = translation,
+                label = stringResource(R.string.translation)
+            )
+            EditText(
+                Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth(),
+                text = pronunciation,
+                label = stringResource(R.string.pronunciation),
+                enabledLeadingIcon = word.value.isNotEmpty() && type.value.isNotEmpty(),
+                leadingIcon = ImageVector.vectorResource(id = R.drawable.arrow_circle_broken_down_left),
+                leadingIconOnClick = {
+//                    getDataWord(wordViewModel, lifecycleOwner, word.value)
+                    fetchDataWord.value = true
+                }
+            )
+
+
+        }
+
+
+        item {
+            LazyRow {
+                items(phonetics) {
+                    ItemText(
+                        modifier = Modifier.padding(end = 8.dp, top = 8.dp),
+                        text = it,
+                        onClick = {
+                            pronunciation.value = pronunciation.value + it
+                        })
+                }
+            }
+        }
+
+        item {
+            EditText(
+                Modifier
+                    .padding(top = 8.dp)
                     .fillMaxWidth(), text = definition, label = stringResource(R.string.definition)
             )
             EditText(
@@ -389,6 +428,27 @@ private fun Content(
         }
 
     }
-
-
 }
+
+//private fun getDataWord(wordViewModel: WordViewModel,lifecycleOwner: LifecycleOwner, word: String): Any? {
+//
+//
+//    wordViewModel.getDataWord(word).observe(lifecycleOwner){
+//        when(it){
+//            is NetworkResult.Error -> {
+//                timber("WORD_DATA :: ERR ${it.message}")
+//            }
+//            is NetworkResult.Loading -> {
+//                timber("WORD_DATA ::  LD")
+//            }
+//            is NetworkResult.Success -> {
+//                timber("WORD_DATA :: ${it.data}")
+//            }
+//        }
+//        return it.data
+//
+//    }
+//
+//    return wordViewModel.getDataWord(word).observe(lifecycleOwner)
+//
+//}

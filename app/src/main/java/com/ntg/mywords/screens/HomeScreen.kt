@@ -35,26 +35,6 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 
-    val context = LocalContext.current
-
-
-    wordViewModel.getDataWord("w").observe(LocalLifecycleOwner.current){
-
-        when(it){
-            is NetworkResult.Error -> {
-                timber("WORD_DATA :: ERR ${it.message}")
-            }
-            is NetworkResult.Loading -> {
-                timber("WORD_DATA ::  LD")
-            }
-            is NetworkResult.Success -> {
-                timber("WORD_DATA :: ${it.data}")
-            }
-        }
-
-    }
-
-
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
