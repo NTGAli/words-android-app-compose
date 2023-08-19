@@ -108,7 +108,7 @@ class WordViewModel @Inject constructor(
     fun getDataWord(word: String): MutableLiveData<NetworkResult<List<WordDataItem>>> {
         viewModelScope.launch {
             wordData = safeApiCall(Dispatchers.IO){
-                api.getDataWord("word",BuildConfig.DICTIONARY_API_KEY)
+                api.getDataWord("word")
             } as MutableLiveData<NetworkResult<List<WordDataItem>>>
         }
         return wordData

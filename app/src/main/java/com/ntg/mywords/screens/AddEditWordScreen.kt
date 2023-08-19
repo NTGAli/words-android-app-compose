@@ -58,9 +58,6 @@ fun AddEditWordScreen(
         },
         content = { innerPadding ->
 
-
-            timber("akwldklwadklwmakdlm $wordId")
-
             val word = wordViewModel.findWord(wordId)?.observeAsState()
             Content(
                 paddingValues = innerPadding,
