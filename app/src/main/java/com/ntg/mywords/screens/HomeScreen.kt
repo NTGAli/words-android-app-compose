@@ -13,12 +13,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
+import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
@@ -34,6 +36,24 @@ import com.ntg.mywords.vm.WordViewModel
 fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 
     val context = LocalContext.current
+
+
+    wordViewModel.getDataWord("w").observe(LocalLifecycleOwner.current){
+
+        when(it){
+            is NetworkResult.Error -> {
+                timber("WORD_DATA :: ERR ${it.message}")
+            }
+            is NetworkResult.Loading -> {
+                timber("WORD_DATA ::  LD")
+            }
+            is NetworkResult.Success -> {
+                timber("WORD_DATA :: ${it.data}")
+            }
+        }
+
+    }
+
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -138,11 +158,15 @@ private fun Content(
             }.orEmpty().size
             numberOfAllWords.value =
                 wordViewModel.getMyWords().observeAsState().value.orEmpty().size
-            val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty().toMutableStateList()
+            val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty()
+                .toMutableStateList()
 
             timeSpent.forEach {
-                if (it.startUnix != null && it.endUnix != null){
-                    totalTime += getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())
+                if (it.startUnix != null && it.endUnix != null) {
+                    totalTime += getSecBetweenTimestamps(
+                        it.startUnix.orDefault(),
+                        it.endUnix.orDefault()
+                    )
                 }
             }
 
