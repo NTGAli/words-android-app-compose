@@ -4,20 +4,28 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ntg.mywords.BuildConfig
+import com.ntg.mywords.api.ApiService
+import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.model.response.WordData
+import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.util.getUnixTimeNDaysAgo
+import com.ntg.mywords.util.safeApiCall
 import com.ntg.mywords.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class WordViewModel @Inject constructor(
     private val wordDao: WordDao,
-    private val timeSpentDao: TimeSpentDao
+    private val timeSpentDao: TimeSpentDao,
+    private val api: ApiService
 ) : ViewModel() {
 
     private var isExist = false
@@ -27,6 +35,7 @@ class WordViewModel @Inject constructor(
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
+    private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
 
 
 
@@ -94,6 +103,15 @@ class WordViewModel @Inject constructor(
             allValidTimeSpent = timeSpentDao.getAllValidTime()
         }
         return allValidTimeSpent
+    }
+
+    fun getDataWord(word: String): MutableLiveData<NetworkResult<List<WordDataItem>>> {
+        viewModelScope.launch {
+            wordData = safeApiCall(Dispatchers.IO){
+                api.getDataWord("word",BuildConfig.DICTIONARY_API_KEY)
+            } as MutableLiveData<NetworkResult<List<WordDataItem>>>
+        }
+        return wordData
     }
 
 

@@ -9,16 +9,19 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.*
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.ntg.mywords.R
+import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
 import com.ntg.mywords.model.Success
+import kotlinx.coroutines.CoroutineDispatcher
+import retrofit2.HttpException
+import retrofit2.Response
 import timber.log.Timber
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -310,3 +313,34 @@ fun Long.secondsToClock(): String {
     return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }
 
+suspend fun <T> safeApiCall(dispatcher: CoroutineDispatcher, apiToBeCalled: suspend () -> Response<T>): LiveData<NetworkResult<T>> {
+
+
+    return liveData(dispatcher) {
+
+        var response: Response<T>? = null
+        try {
+            emit(NetworkResult.Loading())
+            timber("TREE_RES_DATE ::: SF1 $response")
+
+            response = apiToBeCalled.invoke()
+
+            timber("TREE_RES_DATE ::: SF $response")
+
+            if (response.isSuccessful) {
+                emit(NetworkResult.Success(data = response.body()))
+            } else {
+                emit(
+                    NetworkResult.Error(message = response.errorBody().toString())
+                )
+
+            }
+        } catch (e: HttpException) {
+            emit(NetworkResult.Error(message = e.message))
+        } catch (e: IOException) {
+            emit(NetworkResult.Error(message = "Check Your connection"))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(message = e.message))
+        }
+    }
+}

@@ -20,6 +20,9 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        buildConfigField("String", "DICTIONARY_API_KEY", DICTIONARY_API_KEY)
+
     }
 
     buildTypes {
