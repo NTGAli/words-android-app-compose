@@ -10,6 +10,8 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.ui.theme.*
 
@@ -22,6 +24,7 @@ fun EditText(
     readOnly: Boolean = false,
     enabled: Boolean = true,
     color: TextFieldColors? = null,
+    leadingIcon: ImageVector = Icons.Rounded.Add,
     enabledLeadingIcon: Boolean = false,
     leadingIconOnClick:(String) -> Unit = {},
     onClick: () -> Unit = {}
@@ -53,7 +56,7 @@ fun EditText(
                     leadingIconOnClick.invoke(text.value)
                 }) {
                     Icon(
-                        imageVector = Icons.Rounded.Add,
+                        imageVector = leadingIcon,
                         contentDescription = "leading"
                     )
                 }
