@@ -245,13 +245,8 @@ private fun Content(
                 title = word.word.toString(),
                 id = word.id,
                 painter = painter
-            ) { title, id ->
-
-                timber("kawljdlkajwdlkjawlkdj $id")
-
+            ) { _, id, _ ->
                 navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
-//                navController.navigate(Screens.AddEditScreen.name+"?wordId=$id")
-
             }
         }
 

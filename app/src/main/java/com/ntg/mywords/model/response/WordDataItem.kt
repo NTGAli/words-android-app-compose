@@ -8,8 +8,8 @@ data class WordDataItem(
 //    val definitionSection: List<DefinitionSection>?,
     @SerializedName("dros")
     val definedRunOns: List<DefinedRunOns>?,
-    @SerializedName("et")
-    val etymology: List<List<String>>?,
+//    @SerializedName("et")
+//    val etymology: List<List<String>>?,
     @SerializedName("fl")
     val functionalLabel: String?,
     @SerializedName("hom")

@@ -27,15 +27,14 @@ import com.ntg.mywords.components.*
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Success
 import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.model.components.ButtonStyle
+import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
 import com.ntg.mywords.ui.theme.Secondary100
-import com.ntg.mywords.util.notEmptyOrNull
-import com.ntg.mywords.util.notFalse
-import com.ntg.mywords.util.timber
-import com.ntg.mywords.util.toast
+import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
 import kotlinx.coroutines.launch
 
@@ -265,6 +264,12 @@ private fun Content(
         "conjunction"
     )
 
+    var wordDataItems = listOf<WordDataItem>()
+
+    val listOfDefinitions= remember {
+        mutableStateListOf<String>()
+    }
+
     if (openBottomSheet) {
 
         ModalBottomSheet(
@@ -276,7 +281,7 @@ private fun Content(
             LazyColumn(Modifier.padding(6.dp)) {
 
                 items(typeWordItems) {
-                    SampleItem(title = it) { title, _ ->
+                    SampleItem(title = it) { title, _, _ ->
                         type.value = title
                         scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
                             if (!bottomSheetState.isVisible) {
@@ -291,24 +296,40 @@ private fun Content(
     }
 
 
-    if (fetchDataWord.value){
-        wordViewModel.getDataWord(word.value).observe(lifecycleOwner){
-            when(it){
+    if (fetchDataWord.value) {
+        wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
+            when (it) {
                 is NetworkResult.Error -> {
                     timber("WORD_DATA :: ERR ${it.message}")
+                    fetchDataWord.value = false
                 }
                 is NetworkResult.Loading -> {
                     timber("WORD_DATA ::  LD")
                 }
                 is NetworkResult.Success -> {
                     timber("WORD_DATA :: ${it.data}")
-                    pronunciation.value = it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
+                    listOfDefinitions.clear()
+                    wordDataItems = it.data.orEmpty()
+                    pronunciation.value =
+                        it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
+                    it.data?.filter { it.functionalLabel == type.value }?.forEach {
+                        it.shortDefinitions?.forEach {def->
+                            listOfDefinitions.add(def)
+                        }
+                    }
+                    if (type.value == "verb"){
+                        pastSimple.value = it.data?.first { it.functionalLabel == type.value }?.inflections?.get(0)?.infection.orEmpty()
+                        pastParticiple.value = it.data?.first { it.functionalLabel == type.value }?.inflections?.get(1)?.infection.orEmpty()
+                    }
+                    fetchDataWord.value = false
                 }
             }
 
         }
-        fetchDataWord.value = false
     }
+
+
+//    wordDataItems.first { it.shortDefinitions?.contains(definition.value).orFalse() }.
 
 
     LazyColumn(
@@ -338,6 +359,11 @@ private fun Content(
                 }
             )
 
+            if (word.value.isNotEmpty() && type.value.isNotEmpty()){
+                CustomButton(modifier = Modifier.padding(top = 8.dp),text = stringResource(id = R.string.auto_fill), size = ButtonSize.SM, type = ButtonType.Primary, style = ButtonStyle.TextOnly){
+                    fetchDataWord.value = true
+                }
+            }
 
             if (type.value == "verb") {
                 Row(modifier = Modifier.padding(top = 4.dp)) {
@@ -346,14 +372,16 @@ private fun Content(
                             .weight(1f)
                             .padding(end = 4.dp),
                         text = pastSimple,
-                        label = stringResource(id = R.string.past_simple)
+                        label = stringResource(id = R.string.past_simple),
+                        enabled = !fetchDataWord.value
                     )
                     EditText(
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp),
                         text = pastParticiple,
-                        label = stringResource(id = R.string.past_simple)
+                        label = stringResource(id = R.string.past_participle),
+                        enabled = !fetchDataWord.value
                     )
                 }
             }
@@ -371,12 +399,7 @@ private fun Content(
                     .fillMaxWidth(),
                 text = pronunciation,
                 label = stringResource(R.string.pronunciation),
-                enabledLeadingIcon = word.value.isNotEmpty() && type.value.isNotEmpty(),
-                leadingIcon = ImageVector.vectorResource(id = R.drawable.arrow_circle_broken_down_left),
-                leadingIconOnClick = {
-//                    getDataWord(wordViewModel, lifecycleOwner, word.value)
-                    fetchDataWord.value = true
-                }
+                enabled = !fetchDataWord.value
             )
 
 
@@ -400,11 +423,25 @@ private fun Content(
             EditText(
                 Modifier
                     .padding(top = 8.dp)
-                    .fillMaxWidth(), text = definition, label = stringResource(R.string.definition)
+                    .fillMaxWidth(), text = definition, label = stringResource(R.string.definition),
+                enabled = !fetchDataWord.value
             )
+        }
+
+        if (listOfDefinitions.isNotEmpty()){
+
+            items(listOfDefinitions) {
+                SampleItem(title = it, enableRadioButton = true, radioSelect = mutableStateOf(definition.value == it), onClick = { text, _, isSelect ->
+                    definition.value = text
+                })
+            }
+
+        }
+
+        item {
             EditText(
                 Modifier
-                    .padding(top = 8.dp)
+                    .padding(top = 8.dp, bottom = 8.dp)
                     .fillMaxWidth(),
                 text = example,
                 label = stringResource(R.string.example),
@@ -422,33 +459,10 @@ private fun Content(
 
         items(exampleList.reversed()) {
             timber("LIST_DATA", "$exampleList")
-            SampleItem(title = it) { title, _ ->
+            SampleItem(title = it) { title, _ , _->
                 exampleList.remove(title)
             }
         }
 
     }
 }
-
-//private fun getDataWord(wordViewModel: WordViewModel,lifecycleOwner: LifecycleOwner, word: String): Any? {
-//
-//
-//    wordViewModel.getDataWord(word).observe(lifecycleOwner){
-//        when(it){
-//            is NetworkResult.Error -> {
-//                timber("WORD_DATA :: ERR ${it.message}")
-//            }
-//            is NetworkResult.Loading -> {
-//                timber("WORD_DATA ::  LD")
-//            }
-//            is NetworkResult.Success -> {
-//                timber("WORD_DATA :: ${it.data}")
-//            }
-//        }
-//        return it.data
-//
-//    }
-//
-//    return wordViewModel.getDataWord(word).observe(lifecycleOwner)
-//
-//}

@@ -99,7 +99,7 @@ private fun Content(
                 title = word.word.toString(),
                 id = word.id,
                 painter = painter
-            ) { title, id ->
+            ) { title, id, _ ->
 
                 timber("kawljdlkajwdlkjawlkdj $id")
 
