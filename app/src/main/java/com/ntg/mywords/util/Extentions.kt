@@ -25,9 +25,11 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
+fun String?.orDefault() = this ?: ""
 fun Int?.orZero() = this ?: 0
 fun Boolean?.orFalse() = this ?: false
 
@@ -59,6 +61,9 @@ fun notFalse(
 ): Result<String> =
     if (value.orFalse()) Success(value.toString())
     else Failure(errorMessage)
+
+
+fun String?.notEqual(str: String) = this != str
 
 
 fun Long.calculateRevisionStatus(numberOfRevision: Int) {

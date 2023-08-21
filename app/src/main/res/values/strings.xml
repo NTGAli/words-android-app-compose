@@ -39,5 +39,7 @@
     <string name="backup_on_storage">on phone storage</string>
     <string name="backup_on_server">on server</string>
     <string name="auto_fill">Auto filling of other fields</string>
+    <string name="error_occurred">An error has occurred</string>
+    <string name="not_exist">not exist!</string>
 
 </resources>

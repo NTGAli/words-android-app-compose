@@ -195,6 +195,7 @@ private fun Content(
         mutableStateListOf<String>()
     }
 
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
 
@@ -266,7 +267,7 @@ private fun Content(
 
     var wordDataItems = listOf<WordDataItem>()
 
-    val listOfDefinitions= remember {
+    val listOfDefinitions = remember {
         mutableStateListOf<String>()
     }
 
@@ -297,10 +298,12 @@ private fun Content(
 
 
     if (fetchDataWord.value) {
+
         wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
             when (it) {
                 is NetworkResult.Error -> {
                     timber("WORD_DATA :: ERR ${it.message}")
+                    context.toast(context.getString(R.string.error_occurred))
                     fetchDataWord.value = false
                 }
                 is NetworkResult.Loading -> {
@@ -308,18 +311,28 @@ private fun Content(
                 }
                 is NetworkResult.Success -> {
                     timber("WORD_DATA :: ${it.data}")
-                    listOfDefinitions.clear()
-                    wordDataItems = it.data.orEmpty()
-                    pronunciation.value =
-                        it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
-                    it.data?.filter { it.functionalLabel == type.value }?.forEach {
-                        it.shortDefinitions?.forEach {def->
-                            listOfDefinitions.add(def)
+                    if (it.data.orEmpty().isNotEmpty()) {
+                        listOfDefinitions.clear()
+                        wordDataItems = it.data.orEmpty()
+                        pronunciation.value =
+                            it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
+                        it.data?.filter { it.functionalLabel == type.value }?.forEach {
+                            it.shortDefinitions?.forEach { def ->
+                                listOfDefinitions.add(def)
+                            }
                         }
-                    }
-                    if (type.value == "verb"){
-                        pastSimple.value = it.data?.first { it.functionalLabel == type.value }?.inflections?.get(0)?.infection.orEmpty()
-                        pastParticiple.value = it.data?.first { it.functionalLabel == type.value }?.inflections?.get(1)?.infection.orEmpty()
+                        if (type.value == "verb") {
+                            pastSimple.value =
+                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
+                                    0
+                                )?.infection.orEmpty()
+                            pastParticiple.value =
+                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
+                                    1
+                                )?.infection.orEmpty()
+                        }
+                    } else {
+                        context.toast(context.getString(R.string.not_exist))
                     }
                     fetchDataWord.value = false
                 }
@@ -359,8 +372,14 @@ private fun Content(
                 }
             )
 
-            if (word.value.isNotEmpty() && type.value.isNotEmpty()){
-                CustomButton(modifier = Modifier.padding(top = 8.dp),text = stringResource(id = R.string.auto_fill), size = ButtonSize.SM, type = ButtonType.Primary, style = ButtonStyle.TextOnly){
+            if (word.value.isNotEmpty() && type.value.isNotEmpty()) {
+                CustomButton(
+                    modifier = Modifier.padding(top = 8.dp),
+                    text = stringResource(id = R.string.auto_fill),
+                    size = ButtonSize.SM,
+                    type = ButtonType.Primary,
+                    style = ButtonStyle.TextOnly
+                ) {
                     fetchDataWord.value = true
                 }
             }
@@ -428,12 +447,16 @@ private fun Content(
             )
         }
 
-        if (listOfDefinitions.isNotEmpty()){
+        if (listOfDefinitions.isNotEmpty()) {
 
             items(listOfDefinitions) {
-                SampleItem(title = it, enableRadioButton = true, radioSelect = mutableStateOf(definition.value == it), onClick = { text, _, isSelect ->
-                    definition.value = text
-                })
+                SampleItem(
+                    title = it,
+                    enableRadioButton = true,
+                    radioSelect = mutableStateOf(definition.value == it),
+                    onClick = { text, _, isSelect ->
+                        definition.value = text
+                    })
             }
 
         }
@@ -459,7 +482,7 @@ private fun Content(
 
         items(exampleList.reversed()) {
             timber("LIST_DATA", "$exampleList")
-            SampleItem(title = it) { title, _ , _->
+            SampleItem(title = it) { title, _, _ ->
                 exampleList.remove(title)
             }
         }
