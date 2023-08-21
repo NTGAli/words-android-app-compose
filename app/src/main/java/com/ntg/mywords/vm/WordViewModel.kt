@@ -106,12 +106,17 @@ class WordViewModel @Inject constructor(
     }
 
     fun getDataWord(word: String): MutableLiveData<NetworkResult<List<WordDataItem>>> {
-        viewModelScope.launch {
-            wordData = safeApiCall(Dispatchers.IO){
-                api.getDataWord(word)
-            } as MutableLiveData<NetworkResult<List<WordDataItem>>>
+        return if (wordData.value?.data.orEmpty().isNotEmpty() && wordData.value?.data.orEmpty().first().entryMetadata?.id?.split(":")?.first().equals(word)){
+            wordData
+        }else{
+            viewModelScope.launch {
+                wordData = safeApiCall(Dispatchers.IO){
+                    api.getDataWord(word)
+                } as MutableLiveData<NetworkResult<List<WordDataItem>>>
+            }
+            wordData
         }
-        return wordData
+
     }
 
 
