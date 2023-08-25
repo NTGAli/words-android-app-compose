@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ntg.mywords.screens.*
+import com.ntg.mywords.screens.login.*
 import com.ntg.mywords.screens.setting.BackupAndRestoreScreen
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
@@ -16,7 +17,7 @@ import com.ntg.mywords.vm.WordViewModel
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screens.HomeScreen.name,
+    startDestination: String = Screens.InsertEmailScreen.name,
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
     onDestinationChangedListener:(NavController, NavDestination, Bundle?) -> Unit
@@ -48,6 +49,10 @@ fun AppNavHost(
             RecentWordScreen(navController, wordViewModel)
         }
 
+        composable(Screens.SelectLanguageScreen.name) {
+            SelectLanguageScreen(navController)
+        }
+
         composable(Screens.TimeScreen.name) {
             TimeScreen(navController, calendarViewModel)
         }
@@ -56,8 +61,40 @@ fun AppNavHost(
             SettingScreen(navController)
         }
 
+        composable(Screens.CodeScreen.name+ "?email={email}",
+            arguments = listOf(navArgument("email")
+            {
+                type = NavType.StringType
+                defaultValue = "your"
+            })
+        ) {
+            CodeScreen(navController, it.arguments?.getString("email").orEmpty())
+        }
+
+        composable(Screens.LoginWithPasswordScreen.name+ "?email={email}",
+            arguments = listOf(navArgument("email")
+            {
+                type = NavType.StringType
+                defaultValue = "your"
+            })
+        ) {
+            LoginWithPasswordScreen(navController, it.arguments?.getString("email").orEmpty())
+        }
+
         composable(Screens.BackupAndRestoreScreen.name) {
             BackupAndRestoreScreen(navController)
+        }
+
+        composable(Screens.InsertEmailScreen.name) {
+            InsertEmailScreen(navController)
+        }
+
+        composable(Screens.VocabularyListScreen.name) {
+            VocabularyListScreen(navController)
+        }
+
+        composable(Screens.NameScreen.name) {
+            NameScreen(navController)
         }
 
 

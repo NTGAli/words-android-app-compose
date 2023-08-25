@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- Without this folders will be inaccessible in Android-11 and above devices -->
     <uses-permission android:name="android.permission.CAMERA"

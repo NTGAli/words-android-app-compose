@@ -2,9 +2,11 @@ package com.ntg.mywords.util
 
 import android.Manifest
 import android.content.Context
+import android.os.CountDownTimer
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -18,6 +20,7 @@ import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
 import com.ntg.mywords.model.Success
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import retrofit2.Response
 import timber.log.Timber
@@ -26,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
+import kotlin.time.Duration.Companion.seconds
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
@@ -54,6 +58,13 @@ fun notEmptyOrNull(
     } else {
         Failure(errorMessage)
     }
+
+fun validEmail(email: String): Result<String> =
+    if (email.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")))
+        Success(email)
+    else Failure("invalid email!")
+
+fun String.validEmail() = this.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"))
 
 fun notFalse(
     value: Boolean?,
@@ -90,6 +101,29 @@ fun getSecBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
     val differenceMillis = endDate.time - startDate.time
 
     return TimeUnit.MILLISECONDS.toSeconds(differenceMillis).toInt()
+}
+
+@Composable
+fun CountDownTimer(start: Int, onTick:(Int) -> Unit){
+    var time = start
+    LaunchedEffect(Unit) {
+        while(true) {
+            delay(1.seconds)
+            onTick.invoke(time--)
+        }
+    }
+}
+
+
+fun Int.minutesToTimeFormat(): String {
+    val hours = this / 60
+    val remainingMinutes = this % 60
+
+    // Format hours and minutes with leading zeros if needed
+    val formattedHours = hours.toString().padStart(2, '0')
+    val formattedMinutes = remainingMinutes.toString().padStart(2, '0')
+
+    return "$formattedHours:$formattedMinutes"
 }
 
 @Composable
@@ -296,7 +330,7 @@ fun Long.formatTime(): String {
     return when {
         this < minute -> "$this seconds"
         this < hour -> "${this / minute} minutes"
-        this < day -> "${this/ hour} hours"
+        this < day -> "${this / hour} hours"
         this < month -> "${this / day} days"
         this < year -> "${this / month} months"
         else -> "${this / year} years"
@@ -318,7 +352,10 @@ fun Long.secondsToClock(): String {
     return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }
 
-suspend fun <T> safeApiCall(dispatcher: CoroutineDispatcher, apiToBeCalled: suspend () -> Response<T>): LiveData<NetworkResult<T>> {
+suspend fun <T> safeApiCall(
+    dispatcher: CoroutineDispatcher,
+    apiToBeCalled: suspend () -> Response<T>
+): LiveData<NetworkResult<T>> {
 
 
     return liveData(dispatcher) {

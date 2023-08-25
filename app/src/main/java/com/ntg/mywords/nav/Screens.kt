@@ -10,7 +10,13 @@ enum class Screens {
     RecentWordScreen,
     TimeScreen,
     SettingScreen,
-    BackupAndRestoreScreen
+    BackupAndRestoreScreen,
+    InsertEmailScreen,
+    CodeScreen,
+    NameScreen,
+    VocabularyListScreen,
+    SelectLanguageScreen,
+    LoginWithPasswordScreen
 
 
 }

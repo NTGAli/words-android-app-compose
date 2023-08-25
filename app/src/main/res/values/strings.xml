@@ -3,7 +3,8 @@
     <string name="workout_report">Workout Report</string>
     <string name="words">Words</string>
     <string name="my_words">My Words</string>
-    <string name="add_new">Add new word</string>
+    <string name="add_new_word">Add new word</string>
+    <string name="add_new">add new</string>
     <string name="word">word</string>
     <string name="pronunciation">pronunciation</string>
     <string name="type">type</string>
@@ -41,5 +42,20 @@
     <string name="auto_fill">Auto filling of other fields</string>
     <string name="error_occurred">An error has occurred</string>
     <string name="not_exist">not exist!</string>
+    <string name="email">email</string>
+    <string name="next">next</string>
+    <string name="agree_policy">"By creating an account, you agree to our Terms. "</string>
+    <string name="invalid_email">invalid email</string>
+    <string name="code">code</string>
+    <string name="send_code_to_format">We sent the code to %s email</string>
+    <string name="send_again">send me again!</string>
+    <string name="name">name</string>
+    <string name="prefer_not_to_say">i prefer not to say.</string>
+    <string name="no_list_message">Okay Ali, you don’t have any list! Create one.</string>
+    <string name="witch_language">Witch language do you want to add to this list?</string>
+    <string name="password">password</string>
+    <string name="set_password">"If you're a new user, please enter your desired password. For those who have already registered, kindly input your existing password.     "</string>
+    <string name="use_password">Use password instead</string>
+    <string name="use_verification_code">Use verification code instead</string>
 
 </resources>

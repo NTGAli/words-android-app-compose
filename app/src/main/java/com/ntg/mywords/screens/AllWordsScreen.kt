@@ -38,11 +38,6 @@ fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel) {
     val numberOfAllWords = wordViewModel.getMyWords().observeAsState().value.orEmpty().size
     val enableSearchBar = remember { mutableStateOf(false) }
 
-//    var wordsList = remember {
-//        mutableStateListOf<Word>()
-//    }
-
-
     wordViewModel.searchOnWords("")
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
