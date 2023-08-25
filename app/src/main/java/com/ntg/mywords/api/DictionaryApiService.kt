@@ -1,14 +1,13 @@
 package com.ntg.mywords.api
 
 import com.ntg.mywords.BuildConfig
-import com.ntg.mywords.model.response.WordData
 import com.ntg.mywords.model.response.WordDataItem
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface ApiService {
+interface DictionaryApiService {
     /**
      * DICTIONARY API KEY:
      * 1. Sign up at [https://www.dictionaryapi.com].

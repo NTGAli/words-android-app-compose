@@ -1,7 +1,6 @@
 package com.ntg.mywords.screens
 
 import android.content.Context
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -9,17 +8,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.api.NetworkResult
@@ -33,7 +27,6 @@ import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
-import com.ntg.mywords.ui.theme.Secondary100
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
 import kotlinx.coroutines.launch
@@ -55,7 +48,7 @@ fun AddEditWordScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             Appbar(
-                title = stringResource(R.string.add_new),
+                title = stringResource(R.string.add_new_word),
                 scrollBehavior = scrollBehavior,
                 navigationOnClick = { navController.popBackStack() }
             )

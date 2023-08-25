@@ -3,6 +3,7 @@ package com.ntg.mywords.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,8 +19,10 @@ import com.ntg.mywords.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditText(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     text: MutableState<String> = remember { mutableStateOf("") },
+    setError: MutableState<Boolean> = remember { mutableStateOf(false) },
+    supportText: String = "",
     label: String? = null,
     readOnly: Boolean = false,
     enabled: Boolean = true,
@@ -27,7 +30,8 @@ fun EditText(
     leadingIcon: ImageVector = Icons.Rounded.Add,
     enabledLeadingIcon: Boolean = false,
     leadingIconOnClick:(String) -> Unit = {},
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onChange: (String) -> Unit = {}
 
 ) {
 
@@ -40,10 +44,11 @@ fun EditText(
             }, value = text.value,
         onValueChange = {
             text.value = it
+            onChange.invoke(it)
         },
         label = {
             if (!label.isNullOrEmpty()) {
-                Text(text = label, style = fontRegular14(Secondary500))
+                Text(text = label)
             }
         },
         readOnly = readOnly,
@@ -80,7 +85,10 @@ fun EditText(
                         }
                     }
                 }
-            }
+            }, isError = setError.value,
+        supportingText = {
+            Text(text = supportText)
+        }
 
     )
 

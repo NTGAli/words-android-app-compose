@@ -1,9 +1,8 @@
 package com.ntg.mywords.di
 
 import android.content.Context
-import android.os.Build
 import androidx.room.Room
-import com.ntg.mywords.api.ApiService
+import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.LoggingInterceptor
 import com.ntg.mywords.db.AppDB
 import com.ntg.mywords.db.dao.TimeSpentDao
@@ -76,8 +75,8 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService{
-        return retrofit.create(ApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): DictionaryApiService{
+        return retrofit.create(DictionaryApiService::class.java)
     }
 
 
