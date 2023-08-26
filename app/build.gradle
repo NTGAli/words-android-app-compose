@@ -22,6 +22,7 @@ android {
         }
 
         buildConfigField("String", "DICTIONARY_API_KEY", DICTIONARY_API_KEY)
+        buildConfigField("String", "VOCAB_API_KEY", VOCAB_API_KEY)
 
     }
 
@@ -69,6 +70,8 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
+
 
     //ui controller
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.31.0-alpha"

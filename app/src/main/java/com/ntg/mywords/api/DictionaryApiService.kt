@@ -2,6 +2,7 @@ package com.ntg.mywords.api
 
 import com.ntg.mywords.BuildConfig
 import com.ntg.mywords.model.response.WordDataItem
+import dagger.Provides
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path

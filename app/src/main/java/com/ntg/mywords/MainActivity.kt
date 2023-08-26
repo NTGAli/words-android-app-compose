@@ -18,6 +18,7 @@ import com.ntg.mywords.ui.theme.AppTheme
 import com.ntg.mywords.util.OnLifecycleEvent
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.CalendarViewModel
+import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
 
     private val wordViewModel: WordViewModel by viewModels()
     private val calendarViewModel: CalendarViewModel by viewModels()
+    private val loginViewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +39,8 @@ class MainActivity : ComponentActivity() {
 
                 AppNavHost(
                     wordViewModel = wordViewModel,
-                    calendarViewModel = calendarViewModel
+                    calendarViewModel = calendarViewModel,
+                    loginViewModel = loginViewModel
                 ) { _, navDestination, _ ->
                     timber("onDestinationChangeListener ${navDestination.route}")
                 }

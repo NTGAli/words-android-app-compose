@@ -2,6 +2,7 @@ package com.ntg.mywords.di
 
 import android.content.Context
 import androidx.room.Room
+import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.LoggingInterceptor
 import com.ntg.mywords.db.AppDB
@@ -9,6 +10,7 @@ import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.util.Constant.DATABASE_NAME
 import com.ntg.mywords.util.Constant.DICTIONARY_API_URL
+import com.ntg.mywords.util.Constant.VOCAB_API_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +20,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -65,7 +68,8 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    @Named("DICTIONARY_API")
+    fun provideRetrofit( okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(DICTIONARY_API_URL)
             .client(okHttpClient)
@@ -73,10 +77,29 @@ class AppModule {
             .build()
     }
 
+
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): DictionaryApiService{
+    @Named("VOCAB_API")
+    fun provideVocabRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(VOCAB_API_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDictionaryApiService(@Named("DICTIONARY_API")retrofit: Retrofit): DictionaryApiService{
         return retrofit.create(DictionaryApiService::class.java)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideApiService(@Named("VOCAB_API")retrofit: Retrofit): ApiService{
+        return retrofit.create(ApiService::class.java)
     }
 
 
