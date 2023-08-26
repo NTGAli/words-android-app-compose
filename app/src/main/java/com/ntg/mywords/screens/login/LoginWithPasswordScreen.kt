@@ -11,28 +11,37 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
+import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.EditText
 import com.ntg.mywords.components.TypewriterText
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
+import com.ntg.mywords.model.enums.TypeOfMessagePass
 import com.ntg.mywords.nav.Screens
-import com.ntg.mywords.util.CountDownTimer
-import com.ntg.mywords.util.minutesToTimeFormat
+import com.ntg.mywords.util.timber
+import com.ntg.mywords.util.toast
+import com.ntg.mywords.vm.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginWithPasswordScreen(navController: NavController, email: String) {
+fun LoginWithPasswordScreen(
+    navController: NavController,
+    email: String,
+    loginViewModel: LoginViewModel
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController = navController, email)
+            Content(paddingValues = innerPadding, navController = navController, email, loginViewModel)
 //            Content(paddingValues = innerPadding, navController = navController)
         }
     )
@@ -40,11 +49,13 @@ fun LoginWithPasswordScreen(navController: NavController, email: String) {
 
 
 @Composable
-private fun Content(paddingValues: PaddingValues, navController: NavController, email: String) {
-    val code = remember {
+private fun Content(paddingValues: PaddingValues, navController: NavController, email: String, loginViewModel: LoginViewModel) {
+    val owner = LocalLifecycleOwner.current
+    val ctx = LocalContext.current
+
+    val password = remember {
         mutableStateOf("")
     }
-
 
     val loading = remember {
         mutableStateOf(false)
@@ -55,6 +66,53 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
     }
 
 
+
+    if (loading.value){
+        loginViewModel.verifyUserByPassword(
+            email = email,
+            password = password.value
+        ).observe(owner){
+
+            when(it){
+                is NetworkResult.Error -> {
+                    timber("VERIFY_BY_PASS ::: ERR")
+                }
+                is NetworkResult.Loading -> {
+                    timber("VERIFY_BY_PASS ::: LOADING")
+                }
+                is NetworkResult.Success -> {
+                    timber("VERIFY_BY_PASS ::: ${it.data}")
+
+                    when(it.data){
+
+                        TypeOfMessagePass.INVALID_TOKEN.name -> {
+                            ctx.toast(ctx.getString(R.string.download_from_google_play))
+                        }
+
+                        TypeOfMessagePass.INCORRECT_PASSWORD.name -> {
+                            ctx.toast(ctx.getString(R.string.incorrect_pass))
+                        }
+
+                        TypeOfMessagePass.NEW_USER_NO_NAME.name -> {
+                            navController.navigate(Screens.NameScreen.name)
+                        }
+
+                        TypeOfMessagePass.USER_VERIFIED.name -> {
+                            navController.navigate(Screens.VocabularyListScreen.name)
+                        }
+
+                        TypeOfMessagePass.USER_NOT_EXIST.name -> {
+                            navController.navigate(Screens.InsertEmailScreen.name)
+                        }
+
+                    }
+
+
+                }
+            }
+
+        }
+    }
 
 
     Column(
@@ -79,9 +137,10 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         EditText(
             modifier = Modifier
                 .padding(top = 64.dp)
-                .fillMaxWidth(), label = stringResource(id = R.string.password), text = code,
+                .fillMaxWidth(), label = stringResource(id = R.string.password), text = password,
             setError = setError,
-            supportText = stringResource(id = R.string.set_password, email)
+            supportText = stringResource(id = R.string.set_password, email),
+            isPassword = true
         )
 
 
@@ -94,13 +153,8 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         ) {
             loading.value = true
 
-            navController.navigate(Screens.NameScreen.name)
+//            navController.navigate(Screens.NameScreen.name)
 
-//            if (email.value.validEmail()) {
-//                navController.navigate(Screens.CodeScreen.name)
-//            } else {
-//                setError.value = true
-//            }
 
 
         }

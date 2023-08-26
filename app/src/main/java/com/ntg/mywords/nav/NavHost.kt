@@ -11,15 +11,17 @@ import com.ntg.mywords.screens.*
 import com.ntg.mywords.screens.login.*
 import com.ntg.mywords.screens.setting.BackupAndRestoreScreen
 import com.ntg.mywords.vm.CalendarViewModel
+import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
 
 @Composable
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screens.InsertEmailScreen.name,
+    startDestination: String = Screens.CodeScreen.name,
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
+    loginViewModel: LoginViewModel,
     onDestinationChangedListener:(NavController, NavDestination, Bundle?) -> Unit
 ) {
 
@@ -61,6 +63,10 @@ fun AppNavHost(
             SettingScreen(navController)
         }
 
+        composable(Screens.CodeScreen.name) {
+            CodeScreen(navController, "", loginViewModel)
+        }
+
         composable(Screens.CodeScreen.name+ "?email={email}",
             arguments = listOf(navArgument("email")
             {
@@ -68,7 +74,7 @@ fun AppNavHost(
                 defaultValue = "your"
             })
         ) {
-            CodeScreen(navController, it.arguments?.getString("email").orEmpty())
+            CodeScreen(navController, it.arguments?.getString("email").orEmpty(), loginViewModel)
         }
 
         composable(Screens.LoginWithPasswordScreen.name+ "?email={email}",
@@ -78,7 +84,7 @@ fun AppNavHost(
                 defaultValue = "your"
             })
         ) {
-            LoginWithPasswordScreen(navController, it.arguments?.getString("email").orEmpty())
+            LoginWithPasswordScreen(navController, it.arguments?.getString("email").orEmpty(), loginViewModel)
         }
 
         composable(Screens.BackupAndRestoreScreen.name) {
@@ -86,7 +92,7 @@ fun AppNavHost(
         }
 
         composable(Screens.InsertEmailScreen.name) {
-            InsertEmailScreen(navController)
+            InsertEmailScreen(navController, loginViewModel)
         }
 
         composable(Screens.VocabularyListScreen.name) {
