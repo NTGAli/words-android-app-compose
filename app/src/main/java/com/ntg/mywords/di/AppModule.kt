@@ -2,6 +2,8 @@ package com.ntg.mywords.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.LoggingInterceptor
@@ -23,10 +25,15 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
+
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
 
+
+    var gson: Gson = GsonBuilder()
+        .setLenient()
+        .create()
 
     @Provides
     @Singleton
@@ -85,6 +92,7 @@ class AppModule {
         return Retrofit.Builder()
             .baseUrl(VOCAB_API_URL)
             .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -101,6 +109,7 @@ class AppModule {
     fun provideApiService(@Named("VOCAB_API")retrofit: Retrofit): ApiService{
         return retrofit.create(ApiService::class.java)
     }
+
 
 
 }

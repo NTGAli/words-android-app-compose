@@ -20,6 +20,7 @@ class LoginViewModel @Inject constructor(
     private var verifyUser: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyCode: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyPass: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private var updateName: MutableLiveData<NetworkResult<String>> = MutableLiveData()
 
 
     fun sendCode(
@@ -70,6 +71,23 @@ class LoginViewModel @Inject constructor(
             } as MutableLiveData<NetworkResult<String>>
         }
         return verifyPass
+    }
+
+
+    fun updateName(
+        email: String,
+        name: String
+    ): MutableLiveData<NetworkResult<String>> {
+        viewModelScope.launch {
+            updateName = safeApiCall(Dispatchers.IO){
+                api.updateName(
+                    token = BuildConfig.VOCAB_API_KEY,
+                    email = email,
+                    name = name
+                )
+            } as MutableLiveData<NetworkResult<String>>
+        }
+        return updateName
     }
 
 

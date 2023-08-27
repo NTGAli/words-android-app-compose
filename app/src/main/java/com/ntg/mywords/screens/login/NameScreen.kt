@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -15,27 +17,69 @@ import com.ntg.mywords.R
 import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.EditText
 import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.fontMedium24
+import com.ntg.mywords.util.Constant
+import com.ntg.mywords.util.toast
+import com.ntg.mywords.vm.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NameScreen(navController: NavController){
+fun NameScreen(navController: NavController, loginViewModel: LoginViewModel, email: String){
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController)
+            Content(paddingValues = innerPadding, navController, loginViewModel, email)
         }
     )
 
 }
 
 @Composable
-private fun Content(paddingValues: PaddingValues, navController: NavController){
+private fun Content(paddingValues: PaddingValues, navController: NavController, loginViewModel: LoginViewModel, email: String){
+
+    val owner = LocalLifecycleOwner.current
+    val ctx = LocalContext.current
 
     var text by remember {
         mutableStateOf("I am no one \uD83E\uDD2D")
+    }
+
+    var loading by remember {
+        mutableStateOf(false)
+    }
+
+
+    if (loading){
+
+        loginViewModel.updateName(
+            name = text.replace("I am ", ""),
+            email = email
+        ).observe(owner){
+
+            when(it.data){
+
+                "200" -> {
+                    navController.navigate(Screens.VocabularyListScreen.name)
+                }
+
+                "400" -> {
+                    ctx.toast(ctx.getString(R.string.sth_wrong))
+                }
+
+                "INVALID_TOKEN" -> {
+                    ctx.toast(ctx.getString(R.string.download_from_google_play))
+                }
+
+
+            }
+
+
+        }
+
+
     }
 
     Column(modifier = Modifier.padding(horizontal = 32.dp)) {
@@ -54,7 +98,15 @@ private fun Content(paddingValues: PaddingValues, navController: NavController){
 
         CustomButton(text = if (text.contains("no one")) stringResource(id = R.string.prefer_not_to_say) else stringResource(
             id = R.string.next
-        ), size = ButtonSize.LG)
+        ), size = ButtonSize.LG, loading = loading){
+
+            if (text.contains("no one")){
+                navController.navigate(Screens.VocabularyListScreen.name)
+            }else{
+                loading = true
+            }
+
+        }
     }
 
 }

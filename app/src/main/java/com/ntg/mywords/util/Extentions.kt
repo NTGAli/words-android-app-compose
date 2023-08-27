@@ -59,6 +59,27 @@ fun notEmptyOrNull(
         Failure(errorMessage)
     }
 
+fun String.hasEnoughDigits() = count(Char::isDigit) > 0
+
+
+fun enoughDigitsForPass(
+    str: String,
+    errorMsg: String
+) =if (str.count(Char::isDigit) > 0){
+        Success(str)
+    }else{
+        Failure(errorMsg)
+    }
+
+fun longEnoughForPass(
+    str: String,
+    errorMsg: String
+) = if (str.length > 4){
+    Success(str)
+}else{
+    Failure(errorMsg)
+}
+
 fun validEmail(email: String): Result<String> =
     if (email.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")))
         Success(email)
@@ -378,11 +399,11 @@ suspend fun <T> safeApiCall(
 
             }
         } catch (e: HttpException) {
-            emit(NetworkResult.Error(message = e.message))
+            emit(NetworkResult.Error(message = "HttpException ::: ${e.message}"))
         } catch (e: IOException) {
-            emit(NetworkResult.Error(message = "Check Your connection"))
+            emit(NetworkResult.Error(message = "IOException ::: ${e.message}"))
         } catch (e: Exception) {
-            emit(NetworkResult.Error(message = e.message))
+            emit(NetworkResult.Error(message = "Exception ::: ${e.message}"))
         }
     }
 }
