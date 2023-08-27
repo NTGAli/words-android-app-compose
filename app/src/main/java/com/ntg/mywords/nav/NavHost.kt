@@ -18,7 +18,7 @@ import com.ntg.mywords.vm.WordViewModel
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screens.CodeScreen.name,
+    startDestination: String = Screens.HomeScreen.name,
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
     loginViewModel: LoginViewModel,
@@ -99,8 +99,14 @@ fun AppNavHost(
             VocabularyListScreen(navController)
         }
 
-        composable(Screens.NameScreen.name) {
-            NameScreen(navController)
+        composable(Screens.NameScreen.name+ "?email={email}",
+            arguments = listOf(navArgument("email")
+            {
+                type = NavType.StringType
+                defaultValue = "-"
+            })
+        ) {
+            NameScreen(navController, loginViewModel, it.arguments?.getString("email").orEmpty())
         }
 
 

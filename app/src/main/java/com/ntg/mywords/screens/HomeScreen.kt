@@ -30,10 +30,17 @@ import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
+
+    val context = LocalContext.current
+    val x = LocalLifecycleOwner.current
+
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -50,8 +57,28 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
                     )
                 ),
                 actionOnClick = {
-                    navController.navigate(Screens.SettingScreen.name)
-//                    AppDatabaseBackup.backupDatabase(context, Constant.DATABASE_NAME)
+//                    navController.navigate(Screens.SettingScreen.name)
+//                    AppDatabaseBackup.backupDatabase(context)
+
+                    val file = context.getDatabasePath(Constant.DATABASE_NAME)
+                    val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                    val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+                    wordViewModel.upload(filePart).observe(x){
+
+                        when(it){
+                            is NetworkResult.Error -> {
+                                timber("ajhwfjkwahfjhwakjfhawkjhf :::: ERR ${it.message}")
+                            }
+                            is NetworkResult.Loading -> {
+                                timber("ajhwfjkwahfjhwakjfhawkjhf :::: LD")
+                            }
+                            is NetworkResult.Success -> {
+                                timber("ajhwfjkwahfjhwakjfhawkjhf :::: ${it.data}")
+                            }
+                        }
+
+                    }
 
                 }
             )

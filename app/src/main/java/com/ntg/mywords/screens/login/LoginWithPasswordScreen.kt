@@ -21,13 +21,15 @@ import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.EditText
 import com.ntg.mywords.components.TypewriterText
+import com.ntg.mywords.model.Failure
+import com.ntg.mywords.model.Success
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.enums.TypeOfMessagePass
+import com.ntg.mywords.model.then
 import com.ntg.mywords.nav.Screens
-import com.ntg.mywords.util.timber
-import com.ntg.mywords.util.toast
+import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,14 +77,14 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
             when(it){
                 is NetworkResult.Error -> {
-                    timber("VERIFY_BY_PASS ::: ERR")
+                    timber("VERIFY_BY_PASS ::: ERR ${it.message}")
                 }
                 is NetworkResult.Loading -> {
                     timber("VERIFY_BY_PASS ::: LOADING")
                 }
                 is NetworkResult.Success -> {
                     timber("VERIFY_BY_PASS ::: ${it.data}")
-
+                    loading.value = false
                     when(it.data){
 
                         TypeOfMessagePass.INVALID_TOKEN.name -> {
@@ -91,10 +93,12 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
                         TypeOfMessagePass.INCORRECT_PASSWORD.name -> {
                             ctx.toast(ctx.getString(R.string.incorrect_pass))
+                            setError.value = true
                         }
 
-                        TypeOfMessagePass.NEW_USER_NO_NAME.name -> {
-                            navController.navigate(Screens.NameScreen.name)
+                        TypeOfMessagePass.NEW_USER_NO_NAME.name,
+                        TypeOfMessagePass.USER_VERIFIED_NO_NAME.name-> {
+                            navController.navigate(Screens.NameScreen.name+"?email=${email}")
                         }
 
                         TypeOfMessagePass.USER_VERIFIED.name -> {
@@ -141,7 +145,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
             setError = setError,
             supportText = stringResource(id = R.string.set_password, email),
             isPassword = true
-        )
+        ){
+            setError.value = false
+        }
 
 
         CustomButton(
@@ -151,11 +157,19 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
             size = ButtonSize.LG,
             loading = loading.value
         ) {
-            loading.value = true
 
-//            navController.navigate(Screens.NameScreen.name)
+            val result = notEmptyOrNull(password.value, ctx.getString(R.string.pass_requiered))
+                .then { enoughDigitsForPass(password.value, ctx.getString(R.string.a_digit_requier)) }
+                .then { longEnoughForPass(password.value, ctx.getString(R.string.not_enough_pass_lenght)) }
 
 
+            if (result is Failure){
+                ctx.toast(result.errorMessage)
+                setError.value = true
+            }else {
+                setError.value = false
+                loading.value = true
+            }
 
         }
         

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.db.dao.TimeSpentDao
@@ -17,13 +18,15 @@ import com.ntg.mywords.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 @HiltViewModel
 class WordViewModel @Inject constructor(
     private val wordDao: WordDao,
     private val timeSpentDao: TimeSpentDao,
-    private val api: DictionaryApiService
+    private val api: DictionaryApiService,
+    private val vocabApi: ApiService
 ) : ViewModel() {
 
     private var isExist = false
@@ -34,6 +37,8 @@ class WordViewModel @Inject constructor(
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
+    private var uplodaState: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+
 
 
 
@@ -116,6 +121,20 @@ class WordViewModel @Inject constructor(
         }
 
     }
+
+
+    fun upload(filePart: MultipartBody.Part): MutableLiveData<NetworkResult<String>> {
+
+        viewModelScope.launch {
+            uplodaState = safeApiCall(Dispatchers.IO){
+                vocabApi.uploadFile(filePart)
+            } as MutableLiveData<NetworkResult<String>>
+        }
+
+        return uplodaState
+
+    }
+
 
 
 }

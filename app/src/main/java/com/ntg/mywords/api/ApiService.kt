@@ -1,8 +1,8 @@
 package com.ntg.mywords.api
 
+import okhttp3.MultipartBody
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface ApiService {
 
@@ -37,6 +37,18 @@ interface ApiService {
         @Query("pass") password: String
     ): Response<String>
 
+    @GET("registration/VerifyName.php")
+    suspend fun updateName(
+        @Query("token") token: String,
+        @Query("email") email: String,
+        @Query("name") name: String
+    ): Response<String>
 
+
+    @Multipart
+    @POST("backup/Backup.php") // Replace with your server URL
+    suspend fun uploadFile(
+        @Part filePart: MultipartBody.Part
+    ): Response<String>
 
 }
