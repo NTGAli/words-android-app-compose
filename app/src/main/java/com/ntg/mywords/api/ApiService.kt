@@ -1,5 +1,6 @@
 package com.ntg.mywords.api
 
+import com.ntg.mywords.model.req.BackupUserData
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -49,6 +50,16 @@ interface ApiService {
     @POST("backup/Backup.php") // Replace with your server URL
     suspend fun uploadFile(
         @Part filePart: MultipartBody.Part
+    )
+    : Response<String>
+
+
+    @POST("backup/Backup.php") // Replace with your server URL
+    suspend fun backupUserData(
+        @Body backupUserData: BackupUserData,
+        @Query("email") email: String,
+        @Query("token") token: String,
+        @Query("ver") version: String
     ): Response<String>
 
 }

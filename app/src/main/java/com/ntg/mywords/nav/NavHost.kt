@@ -88,7 +88,7 @@ fun AppNavHost(
         }
 
         composable(Screens.BackupAndRestoreScreen.name) {
-            BackupAndRestoreScreen(navController)
+            BackupAndRestoreScreen(navController, wordViewModel)
         }
 
         composable(Screens.InsertEmailScreen.name) {
