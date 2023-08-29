@@ -63,5 +63,8 @@
     <string name="a_digit_requier">"Password requires at least one number.     "</string>
     <string name="not_enough_pass_lenght">"Password must be at least 5 characters.     "</string>
     <string name="pass_requiered">"Password must not be empty.     "</string>
+    <string name="share">share</string>
+    <string name="backup_done">"Backup successfully completed.     "</string>
+    <string name="backup_failed">"Backup has unfortunately failed.     "</string>
 
 </resources>

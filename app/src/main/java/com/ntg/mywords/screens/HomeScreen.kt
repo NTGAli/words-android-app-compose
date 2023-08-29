@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.ntg.mywords.R
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.Appbar
@@ -26,20 +28,20 @@ import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
 import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.model.req.BackupUserData
+import com.ntg.mywords.model.response.WordData
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONArray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 
     val context = LocalContext.current
-    val x = LocalLifecycleOwner.current
+    val owner = LocalLifecycleOwner.current
 
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -57,28 +59,39 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
                     )
                 ),
                 actionOnClick = {
-//                    navController.navigate(Screens.SettingScreen.name)
-//                    AppDatabaseBackup.backupDatabase(context)
+                    navController.navigate(Screens.SettingScreen.name)
 
-                    val file = context.getDatabasePath(Constant.DATABASE_NAME)
-                    val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
-                    val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-                    wordViewModel.upload(filePart).observe(x){
 
-                        when(it){
-                            is NetworkResult.Error -> {
-                                timber("ajhwfjkwahfjhwakjfhawkjhf :::: ERR ${it.message}")
-                            }
-                            is NetworkResult.Loading -> {
-                                timber("ajhwfjkwahfjhwakjfhawkjhf :::: LD")
-                            }
-                            is NetworkResult.Success -> {
-                                timber("ajhwfjkwahfjhwakjfhawkjhf :::: ${it.data}")
-                            }
-                        }
+//                    wordViewModel.getMyWords().observe(owner){words ->
+//                        wordViewModel.getAllValidTimeSpent().observe(owner){times ->
+//
+//
+//                            val wordData = BackupUserData(words = words, totalTimeSpent = times)
+//
+//
+//
+//
+//                            wordViewModel.upload(wordData, "alintg14@gmail.com").observe(owner) {
+//
+//                                when (it) {
+//                                    is NetworkResult.Error -> {
+//                                        timber("ajhwfjkwahfjhwakjfhawkjhf :::: ERR ${it.message}")
+//                                    }
+//                                    is NetworkResult.Loading -> {
+//                                        timber("ajhwfjkwahfjhwakjfhawkjhf :::: LD")
+//                                    }
+//                                    is NetworkResult.Success -> {
+//                                        timber("ajhwfjkwahfjhwakjfhawkjhf :::: ${it.data}")
+//                                    }
+//                                }
+//
+//                            }
+//
+//
+//                        }
+//                    }
 
-                    }
 
                 }
             )

@@ -1,9 +1,11 @@
 package com.ntg.mywords.vm
 
+import android.provider.ContactsContract.CommonDataKinds.Email
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ntg.mywords.BuildConfig
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.NetworkResult
@@ -11,7 +13,9 @@ import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.response.WordDataItem
+import com.ntg.mywords.util.Constant
 import com.ntg.mywords.util.getUnixTimeNDaysAgo
 import com.ntg.mywords.util.safeApiCall
 import com.ntg.mywords.util.timber
@@ -128,6 +132,19 @@ class WordViewModel @Inject constructor(
         viewModelScope.launch {
             uplodaState = safeApiCall(Dispatchers.IO){
                 vocabApi.uploadFile(filePart)
+            } as MutableLiveData<NetworkResult<String>>
+        }
+
+        return uplodaState
+
+    }
+
+
+    fun upload(userData: BackupUserData, email: String): MutableLiveData<NetworkResult<String>> {
+
+        viewModelScope.launch {
+            uplodaState = safeApiCall(Dispatchers.IO){
+                vocabApi.backupUserData(backupUserData = userData, email = email,token = BuildConfig.VOCAB_API_KEY, version = BuildConfig.VERSION_NAME, )
             } as MutableLiveData<NetworkResult<String>>
         }
 

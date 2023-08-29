@@ -1,3 +1,9 @@
 package com.ntg.mywords.model.response
 
-class WordData : ArrayList<WordDataItem>()
+import androidx.compose.ui.graphics.painter.Painter
+import com.ntg.mywords.model.db.Word
+
+data class WordData(
+    val id: List<Word>
+)
+
