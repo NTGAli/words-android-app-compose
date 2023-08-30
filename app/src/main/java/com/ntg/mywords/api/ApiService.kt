@@ -1,6 +1,7 @@
 package com.ntg.mywords.api
 
 import com.ntg.mywords.model.req.BackupUserData
+import com.ntg.mywords.model.response.ResponseBody
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -61,5 +62,13 @@ interface ApiService {
         @Query("token") token: String,
         @Query("ver") version: String
     ): Response<String>
+
+
+    @FormUrlEncoded
+    @POST("backup/restore.php")
+    suspend fun restoreUserData(
+        @Field("token") token: String,
+        @Field("email") email: String,
+    ): Response<ResponseBody<BackupUserData>>
 
 }

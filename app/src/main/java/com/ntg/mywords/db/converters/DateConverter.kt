@@ -11,9 +11,14 @@ class DateConverter {
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun fromString(value: String?): LocalDate? {
-        return value?.let {
-            LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE)
+        return try {
+            value?.let {
+                LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE)
+            }
+        }catch (e: Exception) {
+            null
         }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

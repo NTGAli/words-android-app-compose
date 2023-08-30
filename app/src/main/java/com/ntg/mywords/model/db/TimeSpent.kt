@@ -8,7 +8,7 @@ import java.time.LocalDate
 data class TimeSpent(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    val date: LocalDate? = null,
+    val date: String? = null,
     val startUnix: Long? = null,
     var endUnix: Long? = null,
     val type: Int? = null

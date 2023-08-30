@@ -11,8 +11,14 @@ interface TimeSpentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(timeSpent: TimeSpent)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(timeSpent: List<TimeSpent>)
+
     @Update
     suspend fun update(timeSpent: TimeSpent)
+
+    @Query("DELETE FROM TimeSpent")
+    suspend fun clear()
 
     @Query("SELECT * FROM TimeSpent ORDER BY id DESC LIMIT 1")
     fun getLastItem(): LiveData<TimeSpent>
