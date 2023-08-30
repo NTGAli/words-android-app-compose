@@ -66,5 +66,11 @@
     <string name="share">share</string>
     <string name="backup_done">"Backup successfully completed.     "</string>
     <string name="backup_failed">"Backup has unfortunately failed.     "</string>
+    <string name="restore">restore</string>
+    <string name="dismiss">dismiss</string>
+    <string name="restore_from_server">restore from server</string>
+    <string name="str_import">import</string>
+    <string name="attention_for_restore_message">"Attention: Restoring your backup will result in the removal of all existing words."</string>
+    <string name="backup_imported">"Your backup has been imported successfully."</string>
 
 </resources>

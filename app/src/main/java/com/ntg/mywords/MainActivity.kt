@@ -62,7 +62,7 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
                 calendarViewModel.insertSpendTime(
                     TimeSpent(
                         id = 0,
-                        date = LocalDate.now(),
+                        date = LocalDate.now().toString(),
                         startUnix = System.currentTimeMillis(),
                         endUnix = null,
                         type = SpendTimeType.Learning.ordinal

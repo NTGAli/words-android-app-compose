@@ -1,10 +1,10 @@
 package com.ntg.mywords.vm
 
-import android.provider.ContactsContract.CommonDataKinds.Email
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.ntg.mywords.BuildConfig
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
@@ -14,8 +14,8 @@ import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.req.BackupUserData
+import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.WordDataItem
-import com.ntg.mywords.util.Constant
 import com.ntg.mywords.util.getUnixTimeNDaysAgo
 import com.ntg.mywords.util.safeApiCall
 import com.ntg.mywords.util.timber
@@ -23,6 +23,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
+import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,29 +42,34 @@ class WordViewModel @Inject constructor(
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
-    private var uplodaState: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =
+        MutableLiveData()
 
 
-
-
-    fun searchOnWords(query: String){
+    fun searchOnWords(query: String) {
         viewModelScope.launch {
             searchedWord.value = wordDao.search(query)
         }
     }
 
-    fun searchOnRecentWords(query: String){
+    fun searchOnRecentWords(query: String) {
         viewModelScope.launch {
-            searchedRecentWord.value = wordDao.searchOnRecent(query, 7.getUnixTimeNDaysAgo(), System.currentTimeMillis())
+            searchedRecentWord.value =
+                wordDao.searchOnRecent(query, 7.getUnixTimeNDaysAgo(), System.currentTimeMillis())
         }
     }
 
     fun addNewWord(word: Word) {
-
         viewModelScope.launch {
             wordDao.insert(word)
         }
+    }
 
+    fun addAllWords(words: List<Word>) {
+        viewModelScope.launch {
+            wordDao.insertAll(words)
+        }
     }
 
     fun editWord(id: Int?, word: Word) {
@@ -78,7 +84,20 @@ class WordViewModel @Inject constructor(
         }
     }
 
-    fun getMyWords():LiveData<List<Word>>  {
+
+    fun clearWordsTable() {
+        viewModelScope.launch {
+            wordDao.clear()
+        }
+    }
+
+    fun clearTimesTable() {
+        viewModelScope.launch {
+            timeSpentDao.clear()
+        }
+    }
+
+    fun getMyWords(): LiveData<List<Word>> {
         viewModelScope.launch {
             myWords = wordDao.getAllWords()
         }
@@ -86,9 +105,10 @@ class WordViewModel @Inject constructor(
 
     }
 
-    fun recentWords(daysAgo: Int) =wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis())
+    fun recentWords(daysAgo: Int) =
+        wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis())
 
-    fun findWord(id: Int?):LiveData<Word>?{
+    fun findWord(id: Int?): LiveData<Word>? {
         if (id == -1) return null
         viewModelScope.launch {
             word = wordDao.findWord(id)
@@ -113,11 +133,13 @@ class WordViewModel @Inject constructor(
     }
 
     fun getDataWord(word: String): MutableLiveData<NetworkResult<List<WordDataItem>>> {
-        return if (wordData.value?.data.orEmpty().isNotEmpty() && wordData.value?.data.orEmpty().first().entryMetadata?.id?.split(":")?.first().equals(word)){
+        return if (wordData.value?.data.orEmpty().isNotEmpty() && wordData.value?.data.orEmpty()
+                .first().entryMetadata?.id?.split(":")?.first().equals(word)
+        ) {
             wordData
-        }else{
+        } else {
             viewModelScope.launch {
-                wordData = safeApiCall(Dispatchers.IO){
+                wordData = safeApiCall(Dispatchers.IO) {
                     api.getDataWord(word)
                 } as MutableLiveData<NetworkResult<List<WordDataItem>>>
             }
@@ -126,16 +148,21 @@ class WordViewModel @Inject constructor(
 
     }
 
+    fun addAllTimeSpent(timeSpent: List<TimeSpent>){
+        viewModelScope.launch {
+            timeSpentDao.insertAll(timeSpent)
+        }
+    }
 
     fun upload(filePart: MultipartBody.Part): MutableLiveData<NetworkResult<String>> {
 
         viewModelScope.launch {
-            uplodaState = safeApiCall(Dispatchers.IO){
+            uploadStatus = safeApiCall(Dispatchers.IO) {
                 vocabApi.uploadFile(filePart)
             } as MutableLiveData<NetworkResult<String>>
         }
 
-        return uplodaState
+        return uploadStatus
 
     }
 
@@ -143,15 +170,42 @@ class WordViewModel @Inject constructor(
     fun upload(userData: BackupUserData, email: String): MutableLiveData<NetworkResult<String>> {
 
         viewModelScope.launch {
-            uplodaState = safeApiCall(Dispatchers.IO){
-                vocabApi.backupUserData(backupUserData = userData, email = email,token = BuildConfig.VOCAB_API_KEY, version = BuildConfig.VERSION_NAME, )
+            uploadStatus = safeApiCall(Dispatchers.IO) {
+                vocabApi.backupUserData(
+                    backupUserData = userData,
+                    email = email,
+                    token = BuildConfig.VOCAB_API_KEY,
+                    version = BuildConfig.VERSION_NAME,
+                )
             } as MutableLiveData<NetworkResult<String>>
         }
 
-        return uplodaState
+        return uploadStatus
 
     }
 
+
+    fun restoreUserBackup(email: String): MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> {
+        viewModelScope.launch {
+            userBackup = safeApiCall(Dispatchers.IO) {
+                vocabApi.restoreUserData(email = email, token = BuildConfig.VOCAB_API_KEY)
+            } as MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>>
+        }
+        return userBackup
+    }
+
+    fun importToDB(content: String) {
+        val backupUserData: BackupUserData = Gson().fromJson(content, BackupUserData::class.java)
+        try {
+            clearWordsTable()
+            clearTimesTable()
+            addAllWords(backupUserData.words ?: listOf())
+            addAllTimeSpent(backupUserData.totalTimeSpent ?: listOf())
+
+        } catch (e: Exception) {
+            timber("restoreBackupError ::: ${e.message}")
+        }
+    }
 
 
 }

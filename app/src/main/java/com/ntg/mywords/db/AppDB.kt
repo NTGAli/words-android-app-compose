@@ -11,7 +11,7 @@ import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.Word
 
-@Database(entities = [Word::class, TimeSpent::class], version = 8)
+@Database(entities = [Word::class, TimeSpent::class], version = 9)
 @TypeConverters(ExamplesConverters::class, VerbFormsConverter::class, DateConverter::class)
 abstract class AppDB: RoomDatabase()  {
 
