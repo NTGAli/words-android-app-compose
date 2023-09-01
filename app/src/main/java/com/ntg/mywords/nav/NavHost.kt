@@ -10,6 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import com.ntg.mywords.screens.*
 import com.ntg.mywords.screens.login.*
 import com.ntg.mywords.screens.setting.BackupAndRestoreScreen
+import com.ntg.mywords.screens.setting.SettingScreen
+import com.ntg.mywords.util.orTrue
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
@@ -18,7 +20,7 @@ import com.ntg.mywords.vm.WordViewModel
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screens.HomeScreen.name,
+    startDestination: String = Screens.CodeScreen.name,
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
     loginViewModel: LoginViewModel,
@@ -52,7 +54,7 @@ fun AppNavHost(
         }
 
         composable(Screens.SelectLanguageScreen.name) {
-            SelectLanguageScreen(navController)
+            SelectLanguageScreen(navController, wordViewModel)
         }
 
         composable(Screens.TimeScreen.name) {
@@ -91,12 +93,17 @@ fun AppNavHost(
             BackupAndRestoreScreen(navController, wordViewModel)
         }
 
-        composable(Screens.InsertEmailScreen.name) {
-            InsertEmailScreen(navController, loginViewModel)
+        composable(Screens.InsertEmailScreen.name+"?skip={skip}",
+        arguments = listOf(navArgument("skip"){
+            type = NavType.BoolType
+            defaultValue = true
+        })
+        ) {
+            InsertEmailScreen(navController, loginViewModel, it.arguments?.getBoolean("skip").orTrue())
         }
 
         composable(Screens.VocabularyListScreen.name) {
-            VocabularyListScreen(navController)
+            VocabularyListScreen(navController, wordViewModel, loginViewModel)
         }
 
         composable(Screens.NameScreen.name+ "?email={email}",

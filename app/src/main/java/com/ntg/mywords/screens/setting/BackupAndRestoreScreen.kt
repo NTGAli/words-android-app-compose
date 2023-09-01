@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.ntg.mywords.BuildConfig
@@ -24,6 +26,7 @@ import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.ItemOption
 import com.ntg.mywords.model.req.BackupUserData
+import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.util.toast
@@ -87,6 +90,11 @@ private fun Content(
     val import = remember {
         mutableStateOf(false)
     }
+    val isUserLogged = remember {
+        mutableStateOf(false)
+    }
+    
+    isUserLogged.value = wordViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty() != ""
 
 
 
@@ -134,8 +142,13 @@ private fun Content(
 
     ReadBackupFromStorage(launch = import.value) {
         if (it.orEmpty().isNotEmpty()){
-            wordViewModel.importToDB(it!!)
-            ctx.toast(ctx.getString(R.string.backup_imported))
+            wordViewModel.importToDB(it!!){isSucceed ->
+                if (isSucceed){
+                    ctx.toast(ctx.getString(R.string.backup_imported))
+                }else{
+                    ctx.toast(ctx.getString(R.string.file_not_supported))
+                }
+            }
         }
         import.value = false
         openRestoreDialog.value = false
@@ -184,9 +197,16 @@ private fun Content(
                         text = stringResource(id = R.string.backup_on_server),
                         loading = setBackupOnServer,
                         endIcon = painterResource(id = R.drawable.ok),
-                        visibleWithAnimation = visibleSuccess
+                        visibleWithAnimation = visibleSuccess,
+                        subText = if (isUserLogged.value) null else stringResource(id = R.string.loggin_required)
                     ) {
-                        setBackupOnServer.value = true
+
+                        if (isUserLogged.value){
+                            setBackupOnServer.value = true
+                        }else{
+                            navController.navigate(Screens.InsertEmailScreen.name+"?skip=${false}")
+                        }
+
                     }
                     ItemOption(text = stringResource(id = R.string.share), divider = false) {
                         share.value = true
@@ -226,7 +246,9 @@ private fun Content(
                         text = stringResource(id = R.string.restore_from_server),
                         loading = restoreFromServer,
                         endIcon = painterResource(id = R.drawable.ok),
-                        visibleWithAnimation = visibleSuccess
+                        visibleWithAnimation = visibleSuccess,
+                        subText = if (isUserLogged.value) null else stringResource(id = R.string.loggin_required)
+
                     ) {
                         restoreFromServer.value = true
                     }
@@ -384,7 +406,6 @@ fun ReadBackupFromStorage(launch: Boolean, data: (String?) -> Unit) {
                 )
             }
         }
-
     if (launch) {
         launcher.launch("text/plain")
     }

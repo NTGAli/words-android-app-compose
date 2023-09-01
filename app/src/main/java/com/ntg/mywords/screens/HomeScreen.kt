@@ -18,10 +18,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.ntg.mywords.R
+import com.ntg.mywords.UserDataAndSetting
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
@@ -34,6 +37,9 @@ import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +48,13 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
+
+//    wordViewModel.setUserEmail("aliNtg@outlook.com")
+
+
+    timber("akljeflkejflkejfelk :::::::: ${
+        wordViewModel.getUserData().asLiveData().observeAsState().value?.email
+    }")
 
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

@@ -18,6 +18,7 @@ import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.EditText
 import com.ntg.mywords.components.TypewriterText
 import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.fontRegular12
@@ -29,18 +30,22 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsertEmailScreen(navController: NavHostController, loginViewModel: LoginViewModel) {
+fun InsertEmailScreen(
+    navController: NavHostController,
+    loginViewModel: LoginViewModel,
+    skipBtn: Boolean
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController, loginViewModel)
+            Content(paddingValues = innerPadding, navController, loginViewModel, skipBtn)
         }
     )
 }
 
 @Composable
-private fun Content(paddingValues: PaddingValues, navController: NavHostController, loginViewModel: LoginViewModel) {
+private fun Content(paddingValues: PaddingValues, navController: NavHostController, loginViewModel: LoginViewModel, skipBtn: Boolean) {
 
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
@@ -116,19 +121,17 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
                             }else{
                                 context.toast(context.getString(R.string.sth_wrong))
                             }
-
                         }
                     }
-
                 }
-
-
             }else{
                 errorMessage.value = context.getString(R.string.invalid_email)
                 setError.value = true
             }
+        }
 
-
+        if (skipBtn){
+            CustomButton(modifier = Modifier.padding(top = 8.dp),style= ButtonStyle.TextOnly, text = stringResource(id = R.string.skip), type = ButtonType.Primary, size = ButtonSize.LG)
         }
 
 

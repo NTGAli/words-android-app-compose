@@ -9,6 +9,8 @@ object Constant {
     const val SEPARATOR = ","
     const val DICTIONARY_API_URL = "https://www.dictionaryapi.com/"
     const val VOCAB_API_URL = "https://myvocabulary.ntgt.ir/"
+    const val PREFERENCE_DATA_STORE_NAME = "UserDataSettings"
+    const val DATA_STORE_FILE_NAME = "UserData"
 
 
 

@@ -6,12 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.ntg.mywords.BuildConfig
+import com.ntg.mywords.UserDataAndSetting
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.db.dao.TimeSpentDao
+import com.ntg.mywords.db.dao.VocabListDao
 import com.ntg.mywords.db.dao.WordDao
+import com.ntg.mywords.di.DataRepository
 import com.ntg.mywords.model.db.TimeSpent
+import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.response.ResponseBody
@@ -21,17 +25,19 @@ import com.ntg.mywords.util.safeApiCall
 import com.ntg.mywords.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
-import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
 class WordViewModel @Inject constructor(
     private val wordDao: WordDao,
     private val timeSpentDao: TimeSpentDao,
+    private val vocabListDao: VocabListDao,
     private val api: DictionaryApiService,
-    private val vocabApi: ApiService
+    private val vocabApi: ApiService,
+    private val dataRepository: DataRepository
 ) : ViewModel() {
 
     private var isExist = false
@@ -45,6 +51,7 @@ class WordViewModel @Inject constructor(
     private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =
         MutableLiveData()
+    private lateinit var _recentLocations: Flow<UserDataAndSetting>
 
 
     fun searchOnWords(query: String) {
@@ -148,7 +155,7 @@ class WordViewModel @Inject constructor(
 
     }
 
-    fun addAllTimeSpent(timeSpent: List<TimeSpent>){
+    fun addAllTimeSpent(timeSpent: List<TimeSpent>) {
         viewModelScope.launch {
             timeSpentDao.insertAll(timeSpent)
         }
@@ -184,6 +191,12 @@ class WordViewModel @Inject constructor(
 
     }
 
+    fun getAllVocabList() = vocabListDao.getAllVocabList()
+
+    fun addNewVocabList(vocabItemList: VocabItemList) = viewModelScope.launch {
+        vocabListDao.insert(vocabItemList)
+    }
+
 
     fun restoreUserBackup(email: String): MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> {
         viewModelScope.launch {
@@ -194,18 +207,28 @@ class WordViewModel @Inject constructor(
         return userBackup
     }
 
-    fun importToDB(content: String) {
-        val backupUserData: BackupUserData = Gson().fromJson(content, BackupUserData::class.java)
+    fun importToDB(content: String, callBack: (Boolean) -> Unit) {
         try {
+            val backupUserData: BackupUserData =
+                Gson().fromJson(content, BackupUserData::class.java)
             clearWordsTable()
             clearTimesTable()
             addAllWords(backupUserData.words ?: listOf())
             addAllTimeSpent(backupUserData.totalTimeSpent ?: listOf())
+            callBack.invoke(true)
 
         } catch (e: Exception) {
+            callBack.invoke(false)
             timber("restoreBackupError ::: ${e.message}")
         }
     }
 
+
+    fun getUserData(): Flow<UserDataAndSetting> {
+        viewModelScope.launch {
+            _recentLocations = dataRepository.getUserData()
+        }
+        return _recentLocations
+    }
 
 }

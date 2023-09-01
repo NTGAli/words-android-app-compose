@@ -4,23 +4,29 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.mywords.BuildConfig
+import com.ntg.mywords.UserDataAndSetting
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.NetworkResult
+import com.ntg.mywords.di.DataRepository
 import com.ntg.mywords.util.safeApiCall
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val api: ApiService
+    private val api: ApiService,
+    private val dataRepository: DataRepository
 ): ViewModel() {
 
     private var verifyUser: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyCode: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyPass: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var updateName: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private lateinit var userDataSettings: Flow<UserDataAndSetting>
+
 
 
     fun sendCode(
@@ -88,6 +94,21 @@ class LoginViewModel @Inject constructor(
             } as MutableLiveData<NetworkResult<String>>
         }
         return updateName
+    }
+
+    fun setUserEmail(email: String) = viewModelScope.launch {
+        dataRepository.setUserEmail(email)
+    }
+
+    fun setUsername(name: String) = viewModelScope.launch {
+        dataRepository.setUsername(name)
+    }
+
+    fun getUserData(): Flow<UserDataAndSetting> {
+        viewModelScope.launch {
+            userDataSettings = dataRepository.getUserData()
+        }
+        return userDataSettings
     }
 
 
