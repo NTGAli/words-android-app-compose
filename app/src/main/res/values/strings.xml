@@ -80,5 +80,10 @@
     <string name="enter_list_name">"Please provide a name for your list."</string>
     <string name="create_new_list">Create new list</string>
     <string name="language">language</string>
+    <string name="save">save</string>
+    <string name="this_list_already_exist">this list already exist</string>
+    <string name="already_verified">You have already been verified using this code!</string>
+    <string name="your_code_expired">your code expired!</string>
+    <string name="incorrect_code">incorrect code!</string>
 
 </resources>

@@ -102,13 +102,14 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                             navController.navigate(Screens.NameScreen.name+"?email=${email}")
                         }
 
-                        TypeOfMessagePass.USER_VERIFIED.name -> {
-                            loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.VocabularyListScreen.name)
-                        }
-
                         TypeOfMessagePass.USER_NOT_EXIST.name -> {
                             navController.navigate(Screens.InsertEmailScreen.name)
+                        }
+
+                        else -> {
+                            loginViewModel.setUsername(it.data.orEmpty())
+                            loginViewModel.setUserEmail(email)
+                            navController.navigate(Screens.VocabularyListScreen.name)
                         }
 
                     }

@@ -119,7 +119,6 @@ private fun submitWord(
     when (result) {
 
         is Success -> {
-
             if (isEdit) {
                 wordViewModel.editWord(wordData.id, wordData)
             } else {
@@ -190,6 +189,8 @@ private fun Content(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+
 
 
     if (wordEdit != null && !applyEdit.value) {
@@ -204,12 +205,12 @@ private fun Content(
             exampleList.add(it)
         }
         applyEdit.value = true
-
     }
 
     wordData(
         Word(
             if (wordEdit?.id != null && wordEdit.id != -1) wordEdit.id else 0,
+            listId = listId.orZero(),
             word = word.value,
             type = type.value,
             verbForms = VerbForms(

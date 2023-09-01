@@ -197,6 +197,13 @@ class WordViewModel @Inject constructor(
         vocabListDao.insert(vocabItemList)
     }
 
+    fun selectList(id: Int) = viewModelScope.launch {
+        vocabListDao.selectList(id)
+    }
+
+    fun getIdOfListSelected() = vocabListDao.getDataOfListSelected()
+
+    fun isListExist(name: String, language: String) = vocabListDao.isExist(name, language)
 
     fun restoreUserBackup(email: String): MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> {
         viewModelScope.launch {

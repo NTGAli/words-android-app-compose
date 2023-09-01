@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -26,6 +28,7 @@ import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.ui.theme.fontMedium14
+import com.ntg.mywords.util.toast
 import com.ntg.mywords.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +60,7 @@ private fun Content(
         "wdwadwad"
     )
 
+    val ctx = LocalContext.current
     var language by remember {
         mutableStateOf("english")
     }
@@ -66,6 +70,11 @@ private fun Content(
     val anotherLanguage = remember {
         mutableStateOf("")
     }
+
+    val isExist = wordViewModel.isListExist(
+        name = name.value,
+        language = language
+    ).observeAsState().value != 0
 
 
 
@@ -159,18 +168,26 @@ private fun Content(
         item {
             CustomButton(
                 modifier = Modifier.padding(top = 24.dp),
-                text = stringResource(id = R.string.next),
+                text = stringResource(id = R.string.save),
                 enable = language.isNotEmpty() && name.value.isNotEmpty(),
                 size = ButtonSize.XL
             ) {
-                wordViewModel.addNewVocabList(
-                    VocabItemList(
-                        0,
-                        title = name.value,
-                        language = language
+
+                if (isExist){
+                    ctx.toast(ctx.getString(R.string.this_list_already_exist))
+                }else{
+
+                    wordViewModel.addNewVocabList(
+                        VocabItemList(
+                            0,
+                            title = name.value,
+                            language = language,
+                            isSelected = false
+                        )
                     )
-                )
-                navController.popBackStack()
+                    navController.popBackStack()
+
+                }
             }
         }
     }

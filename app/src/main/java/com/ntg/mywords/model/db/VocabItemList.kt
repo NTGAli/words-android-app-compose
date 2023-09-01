@@ -8,5 +8,6 @@ data class VocabItemList (
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val title: String,
-    val language: String
+    val language: String,
+    val isSelected: Boolean,
         )

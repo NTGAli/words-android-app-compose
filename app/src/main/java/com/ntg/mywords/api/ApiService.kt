@@ -1,6 +1,7 @@
 package com.ntg.mywords.api
 
 import com.ntg.mywords.model.req.BackupUserData
+import com.ntg.mywords.model.req.VerifyUserReq
 import com.ntg.mywords.model.response.ResponseBody
 import okhttp3.MultipartBody
 import retrofit2.Response
