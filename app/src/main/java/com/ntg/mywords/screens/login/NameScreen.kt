@@ -62,6 +62,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
             when(it.data){
 
                 "200" -> {
+                    loginViewModel.setUsername(text.replace("I am ", ""))
                     navController.navigate(Screens.VocabularyListScreen.name)
                 }
 

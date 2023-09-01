@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.ntg.mywords.R
 import com.ntg.mywords.ui.theme.Success500
 import com.ntg.mywords.ui.theme.fontMedium14
+import com.ntg.mywords.ui.theme.fontRegular12
 import com.ntg.mywords.ui.theme.fontRegular14
 import com.ntg.mywords.util.timber
 
@@ -30,6 +31,7 @@ fun ItemOption(
     modifier: Modifier = Modifier,
     painter: Painter? = null,
     text: String,
+    subText: String? = null,
     divider: Boolean = true,
     endIcon: Painter? = null,
     visibleWithAnimation: MutableState<Boolean> = remember { mutableStateOf(false) },
@@ -88,14 +90,26 @@ fun ItemOption(
                     )
                 }
 
-                Text(
+                Column(
                     modifier = Modifier
                         .weight(1f)
+                        .padding(vertical = 16.dp)
                         .padding(end = 32.dp)
-                        .padding(vertical = 12.dp),
-                    text = text,
-                    style = fontRegular14(MaterialTheme.colorScheme.onBackground)
-                )
+                ) {
+
+                    Text(
+                        text = text,
+                        style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+                    )
+
+                    if (subText != null) {
+                        Text(
+                            text = subText,
+                            style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                }
+
 
                 if (endIcon != null) {
 
@@ -120,6 +134,8 @@ fun ItemOption(
 
                 }
             }
+
+
 
             if (divider) {
                 Divider(

@@ -51,7 +51,7 @@
     <string name="send_again">send me again!</string>
     <string name="name">name</string>
     <string name="prefer_not_to_say">i prefer not to say.</string>
-    <string name="no_list_message">Okay Ali, you don’t have any list! Create one.</string>
+    <string name="no_list_message">Okay %s, you don’t have any list! Create one.</string>
     <string name="witch_language">Witch language do you want to add to this list?</string>
     <string name="password">password</string>
     <string name="set_password">"If you're a new user, please enter your desired password. For those who have already registered, kindly input your existing password.     "</string>
@@ -72,5 +72,13 @@
     <string name="str_import">import</string>
     <string name="attention_for_restore_message">"Attention: Restoring your backup will result in the removal of all existing words."</string>
     <string name="backup_imported">"Your backup has been imported successfully."</string>
+    <string name="file_not_supported">"The file you have selected is not supported."</string>
+    <string name="loggin_required">login required</string>
+    <string name="skip">skip</string>
+    <string name="select_a_list">"Okay %s, Select one to continue. "</string>
+    <string name="switchable_list">(you can switch between your lists)</string>
+    <string name="enter_list_name">"Please provide a name for your list."</string>
+    <string name="create_new_list">Create new list</string>
+    <string name="language">language</string>
 
 </resources>

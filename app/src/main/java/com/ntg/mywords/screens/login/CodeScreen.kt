@@ -98,6 +98,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                     timber("verifyCodeeeeeeeeeeeeeee ::: ${it.data}")
 
                     if (it.data == "200"){
+                        loginViewModel.setUserEmail(email)
                         navController.navigate(Screens.NameScreen.name)
                     }else{
                         context.toast(it.data ?: context.getString(R.string.sth_wrong))

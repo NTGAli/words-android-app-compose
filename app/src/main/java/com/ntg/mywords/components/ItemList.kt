@@ -1,6 +1,5 @@
 package com.ntg.mywords.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -14,26 +13,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.ui.theme.fontMedium14
-import com.ntg.mywords.ui.theme.fontRegular14
+import com.ntg.mywords.ui.theme.fontMedium16
 
 @Composable
-fun ItemSelectable(
+fun ItemList(
     modifier: Modifier = Modifier,
-    text: String,
+    title: String,
+    subTitle: String,
     isSelected: Boolean,
-    onClick:(String) -> Unit = {}
+    onClick:(String) -> Unit
 ){
+
 
     Box(modifier = modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(16.dp))
-        .border(width = 2.dp, shape = RoundedCornerShape(16.dp), color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+        .border(width = 2.dp, shape = RoundedCornerShape(16.dp), color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
         .clickable {
-            onClick.invoke(text)
+            onClick.invoke(title)
         }){
-        
-        Text(modifier = Modifier.padding(vertical = 16.dp).padding(start = 24.dp), text = text, style = fontMedium14(MaterialTheme.colorScheme.onBackground))
-        
+
+        Text(modifier = Modifier.padding(top = 16.dp).padding(horizontal = 16.dp), text = title, style = fontMedium16(
+            MaterialTheme.colorScheme.primary)
+        )
+
+        Text(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp).padding(horizontal = 16.dp), text = subTitle, style = fontMedium14(
+            MaterialTheme.colorScheme.onBackground)
+        )
+
     }
 
 }

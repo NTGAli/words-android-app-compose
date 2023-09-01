@@ -36,6 +36,7 @@ fun Long?.orDefault() = this ?: 0L
 fun String?.orDefault() = this ?: ""
 fun Int?.orZero() = this ?: 0
 fun Boolean?.orFalse() = this ?: false
+fun Boolean?.orTrue() = this ?: true
 
 fun timber(msg: String) {
     Timber.d(msg)

@@ -10,23 +10,32 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.ntg.mywords.ui.theme.fontBold24
 import com.ntg.mywords.ui.theme.fontMedium24
+import com.ntg.mywords.util.timber
 import kotlinx.coroutines.delay
 import kotlin.streams.toList
 
 @Composable
 fun TypewriterText(
     modifier: Modifier = Modifier,
-    texts: List<String>,
+    texts:List<String>,
     cursor: String="",
     speedType: Long = 40L,
     singleText: Boolean = false
 ) {
+//    var name = rememberSaveable { mutableStateOf("") }
+
+
+//    val dddd = mutableStateListOf<String>()
+
+//    val ffffff = texts2.value
 
     val vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val vibratorManager =
@@ -44,11 +53,10 @@ fun TypewriterText(
     var textToDisplay by remember {
         mutableStateOf("")
     }
-    val textCharsList: List<List<String>> = remember {
-        texts.map {
-            it.splitToCodePoints()
-        }
-    }
+    val textCharsList =
+            texts.map {
+                it.splitToCodePoints()
+            }
 
     LaunchedEffect(
         key1 = texts,
@@ -64,7 +72,7 @@ fun TypewriterText(
 //                Log.e("Abhi", "$charIndex $textToDisplay")
                 delay(speedType)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
+//                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
                 }
 
             }
