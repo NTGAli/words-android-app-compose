@@ -45,11 +45,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
     val list = remember {
         mutableStateOf(listOf<VocabItemList>())
     }
-
     var username by remember {
         mutableStateOf("")
     }
-
     val title = remember {
         mutableStateOf(listOf<String>())
     }
@@ -76,29 +74,30 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         )
 
         if (list.value.isNotEmpty()){
-            Text(modifier = Modifier.padding(top = 4.dp), text = stringResource(id = R.string.switchable_list), style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant))
-        }else{
+            Text(modifier = Modifier.padding(top = 4.dp, bottom = 24.dp), text = stringResource(id = R.string.switchable_list), style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant))
 
             LazyColumn{
                 items(list.value){
 
                     ItemList(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        id = it.id,
                         title = it.title,
                         subTitle = it.language,
                         isSelected = true,
-                        onClick = {}
+                        onClick = {id ->
+                            wordViewModel.selectList(id)
+                            navController.navigate(Screens.HomeScreen.name)
+                        }
                     )
 
                 }
             }
-
         }
 
 
-
-
         CustomButton(
-            modifier = Modifier.padding(top = 32.dp),
+            modifier = Modifier.padding(top = 24.dp),
             text = stringResource(id = R.string.add_new),
             style = ButtonStyle.TextOnly,
             type = ButtonType.Primary

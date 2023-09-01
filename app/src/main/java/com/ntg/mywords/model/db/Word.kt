@@ -8,6 +8,7 @@ data class Word (
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val listId:Int=0,
     val word: String? = null,
     val translation: String? = null,
     val type: String? = null,
@@ -18,7 +19,7 @@ data class Word (
     val example: List<String>? = null,
     val dateCreated: Long? = null,
     var revisionCount: Int = 0,
-    var lastRevisionTime: Long? = null
+    var lastRevisionTime: Long? = null,
         )
 
 data class VerbForms(

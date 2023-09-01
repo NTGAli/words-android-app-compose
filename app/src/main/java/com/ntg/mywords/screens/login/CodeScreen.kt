@@ -22,12 +22,14 @@ import com.ntg.mywords.components.TypewriterText
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
+import com.ntg.mywords.model.enums.TypeOfVerifyCode
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.util.CountDownTimer
 import com.ntg.mywords.util.minutesToTimeFormat
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.util.toast
 import com.ntg.mywords.vm.LoginViewModel
+import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +83,6 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
             code = code.value,
             email = email
         ).observe(owner){
-            timber("verifyCodeeeeeeeeeeeeeee")
             when(it){
                 is NetworkResult.Error -> {
                     loading.value = false
@@ -95,15 +96,41 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                 is NetworkResult.Success -> {
                     loading.value = false
                     code.value = ""
-                    timber("verifyCodeeeeeeeeeeeeeee ::: ${it.data}")
 
-                    if (it.data == "200"){
-                        loginViewModel.setUserEmail(email)
-                        navController.navigate(Screens.NameScreen.name)
-                    }else{
-                        context.toast(it.data ?: context.getString(R.string.sth_wrong))
+                    when(it.data){
+
+                        TypeOfVerifyCode.ALREADY_VERIFIED.name -> {
+                            context.toast(context.getString(R.string.already_verified))
+                        }
+
+                        TypeOfVerifyCode.USER_VERIFIED_NO_NAME.name -> {
+                            loginViewModel.setUserEmail(email)
+                            navController.navigate(Screens.NameScreen.name)
+                        }
+
+                        TypeOfVerifyCode.CODE_EXPIRED.name -> {
+                            context.toast(context.getString(R.string.your_code_expired))
+                        }
+
+                        TypeOfVerifyCode.INCORRECT_CODE.name -> {
+                            context.toast(context.getString(R.string.incorrect_code))
+                        }
+
+                        TypeOfVerifyCode.INVALID_TOKEN.name -> {
+                            context.toast(context.getString(R.string.download_from_google_play))
+                        }
+
+                        TypeOfVerifyCode.ERR.name -> {
+                            context.toast(context.getString(R.string.sth_wrong))
+                        }
+
+                        else -> {
+                            loginViewModel.setUserEmail(it.data.orEmpty())
+                            loginViewModel.setUserEmail(email)
+                            navController.navigate(Screens.VocabularyListScreen.name)
+                        }
+
                     }
-
                 }
             }
 
