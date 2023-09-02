@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asLiveData
@@ -17,6 +18,7 @@ import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.ItemList
+import com.ntg.mywords.components.Message
 import com.ntg.mywords.components.TypewriterText
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
@@ -52,6 +54,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         mutableStateOf(listOf<String>())
     }
 
+
+
+
     list.value = wordViewModel.getAllVocabList().observeAsState().value ?: listOf()
     username = loginViewModel.getUserData().asLiveData().observeAsState().value?.name.orEmpty()
 
@@ -66,8 +71,14 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
     Column(modifier = Modifier.padding(horizontal = 32.dp)) {
 
+
+        Message(modifier = Modifier.padding(top = 24.dp), icon = painterResource(id = R.drawable.download), title = "your backup is available", subTitle = "last backup: 11 Des 2023", btnText = "restore"){
+
+        }
+
+
         TypewriterText(
-            modifier = Modifier.padding(top = 64.dp),
+            modifier = Modifier.padding(top = 32.dp),
             texts = title.value,
             singleText = true,
             speedType = 10L
