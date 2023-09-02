@@ -25,6 +25,7 @@ import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.Primary200
 import com.ntg.mywords.util.getIconStateRevision
+import com.ntg.mywords.util.orZero
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.WordViewModel
 
@@ -32,11 +33,12 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel) {
 
-    val numberOfAllWords = wordViewModel.getMyWords().observeAsState().value.orEmpty().size
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
     val enableSearchBar = remember { mutableStateOf(false) }
 
 
-    wordViewModel.searchOnRecentWords("")
+    wordViewModel.searchOnRecentWords("", listId.orZero())
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -56,7 +58,7 @@ fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel)
                 },
                 enableSearchbar = enableSearchBar,
                 onQueryChange = {query ->
-                    wordViewModel.searchOnRecentWords(query)
+                    wordViewModel.searchOnRecentWords(query, listId.orZero())
                 },
                 navigationOnClick = { navController.popBackStack() }
             )

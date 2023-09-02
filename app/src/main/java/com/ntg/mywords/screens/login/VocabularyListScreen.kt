@@ -87,7 +87,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                         isSelected = true,
                         onClick = {id ->
                             wordViewModel.selectList(id)
-                            navController.navigate(Screens.HomeScreen.name)
+                            navController.navigate(Screens.HomeScreen.name){
+                                popUpTo(0)
+                            }
                         }
                     )
 

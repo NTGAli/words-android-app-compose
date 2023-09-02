@@ -105,7 +105,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
                         TypeOfVerifyCode.USER_VERIFIED_NO_NAME.name -> {
                             loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.NameScreen.name)
+                            navController.navigate(Screens.NameScreen.name){
+                                popUpTo(0)
+                            }
                         }
 
                         TypeOfVerifyCode.CODE_EXPIRED.name -> {
@@ -127,7 +129,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                         else -> {
                             loginViewModel.setUserEmail(it.data.orEmpty())
                             loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.VocabularyListScreen.name)
+                            navController.navigate(Screens.VocabularyListScreen.name){
+                                popUpTo(0)
+                            }
                         }
 
                     }

@@ -26,6 +26,9 @@ interface WordDao {
     @Query("SELECT * FROM Word ORDER BY id DESC")
     fun getAllWords(): LiveData<List<Word>>
 
+    @Query("SELECT * FROM Word WHERE listId=:listId ORDER BY id DESC")
+    fun getWordBaseListId(listId: Int): LiveData<List<Word>>
+
 
     @Query("SELECT * FROM Word WHERE id =:id")
     fun findWord(id: Int?): LiveData<Word>
@@ -33,12 +36,12 @@ interface WordDao {
     @Query("SELECT EXISTS(SELECT * FROM Word WHERE word =:word AND type =:type)")
     suspend fun isExist(word: String, type: String): Boolean
 
-    @Query("SELECT COUNT(*) FROM Word WHERE dateCreated BETWEEN :start AND :end")
-    fun recentWordsCount(start: Long, end: Long): LiveData<Int>
+    @Query("SELECT COUNT(*) FROM Word WHERE (dateCreated BETWEEN :start AND :end) AND listId=:listId")
+    fun recentWordsCount(start: Long, end: Long, listId: Int): LiveData<Int>
 
-    @Query("SELECT * FROM Word WHERE word LIKE '%' || :query || '%'")
-    suspend fun search(query: String): List<Word>
+    @Query("SELECT * FROM Word WHERE (word LIKE '%' || :query || '%') AND listId=:listId")
+    suspend fun search(query: String,listId: Int): List<Word>
 
-    @Query("SELECT * FROM Word WHERE word LIKE '%' || :query || '%' AND (dateCreated BETWEEN :start AND :end)")
-    suspend fun searchOnRecent(query: String, start: Long, end: Long): List<Word>
+    @Query("SELECT * FROM Word WHERE word LIKE '%' || :query || '%' AND (dateCreated BETWEEN :start AND :end) AND listId=:listId")
+    suspend fun searchOnRecent(query: String, start: Long, end: Long, listId: Int): List<Word>
 }

@@ -35,6 +35,7 @@ import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.OnLifecycleEvent
 import com.ntg.mywords.util.getStateRevision
+import com.ntg.mywords.util.orZero
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
 import java.time.LocalDate
@@ -81,7 +82,8 @@ private fun Content(
     navController: NavController,
 ) {
 
-    var words = wordViewModel.getMyWords().observeAsState().value.orEmpty().filter {
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    var words = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().filter {
         getStateRevision(
             it.revisionCount,
             it.lastRevisionTime

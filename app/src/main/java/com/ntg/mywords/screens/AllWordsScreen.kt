@@ -1,7 +1,6 @@
 package com.ntg.mywords.screens
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,19 +12,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
-import com.ntg.mywords.components.ShapeTileWidget
 import com.ntg.mywords.model.components.AppbarItem
-import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
@@ -35,10 +29,11 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel) {
 
-    val numberOfAllWords = wordViewModel.getMyWords().observeAsState().value.orEmpty().size
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
     val enableSearchBar = remember { mutableStateOf(false) }
 
-    wordViewModel.searchOnWords("")
+    wordViewModel.searchOnWords("", listId.orZero())
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -58,7 +53,7 @@ fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel) {
                 },
                 enableSearchbar = enableSearchBar,
                 onQueryChange = {query ->
-                    wordViewModel.searchOnWords(query)
+                    wordViewModel.searchOnWords(query, listId.orZero())
                     timber("asljdkawljflkjawlkfj $query")
                 },
                 navigationOnClick = { navController.popBackStack() }
