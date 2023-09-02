@@ -29,11 +29,13 @@ import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
+import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
+import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
+fun HomeScreen(navController: NavController, wordViewModel: WordViewModel, loginViewModel: LoginViewModel) {
 
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
@@ -41,9 +43,8 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
 //    wordViewModel.setUserEmail("aliNtg@outlook.com")
 
 
-    timber("akljeflkejflkejfelk :::::::: ${
-        wordViewModel.getUserData().asLiveData().observeAsState().value?.email
-    }")
+
+
 
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -62,39 +63,6 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel) {
                 ),
                 actionOnClick = {
                     navController.navigate(Screens.SettingScreen.name)
-
-
-
-//                    wordViewModel.getMyWords().observe(owner){words ->
-//                        wordViewModel.getAllValidTimeSpent().observe(owner){times ->
-//
-//
-//                            val wordData = BackupUserData(words = words, totalTimeSpent = times)
-//
-//
-//
-//
-//                            wordViewModel.upload(wordData, "alintg14@gmail.com").observe(owner) {
-//
-//                                when (it) {
-//                                    is NetworkResult.Error -> {
-//                                        timber("ajhwfjkwahfjhwakjfhawkjhf :::: ERR ${it.message}")
-//                                    }
-//                                    is NetworkResult.Loading -> {
-//                                        timber("ajhwfjkwahfjhwakjfhawkjhf :::: LD")
-//                                    }
-//                                    is NetworkResult.Success -> {
-//                                        timber("ajhwfjkwahfjhwakjfhawkjhf :::: ${it.data}")
-//                                    }
-//                                }
-//
-//                            }
-//
-//
-//                        }
-//                    }
-
-
                 }
             )
         },
@@ -166,8 +134,6 @@ private fun Content(
                     )
                 }
             }
-
-            timber("kalwjdklwjadkjwaldkjw ${7.getUnixTimeNDaysAgo()} --- ${System.currentTimeMillis()} --- ${recentWordCount.value}")
 
             Text(
                 modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 12.dp),

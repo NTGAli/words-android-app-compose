@@ -18,6 +18,7 @@ class DefaultDataRepository @Inject constructor(
 
     override suspend fun setUserEmail(email: String) {
         recentLocationsDataStore.updateData { data ->
+            timber("skwelflkewjflkew $email")
             data.toBuilder().setEmail(email).build()
         }
     }

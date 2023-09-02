@@ -2,6 +2,7 @@ package com.ntg.mywords.nav
 
 enum class Screens {
 
+    SplashScreen,
     HomeScreen,
     AddEditScreen,
     WordDetailScreen,
