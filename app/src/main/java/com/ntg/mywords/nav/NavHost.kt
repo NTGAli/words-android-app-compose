@@ -20,7 +20,7 @@ import com.ntg.mywords.vm.WordViewModel
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screens.CodeScreen.name,
+    startDestination: String = Screens.SplashScreen.name,
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
     loginViewModel: LoginViewModel,
@@ -41,8 +41,13 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+
+        composable(Screens.SplashScreen.name) {
+            SplashScreen(navController,loginViewModel, wordViewModel)
+        }
+
         composable(Screens.HomeScreen.name) {
-            HomeScreen(navController, wordViewModel)
+            HomeScreen(navController, wordViewModel, loginViewModel)
         }
 
         composable(Screens.AllWordsScreen.name) {
