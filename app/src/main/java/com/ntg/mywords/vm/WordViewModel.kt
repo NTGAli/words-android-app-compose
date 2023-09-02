@@ -106,6 +106,12 @@ class WordViewModel @Inject constructor(
         }
     }
 
+    fun clearVocabListsTable() {
+        viewModelScope.launch {
+            vocabListDao.clear()
+        }
+    }
+
     fun getWordsBaseListId(listId: Int): LiveData<List<Word>> {
         viewModelScope.launch {
             myWords = wordDao.getWordBaseListId(listId)
@@ -173,6 +179,12 @@ class WordViewModel @Inject constructor(
     fun addAllTimeSpent(timeSpent: List<TimeSpent>) {
         viewModelScope.launch {
             timeSpentDao.insertAll(timeSpent)
+        }
+    }
+
+    fun addAllVocabLists(lists: List<VocabItemList>) {
+        viewModelScope.launch {
+            vocabListDao.insertAll(lists)
         }
     }
 

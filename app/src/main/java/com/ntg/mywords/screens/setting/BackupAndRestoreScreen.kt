@@ -61,7 +61,6 @@ fun BackupAndRestoreScreen(navController: NavController, wordViewModel: WordView
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -313,8 +312,10 @@ private fun RestoreUserData(wordViewModel: WordViewModel, resultCallback: (Boole
                 if (it.data?.isSuccess.orFalse() && it.data?.data?.words != null) {
                     wordViewModel.clearWordsTable()
                     wordViewModel.clearTimesTable()
+                    wordViewModel.clearVocabListsTable()
                     wordViewModel.addAllWords(it.data.data.words)
                     wordViewModel.addAllTimeSpent(it.data.data.totalTimeSpent ?: listOf())
+                    wordViewModel.addAllVocabLists(it.data.data.vocabList ?: listOf())
                     resultCallback.invoke(
                         true
                     )
@@ -373,9 +374,11 @@ private fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) 
     val owner = LocalLifecycleOwner.current
     wordViewModel.getAllWords().observe(owner) { words ->
         wordViewModel.getAllValidTimeSpent().observe(owner) { times ->
-            callBack.invoke(
-                BackupUserData(words = words, totalTimeSpent = times)
-            )
+            wordViewModel.getAllVocabList().observe(owner) {vocabList ->
+                callBack.invoke(
+                    BackupUserData(words = words, totalTimeSpent = times, vocabList = vocabList)
+                )
+            }
         }
     }
 }
