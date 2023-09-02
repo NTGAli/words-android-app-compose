@@ -18,7 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
@@ -31,7 +30,6 @@ import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
-import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,14 +37,6 @@ fun HomeScreen(navController: NavController, wordViewModel: WordViewModel, login
 
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
-
-//    wordViewModel.setUserEmail("aliNtg@outlook.com")
-
-
-
-
-
-
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -123,7 +113,7 @@ private fun Content(
             }.orEmpty().size
             numberOfAllWords.value =
                 wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
-            val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty()
+            val timeSpent = wordViewModel.getAllValidTimeSpentBaseListId(listId.orZero()).observeAsState().value.orEmpty()
                 .toMutableStateList()
 
             timeSpent.forEach {

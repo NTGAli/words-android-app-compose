@@ -26,6 +26,9 @@ interface TimeSpentDao {
     @Query("UPDATE TimeSpent SET endUnix = :end WHERE id = ( SELECT id FROM TimeSpent ORDER BY 1 DESC LIMIT 1)")
     suspend fun stopTime(end: Long)
 
+    @Query("SELECT * FROM TimeSpent WHERE startUnix IS NOT NULL AND endUnix IS NOT NULL AND listId=:listId")
+    fun getAllValidTimeBaseListId(listId: Int): LiveData<List<TimeSpent>>
+
     @Query("SELECT * FROM TimeSpent WHERE startUnix IS NOT NULL AND endUnix IS NOT NULL")
     fun getAllValidTime(): LiveData<List<TimeSpent>>
 
