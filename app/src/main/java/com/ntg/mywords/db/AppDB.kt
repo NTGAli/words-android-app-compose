@@ -13,7 +13,7 @@ import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
 
-@Database(entities = [Word::class, TimeSpent::class, VocabItemList::class], version = 12)
+@Database(entities = [Word::class, TimeSpent::class, VocabItemList::class], version = 13)
 @TypeConverters(ExamplesConverters::class, VerbFormsConverter::class, DateConverter::class)
 abstract class AppDB: RoomDatabase()  {
 

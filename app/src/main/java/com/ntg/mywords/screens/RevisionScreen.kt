@@ -9,10 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,13 +34,19 @@ import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.OnLifecycleEvent
 import com.ntg.mywords.util.getStateRevision
 import com.ntg.mywords.util.orZero
+import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
+import kotlinx.coroutines.*
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel, calendarViewModel: CalendarViewModel) {
+fun RevisionScreen(
+    navController: NavController,
+    wordViewModel: WordViewModel,
+    calendarViewModel: CalendarViewModel
+) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -71,7 +75,7 @@ fun RevisionScreen(navController: NavController, wordViewModel: WordViewModel, c
     )
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        HandleLifecycle(calendarViewModel)
+        HandleLifecycle(calendarViewModel, wordViewModel)
     }
 }
 
@@ -83,15 +87,16 @@ private fun Content(
 ) {
 
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
-    var words = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().filter {
-        getStateRevision(
-            it.revisionCount,
-            it.lastRevisionTime
-        ) == 2 || getStateRevision(
-            it.revisionCount,
-            it.lastRevisionTime
-        ) == 3
-    }
+    var words =
+        wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().filter {
+            getStateRevision(
+                it.revisionCount,
+                it.lastRevisionTime
+            ) == 2 || getStateRevision(
+                it.revisionCount,
+                it.lastRevisionTime
+            ) == 3
+        }
 
     val rejectedList = remember {
         mutableStateListOf<Word>()
@@ -132,11 +137,15 @@ private fun Content(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = word.word.orEmpty(), style = fontMedium24(Secondary900))
-                        Text(modifier = Modifier.padding(start = 8.dp), text = word.type.orEmpty(), style = fontRegular14(Secondary500))
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text = word.type.orEmpty(),
+                            style = fontRegular14(Secondary500)
+                        )
                     }
 
 
-                    if (word.translation.orEmpty().isNotEmpty()){
+                    if (word.translation.orEmpty().isNotEmpty()) {
                         Text(
                             modifier = Modifier.padding(top = 8.dp),
                             text = word.translation.orEmpty(),
@@ -164,38 +173,62 @@ private fun Content(
             }
 
             item {
-                CustomButton(modifier = Modifier
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 24.dp), text = stringResource(R.string.yes), style = ButtonStyle.Contained, type = ButtonType.Success, size = ButtonSize.MD){
+                CustomButton(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 24.dp),
+                    text = stringResource(R.string.yes),
+                    style = ButtonStyle.Contained,
+                    type = ButtonType.Success,
+                    size = ButtonSize.MD
+                ) {
                     word.revisionCount = word.revisionCount + 1
                     word.lastRevisionTime = System.currentTimeMillis()
                     wordViewModel.editWord(word.id, word)
                     rejectedList.add(word)
                 }
 
-                CustomButton(modifier = Modifier
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 24.dp), text = stringResource(R.string.no), style = ButtonStyle.TextOnly, type = ButtonType.Danger, size = ButtonSize.MD){
+                CustomButton(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 24.dp),
+                    text = stringResource(R.string.no),
+                    style = ButtonStyle.TextOnly,
+                    type = ButtonType.Danger,
+                    size = ButtonSize.MD
+                ) {
                     rejectedList.add(word)
                 }
             }
 
         }
-    }else{
+    } else {
         rejectedList.clear()
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
+private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel: WordViewModel) {
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value
+    val events = remember {
+        mutableStateOf(Lifecycle.Event.ON_START)
+    }
+
     OnLifecycleEvent { owner, event ->
-        when (event) {
-            Lifecycle.Event.ON_START -> {
+        events.value = event
+    }
+
+    when (events.value) {
+        Lifecycle.Event.ON_START,
+        Lifecycle.Event.ON_RESUME -> {
+            LaunchedEffect(key1 = listId) {
+                delay(100)
                 calendarViewModel.stopLastTime()
                 calendarViewModel.insertSpendTime(
                     TimeSpent(
                         id = 0,
+                        listId = listId?.id.orZero(),
                         date = LocalDate.now().toString(),
                         startUnix = System.currentTimeMillis(),
                         endUnix = null,
@@ -203,19 +236,23 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel) {
                     )
                 )
             }
-            Lifecycle.Event.ON_STOP -> {
-                calendarViewModel.stopLastTime()
-                calendarViewModel.insertSpendTime(
-                    TimeSpent(
-                        id = 0,
-                        date = LocalDate.now().toString(),
-                        startUnix = System.currentTimeMillis(),
-                        endUnix = null,
-                        type = SpendTimeType.Learning.ordinal
-                    )
-                )
-            }
-            else -> {}
         }
+        Lifecycle.Event.ON_STOP,
+        Lifecycle.Event.ON_PAUSE -> {
+            calendarViewModel.stopLastTime()
+            calendarViewModel.insertSpendTime(
+                TimeSpent(
+                    id = 0,
+                    listId = listId?.id.orZero(),
+                    date = LocalDate.now().toString(),
+                    startUnix = System.currentTimeMillis(),
+                    endUnix = null,
+                    type = SpendTimeType.Learning.ordinal
+                )
+            )
+        }
+        else -> {}
     }
+
+
 }

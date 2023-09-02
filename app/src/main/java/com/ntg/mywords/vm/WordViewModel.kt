@@ -47,6 +47,7 @@ class WordViewModel @Inject constructor(
     private var word: LiveData<Word> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
+    private var allValidTimeSpentBaseListId: LiveData<List<TimeSpent>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
     private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
@@ -137,6 +138,13 @@ class WordViewModel @Inject constructor(
         }
         timber("checkIfExist", isExist.toString())
         return isExist
+    }
+
+    fun getAllValidTimeSpentBaseListId(listId: Int): LiveData<List<TimeSpent>> {
+        viewModelScope.launch {
+            allValidTimeSpentBaseListId = timeSpentDao.getAllValidTimeBaseListId(listId)
+        }
+        return allValidTimeSpentBaseListId
     }
 
     fun getAllValidTimeSpent(): LiveData<List<TimeSpent>> {
