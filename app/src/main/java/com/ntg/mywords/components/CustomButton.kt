@@ -50,42 +50,7 @@ fun CustomButton(
     var background = Secondary500
     var borderColor = Secondary500
     var loadingColor = MaterialTheme.colorScheme.onPrimary
-
-    when (size) {
-
-        ButtonSize.XL -> {
-            left = 24.dp
-            right = 24.dp
-            top = 16.dp
-            bottom = 16.dp
-        }
-        ButtonSize.LG -> {
-            left = 20.dp
-            right = 20.dp
-            top = 14.dp
-            bottom = 14.dp
-        }
-        ButtonSize.MD -> {
-            left = 16.dp
-            right = 16.dp
-            top = 10.dp
-            bottom = 10.dp
-        }
-        ButtonSize.SM -> {
-            left = 12.dp
-            right = 12.dp
-            top = 7.dp
-            bottom = 7.dp
-        }
-        ButtonSize.XS -> {
-            left = 8.dp
-            right = 8.dp
-            top = 3.dp
-            bottom = 3.dp
-        }
-
-    }
-
+    var textStyle = fontMedium14(textColor)
 
     when (type) {
 
@@ -100,7 +65,7 @@ fun CustomButton(
                 }
                 ButtonStyle.Outline -> {
                     background = Color.Transparent
-                    borderColor = MaterialTheme.colorScheme.primaryContainer
+                    borderColor = MaterialTheme.colorScheme.primary
                     textColor = MaterialTheme.colorScheme.onPrimaryContainer
                 }
                 ButtonStyle.TextOnly -> {
@@ -210,10 +175,50 @@ fun CustomButton(
     }
 
 
+    when (size) {
+
+        ButtonSize.XL -> {
+            left = 24.dp
+            right = 24.dp
+            top = 16.dp
+            bottom = 16.dp
+            textStyle = fontMedium16(textColor)
+        }
+        ButtonSize.LG -> {
+            left = 20.dp
+            right = 20.dp
+            top = 14.dp
+            bottom = 14.dp
+            textStyle = fontMedium14(textColor)
+        }
+        ButtonSize.MD -> {
+            left = 16.dp
+            right = 16.dp
+            top = 10.dp
+            bottom = 10.dp
+            textStyle = fontMedium14(textColor)
+        }
+        ButtonSize.SM -> {
+            left = 12.dp
+            right = 12.dp
+            top = 7.dp
+            bottom = 7.dp
+            textStyle = fontMedium12(textColor)
+        }
+        ButtonSize.XS -> {
+            left = 8.dp
+            right = 8.dp
+            top = 3.dp
+            bottom = 3.dp
+            textStyle = fontMedium12(textColor)
+        }
+
+    }
+
+
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
             .wrapContentHeight()
             .clip(RoundedCornerShape(roundCorner))
             .border(width = 2.dp, color = borderColor, shape = RoundedCornerShape(roundCorner))
@@ -224,21 +229,13 @@ fun CustomButton(
         contentAlignment = Alignment.Center
     )
     {
-
-
-
-
-
         Row(modifier = Modifier.align(Alignment.Center)
             .padding(start = left, top = top, end = right, bottom = bottom)) {
-
-
-
-
             if (!loading){
                 Text(
                     text = text,
-                    color = textColor
+                    color = textColor,
+                    style = textStyle
                 )
             }else{
                 CircularProgressIndicator(modifier = Modifier
@@ -246,8 +243,6 @@ fun CustomButton(
                     .size(24.dp)
                     , color = loadingColor, strokeWidth = 3.dp)
             }
-
-
         }
     }
 
