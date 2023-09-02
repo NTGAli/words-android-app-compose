@@ -18,29 +18,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.ntg.mywords.R
-import com.ntg.mywords.UserDataAndSetting
-import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
 import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.model.db.Word
-import com.ntg.mywords.model.req.BackupUserData
-import com.ntg.mywords.model.response.WordData
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import org.json.JSONArray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,33 +125,9 @@ private fun Content(
     navController: NavController
 ) {
 
-    val modalBottomSheetState =
-        rememberBottomSheetScaffoldState(SheetState(skipPartiallyExpanded = false))
-    val scope = rememberCoroutineScope()
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val wordsList: State<List<Word>?> = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState()
 
-//    BoxWithConstraints() {
-//        val maxHeight = maxHeight
-//        val sheetHeight = maxHeight / 4.dp
-//        BottomSheetScaffold(
-//            modifier = Modifier,
-//            scaffoldState = modalBottomSheetState,
-//            sheetContent = {
-//
-//            },
-//            containerColor = Color.White,
-//            sheetPeekHeight = 51.dp
-//        ) {
-//            Box(modifier = Modifier
-//                .height(900.dp)) {
-//
-//                Column(Modifier.background(MaterialTheme.colorScheme.primary).fillMaxSize()) {
-//
-//                }
-//            }
-//        }
-//    }
-
-    val wordsList: State<List<Word>?> = wordViewModel.getMyWords().observeAsState()
 
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
 
@@ -177,20 +142,19 @@ private fun Content(
             val numberOfAllWords = remember {
                 mutableStateOf(0)
             }
-
             var totalTime = 0L
 
 
 
-            recentWordCount.value = wordViewModel.recentWords(7).observeAsState().value.orZero()
-            needToReviewCount.value = wordViewModel.getMyWords().observeAsState().value?.filter {
+            recentWordCount.value = wordViewModel.recentWords(7, listId.orZero()).observeAsState().value.orZero()
+            needToReviewCount.value = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value?.filter {
                 getStateRevision(
                     it.revisionCount,
                     it.lastRevisionTime
                 ) == 2 || getStateRevision(it.revisionCount, it.lastRevisionTime) == 3
             }.orEmpty().size
             numberOfAllWords.value =
-                wordViewModel.getMyWords().observeAsState().value.orEmpty().size
+                wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
             val timeSpent = wordViewModel.getAllValidTimeSpent().observeAsState().value.orEmpty()
                 .toMutableStateList()
 
@@ -203,12 +167,6 @@ private fun Content(
                 }
             }
 
-//            wordViewModel.getAllValidTimeSpent().observeAsState().value?.forEach {
-//                if (it.startUnix != null && it.endUnix != null) {
-//                    timeSpent.value += getSecBetweenTimestamps(it.startUnix, it.endUnix!!)
-//                    timber("TTTTTTTTTTTTTTTTTTTTTTTTTTTTT :: ${timeSpent.value} -- ${getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())}")
-//                }
-//            }
             timber("kalwjdklwjadkjwaldkjw ${7.getUnixTimeNDaysAgo()} --- ${System.currentTimeMillis()} --- ${recentWordCount.value}")
 
             Text(

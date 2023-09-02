@@ -99,7 +99,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                         TypeOfMessagePass.NEW_USER_NO_NAME.name,
                         TypeOfMessagePass.USER_VERIFIED_NO_NAME.name-> {
                             loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.NameScreen.name+"?email=${email}")
+                            navController.navigate(Screens.NameScreen.name+"?email=${email}"){
+                                popUpTo(0)
+                            }
                         }
 
                         TypeOfMessagePass.USER_NOT_EXIST.name -> {
@@ -109,7 +111,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                         else -> {
                             loginViewModel.setUsername(it.data.orEmpty())
                             loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.VocabularyListScreen.name)
+                            navController.navigate(Screens.VocabularyListScreen.name){
+                                popUpTo(0)
+                            }
                         }
 
                     }

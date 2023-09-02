@@ -42,6 +42,7 @@ class WordViewModel @Inject constructor(
 
     private var isExist = false
     private var myWords: LiveData<List<Word>> = MutableLiveData()
+    private var allWords: LiveData<List<Word>> = MutableLiveData()
     private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
@@ -54,16 +55,16 @@ class WordViewModel @Inject constructor(
     private lateinit var _recentLocations: Flow<UserDataAndSetting>
 
 
-    fun searchOnWords(query: String) {
+    fun searchOnWords(query: String, listId: Int) {
         viewModelScope.launch {
-            searchedWord.value = wordDao.search(query)
+            searchedWord.value = wordDao.search(query, listId)
         }
     }
 
-    fun searchOnRecentWords(query: String) {
+    fun searchOnRecentWords(query: String, listId: Int) {
         viewModelScope.launch {
             searchedRecentWord.value =
-                wordDao.searchOnRecent(query, 7.getUnixTimeNDaysAgo(), System.currentTimeMillis())
+                wordDao.searchOnRecent(query, 7.getUnixTimeNDaysAgo(), System.currentTimeMillis(), listId)
         }
     }
 
@@ -104,16 +105,22 @@ class WordViewModel @Inject constructor(
         }
     }
 
-    fun getMyWords(): LiveData<List<Word>> {
+    fun getWordsBaseListId(listId: Int): LiveData<List<Word>> {
         viewModelScope.launch {
-            myWords = wordDao.getAllWords()
+            myWords = wordDao.getWordBaseListId(listId)
         }
         return myWords
-
     }
 
-    fun recentWords(daysAgo: Int) =
-        wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis())
+    fun getAllWords(): LiveData<List<Word>> {
+        viewModelScope.launch {
+            allWords = wordDao.getAllWords()
+        }
+        return allWords
+    }
+
+    fun recentWords(daysAgo: Int, listId: Int) =
+        wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis(), listId)
 
     fun findWord(id: Int?): LiveData<Word>? {
         if (id == -1) return null

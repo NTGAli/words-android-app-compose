@@ -32,11 +32,8 @@ import com.ntg.mywords.util.timber
 import com.ntg.mywords.util.toast
 import com.ntg.mywords.vm.WordViewModel
 import kotlinx.coroutines.delay
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
-import java.io.InputStream
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.*
@@ -374,7 +371,7 @@ private fun ShareUserBackup(wordViewModel: WordViewModel, resultCode: (Int) -> U
 @Composable
 private fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) -> Unit) {
     val owner = LocalLifecycleOwner.current
-    wordViewModel.getMyWords().observe(owner) { words ->
+    wordViewModel.getAllWords().observe(owner) { words ->
         wordViewModel.getAllValidTimeSpent().observe(owner) { times ->
             callBack.invoke(
                 BackupUserData(words = words, totalTimeSpent = times)
