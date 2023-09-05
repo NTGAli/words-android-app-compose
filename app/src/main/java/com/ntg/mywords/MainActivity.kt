@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import com.ntg.mywords.di.SettingsSerializer
 import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.db.TimeSpent
@@ -27,6 +28,7 @@ import com.ntg.mywords.util.orZero
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
+import com.ntg.mywords.vm.SignInViewModel
 import com.ntg.mywords.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity() {
     private val wordViewModel: WordViewModel by viewModels()
     private val calendarViewModel: CalendarViewModel by viewModels()
     private val loginViewModel: LoginViewModel by viewModels()
+    private val signInViewModel: SignInViewModel by viewModels()
 
     // Preferences DataStore
     private val Context.dataStore by preferencesDataStore(name = Constant.PREFERENCE_DATA_STORE_NAME)
@@ -58,7 +61,8 @@ class MainActivity : ComponentActivity() {
                 AppNavHost(
                     wordViewModel = wordViewModel,
                     calendarViewModel = calendarViewModel,
-                    loginViewModel = loginViewModel
+                    loginViewModel = loginViewModel,
+                    signInViewModel = signInViewModel
                 ) { _, navDestination, _ ->
                     timber("onDestinationChangeListener ${navDestination.route}")
                 }

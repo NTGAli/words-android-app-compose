@@ -14,6 +14,7 @@ import com.ntg.mywords.screens.setting.SettingScreen
 import com.ntg.mywords.util.orTrue
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
+import com.ntg.mywords.vm.SignInViewModel
 import com.ntg.mywords.vm.WordViewModel
 
 @Composable
@@ -24,6 +25,7 @@ fun AppNavHost(
     wordViewModel: WordViewModel,
     calendarViewModel: CalendarViewModel,
     loginViewModel: LoginViewModel,
+    signInViewModel: SignInViewModel,
     onDestinationChangedListener:(NavController, NavDestination, Bundle?) -> Unit
 ) {
 
@@ -104,7 +106,7 @@ fun AppNavHost(
             defaultValue = true
         })
         ) {
-            InsertEmailScreen(navController, loginViewModel, it.arguments?.getBoolean("skip").orTrue())
+            InsertEmailScreen(navController, loginViewModel, signInViewModel, it.arguments?.getBoolean("skip").orTrue())
         }
 
         composable(Screens.VocabularyListScreen.name) {

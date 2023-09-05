@@ -3,6 +3,7 @@ package com.ntg.mywords.api
 import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.req.VerifyUserReq
 import com.ntg.mywords.model.response.ResponseBody
+import com.ntg.mywords.model.response.VerifyUserRes
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -40,6 +41,15 @@ interface ApiService {
         @Query("pass") password: String
     ): Response<String>
 
+    @FormUrlEncoded
+    @POST("registration/verifyByGoogle.php")
+    suspend fun verifyByGoogle(
+        @Field("token") token: String,
+        @Field("email") email: String,
+        @Field("name") name: String?,
+        @Field("userId") userId: String?
+    ): Response<ResponseBody<VerifyUserRes>>
+
     @GET("registration/VerifyName.php")
     suspend fun updateName(
         @Query("token") token: String,
@@ -71,5 +81,13 @@ interface ApiService {
         @Field("token") token: String,
         @Field("email") email: String,
     ): Response<ResponseBody<BackupUserData>>
+
+
+    @FormUrlEncoded
+    @POST("backup/lastBackup.php")
+    suspend fun lastUserBackup(
+        @Field("token") token: String,
+        @Field("email") email: String,
+    ): Response<String>
 
 }

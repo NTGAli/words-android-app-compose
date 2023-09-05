@@ -58,14 +58,17 @@
     <string name="use_password">Use password instead</string>
     <string name="use_verification_code">Use verification code instead</string>
     <string name="sth_wrong">something wrong</string>
+    <string name="seems_you_need_to_set_proxy">It seems you need to set up a proxy.</string>
     <string name="download_from_google_play">Please ensure that you have downloaded Vocab from the Google Play Store.</string>
     <string name="incorrect_pass">Your password entry was incorrect.</string>
     <string name="a_digit_requier">"Password requires at least one number.     "</string>
     <string name="not_enough_pass_lenght">"Password must be at least 5 characters.     "</string>
     <string name="pass_requiered">"Password must not be empty.     "</string>
     <string name="share">share</string>
-    <string name="backup_done">"Backup successfully completed.     "</string>
-    <string name="backup_failed">"Backup has unfortunately failed.     "</string>
+    <string name="backup_done">"Backup successfully completed."</string>
+    <string name="restore_done">"Restore successfully completed."</string>
+    <string name="backup_failed">"Backup has unfortunately failed.</string>
+    <string name="restore_failed">"Restore has unfortunately failed.</string>
     <string name="restore">restore</string>
     <string name="dismiss">dismiss</string>
     <string name="restore_from_server">restore from server</string>
@@ -85,5 +88,7 @@
     <string name="already_verified">You have already been verified using this code!</string>
     <string name="your_code_expired">your code expired!</string>
     <string name="incorrect_code">incorrect code!</string>
+    <string name="or">or</string>
+    <string name="continiue_with_google">continue with Google</string>
 
 </resources>

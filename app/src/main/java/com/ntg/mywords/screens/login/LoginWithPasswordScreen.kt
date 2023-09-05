@@ -158,7 +158,8 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
 
         CustomButton(
-            modifier = Modifier.padding(top = 32.dp),
+            modifier = Modifier.padding(top = 32.dp)
+                .fillMaxWidth(),
             text = stringResource(id = R.string.next),
             type = ButtonType.Primary,
             size = ButtonSize.LG,
@@ -181,7 +182,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         }
         
         
-        CustomButton(modifier = Modifier.padding(top = 8.dp), text = stringResource(id = R.string.use_verification_code), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
+        CustomButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), text = stringResource(id = R.string.use_verification_code), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
 //            navController.navigate(Screens.CodeScreen.name)
             navController.popBackStack()
         }

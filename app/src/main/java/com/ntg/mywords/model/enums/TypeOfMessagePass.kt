@@ -7,6 +7,7 @@ enum class TypeOfMessagePass {
     USER_VERIFIED,
     INCORRECT_PASSWORD,
     USER_NOT_EXIST,
-    USER_VERIFIED_NO_NAME
+    USER_VERIFIED_NO_NAME,
+    USER_SET_NAME
 
 }

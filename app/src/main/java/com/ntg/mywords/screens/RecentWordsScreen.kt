@@ -57,7 +57,7 @@ fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel)
                     enableSearchBar.value = true
                 },
                 enableSearchbar = enableSearchBar,
-                onQueryChange = {query ->
+                onQueryChange = { query ->
                     wordViewModel.searchOnRecentWords(query, listId.orZero())
                 },
                 navigationOnClick = { navController.popBackStack() }

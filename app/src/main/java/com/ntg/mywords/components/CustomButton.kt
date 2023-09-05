@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.model.components.ButtonSize
@@ -25,6 +27,7 @@ import com.ntg.mywords.ui.theme.*
 fun CustomButton(
     modifier: Modifier = Modifier,
     text: String,
+    iconStart: Painter? = null,
     type: ButtonType = ButtonType.Primary,
     size: ButtonSize = ButtonSize.MD,
     style: ButtonStyle = ButtonStyle.Contained,
@@ -172,6 +175,26 @@ fun CustomButton(
             }
         }
 
+        ButtonType.Variance -> {
+            when (style) {
+                ButtonStyle.Contained -> {
+                    background = MaterialTheme.colorScheme.surfaceVariant
+                    borderColor = MaterialTheme.colorScheme.surfaceVariant
+                    textColor = MaterialTheme.colorScheme.onSurface
+                    loadingColor = MaterialTheme.colorScheme.onSurface
+                }
+                ButtonStyle.Outline -> {
+                    background = Color.Transparent
+                    borderColor = MaterialTheme.colorScheme.surfaceVariant
+                    textColor = MaterialTheme.colorScheme.onSurfaceVariant
+                }
+                ButtonStyle.TextOnly -> {
+                    background = Color.Transparent
+                    borderColor = Color.Transparent
+                    textColor = MaterialTheme.colorScheme.onSurfaceVariant
+                }
+            }
+        }
     }
 
 
@@ -223,15 +246,22 @@ fun CustomButton(
             .clip(RoundedCornerShape(roundCorner))
             .border(width = 2.dp, color = borderColor, shape = RoundedCornerShape(roundCorner))
             .background(background)
-            .clickable(enabled = enable) {
+            .clickable(enabled = enable && !loading) {
                 onClick()
             },
         contentAlignment = Alignment.Center
     )
     {
-        Row(modifier = Modifier.align(Alignment.Center)
+        Row(modifier = Modifier
+            .align(Alignment.Center)
             .padding(start = left, top = top, end = right, bottom = bottom)) {
             if (!loading){
+                
+                if (iconStart != null){
+                    Icon(painter = iconStart, contentDescription = "icon start",tint = Color.Unspecified)
+                    Spacer(modifier = Modifier.padding(start = 8.dp))
+                }
+                
                 Text(
                     text = text,
                     color = textColor,

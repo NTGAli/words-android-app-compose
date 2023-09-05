@@ -4,6 +4,7 @@ enum class ButtonType {
 
     Primary,
     Secondary,
+    Variance,
     Success,
     Warning,
     Danger,

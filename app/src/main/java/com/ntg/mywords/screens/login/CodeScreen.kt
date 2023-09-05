@@ -38,7 +38,7 @@ fun CodeScreen(navController: NavController, email: String, loginViewModel: Logi
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController = navController, "test1212@mail.com", loginViewModel)
+            Content(paddingValues = innerPadding, navController = navController, email, loginViewModel)
 //            Content(paddingValues = innerPadding, navController = navController)
         }
     )
@@ -172,7 +172,8 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
 
         CustomButton(
-            modifier = Modifier.padding(top = 32.dp),
+            modifier = Modifier.padding(top = 32.dp)
+                .fillMaxWidth(),
             text = if (waiting.value) ticks.minutesToTimeFormat() else stringResource(id = R.string.send_again),
             type = if (waiting.value) ButtonType.Secondary else ButtonType.Primary,
             size = ButtonSize.LG,
@@ -186,7 +187,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
         }
 
-        CustomButton(modifier = Modifier.padding(top = 8.dp), text = stringResource(id = R.string.use_password), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
+        CustomButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), text = stringResource(id = R.string.use_password), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
             navController.navigate(Screens.LoginWithPasswordScreen.name+"?email=$email")
         }
 
