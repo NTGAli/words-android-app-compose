@@ -82,7 +82,7 @@ private fun BottomBarContent(onClick: () -> Unit) {
     ) {
         Divider(Modifier.padding(bottom = 16.dp), color = MaterialTheme.colorScheme.surfaceVariant)
         CustomButton(
-            modifier = Modifier.padding(bottom = 16.dp),
+            modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth(),
             text = "button",
             size = ButtonSize.XL
         ) {
@@ -368,7 +368,8 @@ private fun Content(
 
             if (word.value.isNotEmpty() && type.value.isNotEmpty()) {
                 CustomButton(
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 8.dp),
                     text = stringResource(id = R.string.auto_fill),
                     size = ButtonSize.SM,
                     type = ButtonType.Primary,

@@ -18,7 +18,6 @@ class DefaultDataRepository @Inject constructor(
 
     override suspend fun setUserEmail(email: String) {
         recentLocationsDataStore.updateData { data ->
-            timber("skwelflkewjflkew $email")
             data.toBuilder().setEmail(email).build()
         }
     }
@@ -26,6 +25,12 @@ class DefaultDataRepository @Inject constructor(
     override suspend fun setUsername(name: String) {
         recentLocationsDataStore.updateData { data ->
             data.toBuilder().setName(name).build()
+        }
+    }
+
+    override suspend fun isSkipped(skip: Boolean) {
+        recentLocationsDataStore.updateData { data ->
+            data.toBuilder().setIsSkipped(skip).build()
         }
     }
 

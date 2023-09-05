@@ -41,73 +41,66 @@ fun Appbar(
     popupItemOnClick: (Int) -> Unit = {},
     onQueryChange: (String) -> Unit = {}
 ) {
+    if (enableSearchbar.value) {
+        SearchBar(
+            onQueryChange = { onQueryChange.invoke(it) },
+            onDismiss = { enableSearchbar.value = false })
+    } else {
+        Column(modifier = modifier) {
 
-//    timber("wjrhajfhjakfhkjawhfjhawf ${enableSearchbar}")
-//
-//    var enableSearchBar2 by remember { mutableStateOf(enableSearchbar) }
-//
-//    enableSearchBar2 = enableSearchbar
+            TopAppBar(
+                title = {
+                    Text(
+                        title,
+                        maxLines = 1,
+                        style = fontBold14(MaterialTheme.colorScheme.onBackground)
+                    )
+                },
+                navigationIcon = {
+                    if (enableNavigation) {
 
-
-        if (enableSearchbar.value) {
-            SearchBar(onQueryChange = {onQueryChange.invoke(it)}, onDismiss = { enableSearchbar.value = false })
-        } else {
-            Column(modifier = modifier) {
-
-                TopAppBar(
-                    title = {
-                        Text(
-                            title,
-                            maxLines = 1,
-                            style = fontBold14(MaterialTheme.colorScheme.onBackground)
-                        )
-                    },
-                    navigationIcon = {
-                        if (enableNavigation) {
-
-                            IconButton(onClick = { navigationOnClick.invoke() }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.KeyboardArrowLeft,
-                                    contentDescription = "navigation",
-                                    tint = navigateIconColor
-                                )
-                            }
-
+                        IconButton(onClick = { navigationOnClick.invoke() }) {
+                            Icon(
+                                imageVector = Icons.Rounded.KeyboardArrowLeft,
+                                contentDescription = "navigation",
+                                tint = navigateIconColor
+                            )
                         }
 
-                    },
-                    actions = {
-                        actions.forEach { appbarItem ->
-                            IconButton(onClick = { actionOnClick.invoke(appbarItem.id) }) {
-                                Icon(
-                                    imageVector = appbarItem.imageVector,
-                                    tint = appbarItem.iconColor,
-                                    contentDescription = "action appbar"
-                                )
-                            }
-                        }
+                    }
 
-                        if (popupItems.isNotEmpty()) {
-                            Popup(popupItems = popupItems) {
-                                popupItemOnClick.invoke(it)
-                            }
+                },
+                actions = {
+                    actions.forEach { appbarItem ->
+                        IconButton(onClick = { actionOnClick.invoke(appbarItem.id) }) {
+                            Icon(
+                                imageVector = appbarItem.imageVector,
+                                tint = appbarItem.iconColor,
+                                contentDescription = "action appbar"
+                            )
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
+                    }
+
+                    if (popupItems.isNotEmpty()) {
+                        Popup(popupItems = popupItems) {
+                            popupItemOnClick.invoke(it)
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
 //                        MaterialTheme.colorScheme.background
-                    ),
-                    scrollBehavior = scrollBehavior,
-                    windowInsets = TopAppBarDefaults.windowInsets
-                )
+                ),
+                scrollBehavior = scrollBehavior,
+                windowInsets = TopAppBarDefaults.windowInsets
+            )
 
-                if (scrollBehavior?.state?.contentOffset.orZero() < -25f) {
-                    Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.surfaceVariant)
-                }
-
+            if (scrollBehavior?.state?.contentOffset.orZero() < -25f) {
+                Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.surfaceVariant)
             }
 
         }
 
+    }
 
 
 }
@@ -168,9 +161,9 @@ fun SearchBar(onQueryChange: (String) -> Unit, onDismiss: () -> Unit) {
 
 
     TextField(
-        modifier = Modifier.fillMaxWidth()
-            .focusRequester(focusRequester)
-            ,
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
         value = text,
         onValueChange = {
             text = it

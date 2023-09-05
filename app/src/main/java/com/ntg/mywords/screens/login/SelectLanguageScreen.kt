@@ -167,7 +167,8 @@ private fun Content(
 
         item {
             CustomButton(
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(top = 24.dp)
+                    .fillMaxWidth(),
                 text = stringResource(id = R.string.save),
                 enable = language.isNotEmpty() && name.value.isNotEmpty(),
                 size = ButtonSize.XL

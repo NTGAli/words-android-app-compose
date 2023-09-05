@@ -8,6 +8,8 @@ import com.ntg.mywords.UserDataAndSetting
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.di.DataRepository
+import com.ntg.mywords.model.response.ResponseBody
+import com.ntg.mywords.model.response.VerifyUserRes
 import com.ntg.mywords.util.safeApiCall
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +26,7 @@ class LoginViewModel @Inject constructor(
     private var verifyUser: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyCode: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyPass: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private var verifyGoogle: MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> = MutableLiveData()
     private var updateName: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private lateinit var userDataSettings: Flow<UserDataAndSetting>
 
@@ -80,6 +83,25 @@ class LoginViewModel @Inject constructor(
     }
 
 
+    fun verifyUserByGoogle(
+        email: String,
+        username: String?,
+        userId: String?
+    ): MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> {
+        viewModelScope.launch {
+            verifyGoogle = safeApiCall(Dispatchers.IO){
+                api.verifyByGoogle(
+                    token = BuildConfig.VOCAB_API_KEY,
+                    email = email,
+                    userId = userId,
+                    name = username
+                )
+            } as MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>>
+        }
+        return verifyGoogle
+    }
+
+
     fun updateName(
         email: String,
         name: String
@@ -98,6 +120,10 @@ class LoginViewModel @Inject constructor(
 
     fun setUserEmail(email: String) = viewModelScope.launch {
         dataRepository.setUserEmail(email)
+    }
+
+    fun setSkipLogin(skip: Boolean) = viewModelScope.launch {
+        dataRepository.isSkipped(skip)
     }
 
     fun setUsername(name: String) = viewModelScope.launch {

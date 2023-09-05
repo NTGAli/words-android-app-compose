@@ -3,7 +3,6 @@ package com.ntg.mywords.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,12 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -25,30 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
-import com.ntg.mywords.components.CustomButton
-import com.ntg.mywords.model.CalendarDataSource
 import com.ntg.mywords.model.SpendTimeType
-import com.ntg.mywords.model.components.AppbarItem
-import com.ntg.mywords.model.components.ButtonSize
-import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.CalendarUiModel
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.CalendarViewModel
-import com.ntg.mywords.vm.WordViewModel
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 @RequiresApi(Build.VERSION_CODES.O)

@@ -109,7 +109,7 @@ private fun Content(
     }
 
     if (restoreFromServer.value) {
-        RestoreUserData(wordViewModel = wordViewModel) {
+        RestoreUserDataFromServer(wordViewModel = wordViewModel) {
             restoreFromServer.value = false
             if (it) {
                 visibleSuccess.value = true
@@ -200,6 +200,7 @@ private fun Content(
                         if (isUserLogged.value){
                             setBackupOnServer.value = true
                         }else{
+                            openBackupDialog.value = false
                             navController.navigate(Screens.InsertEmailScreen.name+"?skip=${false}")
                         }
 
@@ -292,7 +293,7 @@ private fun BackupOnServer(wordViewModel: WordViewModel, resultCallback: (Boolea
 
 
 @Composable
-private fun RestoreUserData(wordViewModel: WordViewModel, resultCallback: (Boolean) -> Unit) {
+fun RestoreUserDataFromServer(wordViewModel: WordViewModel, resultCallback: (Boolean) -> Unit) {
     val owner = LocalLifecycleOwner.current
     val ctx = LocalContext.current
     wordViewModel.restoreUserBackup("alintg14@gmail.com").observe(owner) {

@@ -359,6 +359,13 @@ fun Long.formatTime(): String {
     }
 }
 
+fun Long.unixTimeToReadable(): String {
+    val date = Date(this * 1000L)
+    val dateFormat = SimpleDateFormat("dd MMM yyyy")
+    return dateFormat.format(date)
+}
+
+
 fun Long.unixTimeToClock(): String {
     val date = Date(this)
     val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())

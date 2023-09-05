@@ -51,7 +51,8 @@ class WordViewModel @Inject constructor(
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
     private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
-    private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =
+    private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =MutableLiveData()
+    private var lastUserBackupDate: MutableLiveData<NetworkResult<String>> =
         MutableLiveData()
     private lateinit var _recentLocations: Flow<UserDataAndSetting>
 
@@ -239,6 +240,16 @@ class WordViewModel @Inject constructor(
             } as MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>>
         }
         return userBackup
+    }
+
+
+    fun lastUserBackup(email: String): MutableLiveData<NetworkResult<String>> {
+        viewModelScope.launch {
+            lastUserBackupDate = safeApiCall(Dispatchers.IO) {
+                vocabApi.lastUserBackup(email = email, token = BuildConfig.VOCAB_API_KEY)
+            } as MutableLiveData<NetworkResult<String>>
+        }
+        return lastUserBackupDate
     }
 
     fun importToDB(content: String, callBack: (Boolean) -> Unit) {

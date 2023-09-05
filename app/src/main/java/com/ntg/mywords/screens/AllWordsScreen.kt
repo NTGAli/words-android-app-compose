@@ -52,7 +52,7 @@ fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel) {
                     enableSearchBar.value = true
                 },
                 enableSearchbar = enableSearchBar,
-                onQueryChange = {query ->
+                onQueryChange = { query ->
                     wordViewModel.searchOnWords(query, listId.orZero())
                     timber("asljdkawljflkjawlkfj $query")
                 },

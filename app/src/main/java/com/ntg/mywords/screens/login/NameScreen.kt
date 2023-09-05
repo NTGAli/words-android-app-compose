@@ -2,6 +2,7 @@ package com.ntg.mywords.screens.login
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -97,7 +98,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
             }
         })
 
-        CustomButton(text = if (text.contains("no one")) stringResource(id = R.string.prefer_not_to_say) else stringResource(
+        CustomButton(modifier = Modifier.fillMaxWidth(), text = if (text.contains("no one")) stringResource(id = R.string.prefer_not_to_say) else stringResource(
             id = R.string.next
         ), size = ButtonSize.LG, loading = loading){
 

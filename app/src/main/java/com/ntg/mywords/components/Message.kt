@@ -27,6 +27,7 @@ fun Message(
     title: String,
     subTitle: String? = null,
     btnText: String? = null,
+    btnLoading: Boolean = false,
     btnClick:() -> Unit = {}
 ){
 
@@ -51,7 +52,7 @@ fun Message(
                 }
             }
             if (btnText != null){
-                CustomButton(modifier = Modifier.wrapContentSize(), text = btnText, style = ButtonStyle.Outline, size = ButtonSize.XS){
+                CustomButton(modifier = Modifier.wrapContentSize(), text = btnText, style = ButtonStyle.Outline, size = ButtonSize.XS, loading = btnLoading){
                     btnClick.invoke()
                 }
             }
