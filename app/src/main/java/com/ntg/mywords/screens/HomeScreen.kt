@@ -52,7 +52,13 @@ fun HomeScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
 
-            HomeAppbar()
+            HomeAppbar(
+                profileCallback = {
+                    navController.navigate(Screens.ProfileScreen.name)
+                },
+                searchCallback = {},
+                notificationCallback = {}
+            )
 //            Appbar(
 //                title = stringResource(R.string.my_words),
 //                enableNavigation = false,

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class VocabItemList (
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    val title: String,
-    val language: String,
-    val isSelected: Boolean,
+    var title: String,
+    var language: String,
+    var isSelected: Boolean,
         )

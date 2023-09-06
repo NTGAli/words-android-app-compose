@@ -1,9 +1,6 @@
 package com.ntg.mywords.screens.login
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -24,11 +21,15 @@ import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.ItemList
 import com.ntg.mywords.components.Message
 import com.ntg.mywords.components.TypewriterText
+import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VocabItemList
+import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.screens.setting.RestoreUserDataFromServer
+import com.ntg.mywords.ui.theme.fontMedium12
+import com.ntg.mywords.ui.theme.fontMedium14
 import com.ntg.mywords.ui.theme.fontRegular12
 import com.ntg.mywords.util.toast
 import com.ntg.mywords.util.unixTimeToReadable
@@ -51,6 +52,7 @@ fun VocabularyListScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -78,8 +80,18 @@ private fun Content(
     var loading by remember {
         mutableStateOf(false)
     }
+    var deleteList by remember {
+        mutableStateOf(false)
+    }
     val title = remember {
         mutableStateOf(listOf<String>())
+    }
+    val listId = remember {
+        mutableStateOf(-1)
+    }
+
+    var openBottomSheet by remember {
+        mutableStateOf(false)
     }
 
 
@@ -109,6 +121,12 @@ private fun Content(
         }
     }
 
+    if (deleteList) {
+        wordViewModel.deleteListById(listId.value)
+        wordViewModel.deleteWordsOfList(listId.value)
+        wordViewModel.deleteTimeSpentOfList(listId.value)
+        deleteList = false
+    }
 
     if (list.value.isEmpty()) {
         title.value = listOf(stringResource(id = R.string.no_list_message, username))
@@ -152,7 +170,7 @@ private fun Content(
                 items(list.value) {
 
                     ItemList(
-                        modifier = Modifier.padding(vertical = 8.dp),
+                        modifier = Modifier.padding(top = 8.dp),
                         id = it.id,
                         title = it.title,
                         subTitle = it.language,
@@ -162,6 +180,13 @@ private fun Content(
                             navController.navigate(Screens.HomeScreen.name) {
                                 popUpTo(0)
                             }
+                        },
+                        editCallback = { lId ->
+                            navController.navigate(Screens.SelectLanguageScreen.name + "?listId=$lId")
+                        },
+                        deleteCallback = { lId ->
+                            listId.value = lId
+                            openBottomSheet = true
                         }
                     )
 
@@ -171,13 +196,66 @@ private fun Content(
 
 
         CustomButton(
-            modifier = Modifier.padding(top = 24.dp)
+            modifier = Modifier
+                .padding(top = 24.dp)
                 .fillMaxWidth(),
             text = stringResource(id = R.string.add_new),
             style = ButtonStyle.TextOnly,
             type = ButtonType.Primary
         ) {
             navController.navigate(Screens.SelectLanguageScreen.name)
+        }
+    }
+
+
+    if (openBottomSheet) {
+        ModalBottomSheet(onDismissRequest = { openBottomSheet = false }) {
+
+            Column(
+                Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.title_delete_list), style = fontMedium14(
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+
+                Text(
+                    modifier = Modifier.padding(top = 4.dp),
+                    text = stringResource(id = R.string.desc_delete_list),
+                    style = fontMedium12(
+                        MaterialTheme.colorScheme.outline
+                    )
+                )
+
+                Row(modifier = Modifier.padding(top = 16.dp)) {
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        text = stringResource(id = R.string.no),
+                        type = ButtonType.Secondary,
+                        style = ButtonStyle.Outline,
+                        size = ButtonSize.LG
+                    ) {
+                        openBottomSheet = false
+                    }
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp),
+                        text = stringResource(id = R.string.yes),
+                        type = ButtonType.Danger,
+                        size = ButtonSize.LG
+                    ) {
+                        deleteList = true
+                    }
+                }
+            }
+
+
         }
     }
 

@@ -109,8 +109,6 @@ private fun TimeContentItem(
 ) {
     val list = calendarViewModel.finalData.observeAsState().value.orEmpty().toMutableList()
 
-    timber("LLLLLLLLLLLLLLLLLLLLLLLLLLLLL $list")
-
     val dateTime = remember {
         mutableStateOf(LocalDate.now())
     }
@@ -169,7 +167,8 @@ private fun TimeContentItem(
     ) {
         Text(
             modifier = Modifier.padding(top = 16.dp, start = 16.dp),
-            text = if (spendTimeType == SpendTimeType.Learning.ordinal) stringResource(id = R.string.learning)
+            text = if (spendTimeType == SpendTimeType.Learning.ordinal)
+                stringResource(id = R.string.learning)
             else stringResource(id = R.string.revision),
             style = fontMedium14(MaterialTheme.colorScheme.primary)
         )

@@ -45,6 +45,7 @@ class WordViewModel @Inject constructor(
     private var allWords: LiveData<List<Word>> = MutableLiveData()
     private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
+    private var dataList: LiveData<VocabItemList> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
     private var allValidTimeSpentBaseListId: LiveData<List<TimeSpent>> = MutableLiveData()
@@ -91,6 +92,12 @@ class WordViewModel @Inject constructor(
     fun deleteWord(word: Word) {
         viewModelScope.launch {
             wordDao.delete(word)
+        }
+    }
+
+    fun deleteWordsOfList(listId: Int){
+        viewModelScope.launch {
+            wordDao.deleteWordOfList(listId)
         }
     }
 
@@ -183,6 +190,13 @@ class WordViewModel @Inject constructor(
         }
     }
 
+
+    fun deleteTimeSpentOfList(listId: Int) {
+        viewModelScope.launch {
+            timeSpentDao.deleteTimeOfList(listId)
+        }
+    }
+
     fun addAllVocabLists(lists: List<VocabItemList>) {
         viewModelScope.launch {
             vocabListDao.insertAll(lists)
@@ -225,8 +239,27 @@ class WordViewModel @Inject constructor(
         vocabListDao.insert(vocabItemList)
     }
 
+    fun updateVocabList(vocabItemList: VocabItemList) = viewModelScope.launch {
+        vocabListDao.update(vocabItemList)
+    }
+
+    fun deleteListById(id: Int) {
+        viewModelScope.launch {
+            vocabListDao.deleteById(id)
+        }
+    }
+
     fun selectList(id: Int) = viewModelScope.launch {
         vocabListDao.selectList(id)
+    }
+
+    fun findList(id: Int?): LiveData<VocabItemList>? {
+        if (id == -1) return null
+        viewModelScope.launch {
+            dataList = vocabListDao.findList(id)
+        }
+        return dataList
+
     }
 
     fun getIdOfListSelected() = vocabListDao.getDataOfListSelected()
