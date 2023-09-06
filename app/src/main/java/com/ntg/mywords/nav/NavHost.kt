@@ -60,8 +60,13 @@ fun AppNavHost(
             RecentWordScreen(navController, wordViewModel)
         }
 
-        composable(Screens.SelectLanguageScreen.name) {
-            SelectLanguageScreen(navController, wordViewModel)
+        composable(Screens.SelectLanguageScreen.name+ "?listId={listId}",
+            arguments = listOf(navArgument("listId")
+            {
+                type = NavType.IntType
+                defaultValue = -1
+            })) {
+            SelectLanguageScreen(navController, wordViewModel,it.arguments?.getInt("listId"))
         }
 
         composable(Screens.TimeScreen.name) {
@@ -128,6 +133,10 @@ fun AppNavHost(
             RevisionScreen(navController, wordViewModel, calendarViewModel)
         }
 
+        composable(Screens.ProfileScreen.name) {
+            ProfileScreen(navController, wordViewModel, loginViewModel)
+        }
+
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",
             arguments = listOf(navArgument("wordId")
@@ -161,3 +170,5 @@ fun AppNavHost(
     }
 
 }
+
+

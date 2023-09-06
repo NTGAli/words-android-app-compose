@@ -17,7 +17,8 @@ enum class Screens {
     NameScreen,
     VocabularyListScreen,
     SelectLanguageScreen,
-    LoginWithPasswordScreen
+    LoginWithPasswordScreen,
+    ProfileScreen
 
 
 }

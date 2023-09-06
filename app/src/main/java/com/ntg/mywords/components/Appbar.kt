@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -106,10 +107,10 @@ fun Appbar(
 }
 
 @Composable
-fun Popup(popupItems: List<PopupItem>, onClick: (Int) -> Unit) {
+fun Popup(modifier: Modifier = Modifier, popupItems: List<PopupItem>, onClick: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
+    Box(modifier = modifier) {
         IconButton(
             onClick = { expanded = true }
         ) {
@@ -120,31 +121,41 @@ fun Popup(popupItems: List<PopupItem>, onClick: (Int) -> Unit) {
             )
         }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = {
-                expanded = false
-            }
+
+
+        MaterialTheme(
+            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
         ) {
 
-            popupItems.forEach {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                }
+            ) {
 
-                DropdownMenuItem(
-                    onClick = {
-                        onClick.invoke(it.id)
-                        expanded = false
-                    },
-                    interactionSource = MutableInteractionSource(),
-                    text = {
-                        Text(it.title, style = fontRegular14(Secondary500))
-                    },
-                    leadingIcon = {
-                        Icon(painter = it.icon, contentDescription = it.title, tint = Secondary700)
-                    }
-                )
+                popupItems.forEach {
+                    DropdownMenuItem(
+                        onClick = {
+                            onClick.invoke(it.id)
+                            expanded = false
+                        },
+                        interactionSource = MutableInteractionSource(),
+                        text = {
+                            Text(it.title, style = fontRegular14(MaterialTheme.colorScheme.outline))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = it.icon,
+                                contentDescription = it.title,
+                                tint = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    )
+                }
+
 
             }
-
 
         }
     }

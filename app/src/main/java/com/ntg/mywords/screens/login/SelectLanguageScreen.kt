@@ -33,25 +33,26 @@ import com.ntg.mywords.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewModel) {
+fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewModel, listId: Int?) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController, wordViewModel)
+            val listData = wordViewModel.findList(listId)?.observeAsState()
+            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value)
         }
     )
 
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
     navController: NavController,
-    wordViewModel: WordViewModel
+    wordViewModel: WordViewModel,
+    listForEdit: VocabItemList?
 ) {
     val list = listOf(
         "english",
@@ -71,11 +72,56 @@ private fun Content(
         mutableStateOf("")
     }
 
+    var submitList by remember {
+        mutableStateOf(false)
+    }
+
+    var isApplied by remember {
+        mutableStateOf(false)
+    }
+
+
+    if (listForEdit != null && !isApplied) {
+        language = listForEdit.language
+        name.value = listForEdit.title
+        if (listForEdit.language !in list) anotherLanguage.value = listForEdit.language
+        isApplied = true
+    }
+
+
     val isExist = wordViewModel.isListExist(
         name = name.value,
         language = language
     ).observeAsState().value != 0
 
+    if (submitList) {
+
+        if (listForEdit != null) {
+            listForEdit.language = language
+            listForEdit.title = name.value
+            wordViewModel.updateVocabList(
+                listForEdit
+            )
+            navController.popBackStack()
+
+        } else if (isExist) {
+            ctx.toast(ctx.getString(R.string.this_list_already_exist))
+        } else {
+            wordViewModel.addNewVocabList(
+                VocabItemList(
+                    0,
+                    title = name.value,
+                    language = language,
+                    isSelected = false
+                )
+            )
+            navController.popBackStack()
+
+        }
+        submitList = false
+
+
+    }
 
 
 
@@ -85,7 +131,7 @@ private fun Content(
         item {
             TypewriterText(
                 modifier = Modifier.padding(top = 64.dp, bottom = 32.dp),
-                texts = listOf(stringResource(id = R.string.create_new_list)),
+                texts = listOf(stringResource(id = if (listForEdit == null) R.string.create_new_list else R.string.edit_your_list)),
                 singleText = true,
                 speedType = 20L
             )
@@ -158,7 +204,9 @@ private fun Content(
                 EditText(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp), label = stringResource(id = R.string.language), text = anotherLanguage
+                        .padding(horizontal = 8.dp),
+                    label = stringResource(id = R.string.language),
+                    text = anotherLanguage
                 ) {
                     language = it
                 }
@@ -167,28 +215,14 @@ private fun Content(
 
         item {
             CustomButton(
-                modifier = Modifier.padding(top = 24.dp)
+                modifier = Modifier
+                    .padding(top = 24.dp)
                     .fillMaxWidth(),
-                text = stringResource(id = R.string.save),
+                text = if (listForEdit == null) stringResource(id = R.string.save) else stringResource(id = R.string.edit),
                 enable = language.isNotEmpty() && name.value.isNotEmpty(),
                 size = ButtonSize.XL
             ) {
-
-                if (isExist){
-                    ctx.toast(ctx.getString(R.string.this_list_already_exist))
-                }else{
-
-                    wordViewModel.addNewVocabList(
-                        VocabItemList(
-                            0,
-                            title = name.value,
-                            language = language,
-                            isSelected = false
-                        )
-                    )
-                    navController.popBackStack()
-
-                }
+                submitList = true
             }
         }
     }

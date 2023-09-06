@@ -20,6 +20,9 @@ interface WordDao {
     @Delete
     suspend fun delete(word: Word)
 
+    @Query("DELETE FROM Word WHERE  listId =:listId")
+    suspend fun deleteWordOfList(listId: Int)
+
     @Query("DELETE FROM Word")
     suspend fun clear()
 
@@ -28,7 +31,6 @@ interface WordDao {
 
     @Query("SELECT * FROM Word WHERE listId=:listId ORDER BY id DESC")
     fun getWordBaseListId(listId: Int): LiveData<List<Word>>
-
 
     @Query("SELECT * FROM Word WHERE id =:id")
     fun findWord(id: Int?): LiveData<Word>

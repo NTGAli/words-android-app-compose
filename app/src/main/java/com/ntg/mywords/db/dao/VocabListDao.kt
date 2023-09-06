@@ -1,18 +1,19 @@
 package com.ntg.mywords.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.VocabItemList
+import com.ntg.mywords.model.db.Word
 
 @Dao
 interface VocabListDao {
 
     @Insert
     suspend fun insert(vocabList: VocabItemList)
+
+    @Update
+    suspend fun update(vocabList: VocabItemList)
 
     @Query("DELETE FROM VocabItemList")
     suspend fun clear()
@@ -29,6 +30,12 @@ interface VocabListDao {
             "    ELSE 0\n" +
             "END")
     suspend fun selectList(id: Int)
+
+    @Query("SELECT * FROM VocabItemList WHERE id =:id")
+    fun findList(id: Int?): LiveData<VocabItemList>
+
+    @Query("DELETE FROM VocabItemList WHERE id =:id")
+    fun deleteById(id: Int?)
 
     @Query("SELECT * FROM VocabItemList WHERE isSelected=1")
     fun getDataOfListSelected(): LiveData<VocabItemList>

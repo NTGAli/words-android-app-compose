@@ -90,5 +90,12 @@
     <string name="incorrect_code">incorrect code!</string>
     <string name="or">or</string>
     <string name="continiue_with_google">continue with Google</string>
+    <string name="vocabs">Vocabs</string>
+    <string name="your_lists">your lists</string>
+    <string name="delete">delete</string>
+    <string name="edit">edit</string>
+    <string name="edit_your_list">Edit your list</string>
+    <string name="desc_delete_list">By removing this list, all the words within the list and the time you spend on it will be deleted.</string>
+    <string name="title_delete_list">Are you sure you want to delete this list?</string>
 
 </resources>

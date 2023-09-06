@@ -29,11 +29,18 @@ fun SplashScreen(
     LaunchedEffect(userData) {
         delay(200)
         if (userData.value?.email.orEmpty().isEmpty()) {
-            if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0 || lists.value?.filter { it.isSelected }
-                    .orEmpty()
-                    .isNotEmpty())) {
-                navController.navigate(Screens.HomeScreen.name) {
-                    popUpTo(0)
+            if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0)) {
+
+                if (lists.value?.filter { it.isSelected }
+                        .orEmpty()
+                        .isNotEmpty()){
+                    navController.navigate(Screens.HomeScreen.name) {
+                        popUpTo(0)
+                    }
+                }else{
+                    navController.navigate(Screens.VocabularyListScreen.name) {
+                        popUpTo(0)
+                    }
                 }
             }else{
                 navController.navigate(Screens.InsertEmailScreen.name) {

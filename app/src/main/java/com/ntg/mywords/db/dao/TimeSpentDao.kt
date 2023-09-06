@@ -17,6 +17,9 @@ interface TimeSpentDao {
     @Update
     suspend fun update(timeSpent: TimeSpent)
 
+    @Query("DELETE FROM TimeSpent WHERE  listId =:listId")
+    suspend fun deleteTimeOfList(listId: Int)
+
     @Query("DELETE FROM TimeSpent")
     suspend fun clear()
 
