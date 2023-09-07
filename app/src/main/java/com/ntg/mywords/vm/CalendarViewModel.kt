@@ -74,16 +74,16 @@ class CalendarViewModel @Inject constructor(
         finalData.value = calendarUiModel.visibleDates
     }
 
-    fun getDataFromDate(date: LocalDate, type: Int): LiveData<List<TimeSpent>> {
+    fun getDataFromDate(date: LocalDate, type: Int, listId: Int): LiveData<List<TimeSpent>> {
         viewModelScope.launch {
-            listOfTime = timeSpentDao.getDtaOfDate(date, type)
+            listOfTime = timeSpentDao.getDtaOfDate(date, type, listId)
         }
         return listOfTime
     }
 
-    fun getValidTimesSpentBaseType(type: Int): LiveData<List<TimeSpent>> {
+    fun getValidTimesSpentBaseType(type: Int, listId: Int): LiveData<List<TimeSpent>> {
         viewModelScope.launch {
-            allValidTimeSpent = timeSpentDao.getAllValidTimesBaseType(type)
+            allValidTimeSpent = timeSpentDao.getAllValidTimesBaseType(type, listId)
         }
         return allValidTimeSpent
     }

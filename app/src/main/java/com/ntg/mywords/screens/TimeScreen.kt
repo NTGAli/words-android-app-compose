@@ -31,6 +31,7 @@ import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.CalendarViewModel
+import com.ntg.mywords.vm.WordViewModel
 import java.time.LocalDate
 import java.time.format.FormatStyle
 
@@ -39,7 +40,8 @@ import java.time.format.FormatStyle
 @Composable
 fun TimeScreen(
     navController: NavController,
-    calendarViewModel: CalendarViewModel
+    calendarViewModel: CalendarViewModel,
+    wordViewModel: WordViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -55,7 +57,8 @@ fun TimeScreen(
             Content(
                 paddingValues = innerPadding,
                 navController,
-                calendarViewModel = calendarViewModel
+                calendarViewModel = calendarViewModel,
+                wordViewModel
             )
 
         }, floatingActionButton = {
@@ -76,7 +79,8 @@ fun TimeScreen(
 private fun Content(
     paddingValues: PaddingValues,
     navController: NavController,
-    calendarViewModel: CalendarViewModel
+    calendarViewModel: CalendarViewModel,
+    wordViewModel: WordViewModel
 ) {
 
     LazyColumn(Modifier.padding(paddingValues)) {
@@ -84,14 +88,16 @@ private fun Content(
         item {
             TimeContentItem(
                 calendarViewModel = calendarViewModel,
-                spendTimeType = SpendTimeType.Learning.ordinal
+                spendTimeType = SpendTimeType.Learning.ordinal,
+                wordViewModel
             )
         }
 
         item {
             TimeContentItem(
                 calendarViewModel = calendarViewModel,
-                spendTimeType = SpendTimeType.Revision.ordinal
+                spendTimeType = SpendTimeType.Revision.ordinal,
+                wordViewModel
             )
         }
 
@@ -105,9 +111,11 @@ private fun Content(
 @Composable
 private fun TimeContentItem(
     calendarViewModel: CalendarViewModel,
-    spendTimeType: Int
+    spendTimeType: Int,
+    wordViewModel: WordViewModel
 ) {
     val list = calendarViewModel.finalData.observeAsState().value.orEmpty().toMutableList()
+    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
 
     val dateTime = remember {
         mutableStateOf(LocalDate.now())
@@ -121,10 +129,10 @@ private fun TimeContentItem(
 
 
     val timeOfDate =
-        calendarViewModel.getDataFromDate(dateTime.value, spendTimeType).observeAsState().value
+        calendarViewModel.getDataFromDate(dateTime.value, spendTimeType, listId.orZero()).observeAsState().value
 
     val timeSpent =
-        calendarViewModel.getValidTimesSpentBaseType(spendTimeType).observeAsState().value.orEmpty()
+        calendarViewModel.getValidTimesSpentBaseType(spendTimeType, listId.orZero()).observeAsState().value.orEmpty()
             .toMutableStateList()
 
     timeSpent.forEach {
