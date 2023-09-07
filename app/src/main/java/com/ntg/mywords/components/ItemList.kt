@@ -63,7 +63,7 @@ fun ItemList(
         .border(
             width = 2.dp,
             shape = RoundedCornerShape(16.dp),
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
         )
         .clickable {
             onClick.invoke(id)

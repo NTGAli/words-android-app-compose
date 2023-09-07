@@ -235,6 +235,10 @@ class WordViewModel @Inject constructor(
 
     fun getAllVocabList() = vocabListDao.getAllVocabList()
 
+    fun getListWithCount() = vocabListDao.getListWithNumberOfWords()
+
+    fun checkIfNoListSelected() = viewModelScope.launch { vocabListDao.updateFirstItemIfAllNotSelected() }
+
     fun addNewVocabList(vocabItemList: VocabItemList) = viewModelScope.launch {
         vocabListDao.insert(vocabItemList)
     }

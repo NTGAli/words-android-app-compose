@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
@@ -52,12 +53,20 @@ fun HomeScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
 
+            val userData = loginViewModel.getUserData().asLiveData().observeAsState()
+
             HomeAppbar(
+                title = userData.value?.name,
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },
-                searchCallback = {},
-                notificationCallback = {}
+                searchCallback = {
+                                 navController.navigate(Screens.AllWordsScreen.name+"?openSearch=${true}")
+                },
+                notificationCallback = {},
+                voiceSearch = {
+                    navController.navigate(Screens.AllWordsScreen.name+"?openSearch=${true}"+"&query=$it")
+                }
             )
 //            Appbar(
 //                title = stringResource(R.string.my_words),

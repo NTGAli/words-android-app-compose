@@ -104,11 +104,14 @@ fun EditText(
                     }
                 }
             }, isError = setError.value,
-        supportingText = {
-            if (supportText.isNotEmpty()) {
+        supportingText = if (supportText.isNotEmpty()) {
+            {
+
+//            if (supportText.isNotEmpty()) {
                 Text(text = supportText)
+//            }
             }
-        }
+        }else null
 
 
     )

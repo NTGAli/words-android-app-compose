@@ -11,6 +11,7 @@ import com.ntg.mywords.screens.*
 import com.ntg.mywords.screens.login.*
 import com.ntg.mywords.screens.setting.BackupAndRestoreScreen
 import com.ntg.mywords.screens.setting.SettingScreen
+import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orTrue
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
@@ -52,8 +53,19 @@ fun AppNavHost(
             HomeScreen(navController, wordViewModel, loginViewModel)
         }
 
-        composable(Screens.AllWordsScreen.name) {
-            AllWordsScreen(navController, wordViewModel)
+        composable(Screens.AllWordsScreen.name+ "?openSearch={openSearch}"+"&query={query}",
+            arguments = listOf(navArgument("openSearch")
+            {
+                type = NavType.BoolType
+                defaultValue = false
+            },
+            navArgument("query")
+            {
+                type = NavType.StringType
+                defaultValue = ""
+            }
+            )) {
+            AllWordsScreen(navController, wordViewModel,it.arguments?.getBoolean("openSearch").orFalse(), it.arguments?.getString("query").orEmpty())
         }
 
         composable(Screens.RecentWordScreen.name) {
@@ -74,7 +86,7 @@ fun AppNavHost(
         }
 
         composable(Screens.SettingScreen.name) {
-            SettingScreen(navController)
+            SettingScreen(navController, loginViewModel, wordViewModel)
         }
 
         composable(Screens.CodeScreen.name) {

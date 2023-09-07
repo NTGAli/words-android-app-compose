@@ -75,12 +75,6 @@ fun ItemOption(
 
                 if (painter != null) {
                     Spacer(modifier = Modifier.padding(start = 32.dp))
-                } else {
-                    Spacer(modifier = Modifier.padding(start = 8.dp))
-
-                }
-
-                if (painter != null) {
                     Icon(
                         modifier = Modifier
                             .width(48.dp)
@@ -90,16 +84,16 @@ fun ItemOption(
                     )
                 }
 
+
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = 16.dp)
-                        .padding(end = 32.dp)
+                        .padding(vertical = 16.dp, horizontal = 16.dp)
                 ) {
 
                     Text(
                         text = text,
-                        style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+                        style = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
 
                     if (subText != null) {
@@ -141,7 +135,7 @@ fun ItemOption(
                 Divider(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = if (painter != null) 32.dp else 0.dp),
+                        .padding(horizontal = if (painter != null) 32.dp else 16.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
             }

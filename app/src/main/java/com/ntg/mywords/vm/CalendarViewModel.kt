@@ -58,6 +58,8 @@ class CalendarViewModel @Inject constructor(
         return lastItem
     }
 
+    fun removeNullTime() = viewModelScope.launch { timeSpentDao.removeNullTime() }
+
     fun stopLastTime() {
         viewModelScope.launch {
             timeSpentDao.stopTime(System.currentTimeMillis())

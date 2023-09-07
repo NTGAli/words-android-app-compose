@@ -133,6 +133,10 @@ private fun setupAppbar(
 @Composable
 private fun Content(paddingValues: PaddingValues, word: Word?) {
 
+    var visible by remember {
+        mutableStateOf(false)
+    }
+
     LazyColumn(
         modifier = Modifier
             .padding(paddingValues)
@@ -165,9 +169,6 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
         }
 
         item {
-            var visible by remember {
-                mutableStateOf(false)
-            }
             if (word?.verbForms?.pastSimple.orEmpty().isNotEmpty() &&
                 word?.verbForms?.pastParticiple.orEmpty().isNotEmpty()) {
 
@@ -176,7 +177,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                             .padding(top = 16.dp)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Primary100)
+                            .background(MaterialTheme.colorScheme.primary)
                             .clickable {
                                 visible = !visible
                             }
@@ -187,7 +188,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                                 .padding(start = 8.dp),
                             text = stringResource(id = R.string.verb_forms),
                             style = fontMedium14(
-                                Secondary900
+                                MaterialTheme.colorScheme.primaryContainer
                             )
                         )
 
