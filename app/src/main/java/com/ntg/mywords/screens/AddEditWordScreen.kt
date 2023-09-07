@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
@@ -82,7 +84,9 @@ private fun BottomBarContent(onClick: () -> Unit) {
     ) {
         Divider(Modifier.padding(bottom = 16.dp), color = MaterialTheme.colorScheme.surfaceVariant)
         CustomButton(
-            modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .fillMaxWidth(),
             text = "button",
             size = ButtonSize.XL
         ) {
@@ -183,6 +187,22 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var openVoiceToSpeech by remember {
+        mutableStateOf(false)
+    }
+
+    var voiceForWord by remember {
+        mutableStateOf(false)
+    }
+
+    var definitionForWord by remember {
+        mutableStateOf(false)
+    }
+
+    var exampleForWord by remember {
+        mutableStateOf(false)
+    }
+
     val exampleList = remember {
         mutableStateListOf<String>()
     }
@@ -191,6 +211,28 @@ private fun Content(
     val lifecycleOwner = LocalLifecycleOwner.current
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
 
+
+    OpenVoiceSearch(launch = openVoiceToSpeech, voiceSearch = {
+        if (it != null){
+            when{
+                voiceForWord -> {
+                    word.value = it
+                    voiceForWord = false
+                }
+
+                definitionForWord -> {
+                    definition.value = it
+                    definitionForWord = false
+                }
+
+                exampleForWord -> {
+                    example.value = it
+                    exampleForWord = false
+                }
+            }
+        }
+        openVoiceToSpeech = false
+    })
 
 
     if (wordEdit != null && !applyEdit.value) {
@@ -348,7 +390,13 @@ private fun Content(
         item {
             EditText(
                 Modifier
-                    .fillMaxWidth(), text = word, label = stringResource(R.string.word)
+                    .fillMaxWidth(), text = word, label = stringResource(R.string.word),
+                leadingIcon = ImageVector.vectorResource(id = R.drawable.microphone_02),
+                enabledLeadingIcon = true,
+                leadingIconOnClick = {
+                    openVoiceToSpeech = true
+                    voiceForWord = true
+                }
             )
 
             EditText(
@@ -365,7 +413,8 @@ private fun Content(
 
             if (word.value.isNotEmpty() && type.value.isNotEmpty()) {
                 CustomButton(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(top = 8.dp),
                     text = stringResource(id = R.string.auto_fill),
                     size = ButtonSize.SM,
@@ -435,7 +484,13 @@ private fun Content(
                 Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth(), text = definition, label = stringResource(R.string.definition),
-                enabled = !fetchDataWord.value
+                enabled = !fetchDataWord.value,
+                leadingIcon = ImageVector.vectorResource(id = R.drawable.microphone_02),
+                enabledLeadingIcon = true,
+                leadingIconOnClick = {
+                    openVoiceToSpeech = true
+                    definitionForWord = true
+                }
             )
         }
 
