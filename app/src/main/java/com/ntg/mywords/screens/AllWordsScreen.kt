@@ -27,13 +27,14 @@ import com.ntg.mywords.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel) {
+fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel, openSearch: Boolean, query: String) {
 
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
     val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
-    val enableSearchBar = remember { mutableStateOf(false) }
+    val enableSearchBar = remember { mutableStateOf(openSearch) }
+    val userSearchVoiceQuery = remember { mutableStateOf(query) }
 
-    wordViewModel.searchOnWords("", listId.orZero())
+    wordViewModel.searchOnWords(query, listId.orZero())
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -52,9 +53,9 @@ fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel) {
                     enableSearchBar.value = true
                 },
                 enableSearchbar = enableSearchBar,
+                searchQueryText = userSearchVoiceQuery,
                 onQueryChange = { query ->
                     wordViewModel.searchOnWords(query, listId.orZero())
-                    timber("asljdkawljflkjawlkfj $query")
                 },
                 navigationOnClick = { navController.popBackStack() }
             )

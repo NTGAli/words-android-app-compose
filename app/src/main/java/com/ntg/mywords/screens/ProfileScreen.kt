@@ -1,23 +1,36 @@
 package com.ntg.mywords.screens
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.Appbar
+import com.ntg.mywords.components.CustomButton
+import com.ntg.mywords.components.ItemList
+import com.ntg.mywords.components.ItemOption
+import com.ntg.mywords.model.VocabsListWithCount
+import com.ntg.mywords.model.components.ButtonSize
+import com.ntg.mywords.model.components.ButtonStyle
+import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.nav.Screens
-import com.ntg.mywords.ui.theme.Primary200
+import com.ntg.mywords.ui.theme.fontMedium12
 import com.ntg.mywords.ui.theme.fontMedium14
+import com.ntg.mywords.ui.theme.fontRegular12
+import com.ntg.mywords.util.orFalse
+import com.ntg.mywords.util.orZero
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
 
@@ -27,7 +40,7 @@ fun ProfileScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
     loginViewModel: LoginViewModel
-){
+) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -51,15 +64,257 @@ fun ProfileScreen(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Content(paddingValues: PaddingValues,navController: NavController,wordViewModel: WordViewModel){
+private fun Content(
+    paddingValues: PaddingValues,
+    navController: NavController,
+    wordViewModel: WordViewModel
+) {
 
-    LazyColumn(modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp)){
+    val ctx = LocalContext.current
+    val list = remember {
+        mutableStateOf(listOf<VocabsListWithCount>())
+    }
+    val listId = remember {
+        mutableStateOf(-1)
+    }
+
+    var deleteList by remember {
+        mutableStateOf(false)
+    }
+
+    var visible by remember {
+        mutableStateOf(false)
+    }
+
+    var openBottomSheet by remember {
+        mutableStateOf(false)
+    }
+    list.value = wordViewModel.getListWithCount()
+        .observeAsState().value?.sortedByDescending { it.isSelected } ?: listOf()
+
+
+    if (deleteList) {
+        wordViewModel.deleteListById(listId.value)
+        wordViewModel.deleteWordsOfList(listId.value)
+        wordViewModel.deleteTimeSpentOfList(listId.value)
+        wordViewModel.checkIfNoListSelected()
+        openBottomSheet = false
+        deleteList = false
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+    ) {
 
         item {
-            Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(id = R.string.your_lists), style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 16.dp)
+            ) {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    text = stringResource(id = R.string.your_lists),
+                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+
+                CustomButton(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    text = stringResource(id = R.string.add_new),
+                    iconStart = painterResource(
+                        id = R.drawable.plus_03
+                    ),
+                    size = ButtonSize.SM,
+                    style = ButtonStyle.TextOnly
+                ) {
+                    navController.navigate(Screens.SelectLanguageScreen.name)
+                }
+
+            }
+
         }
 
+        items(
+            list.value.subList(
+                0,
+                if (list.value.size >= 3) 3
+                else list.value.size
+            )
+        ) {
+
+            ItemList(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .padding(horizontal = 16.dp),
+                id = it.id.orZero(),
+                title = it.language.orEmpty(),
+                subTitle = it.title.orEmpty(),
+                tertiaryText = if (it.countOfTableTwoItems.orZero() == 0 || it.countOfTableTwoItems.orZero() == 1) stringResource(
+                    id = R.string.word_format,
+                    it.countOfTableTwoItems.orZero()
+                ) else stringResource(id = R.string.words_format, it.countOfTableTwoItems.orZero()),
+                isSelected = it.isSelected.orFalse(),
+                onClick = { id ->
+                    wordViewModel.selectList(id)
+                    navController.navigate(Screens.HomeScreen.name) {
+                        popUpTo(0)
+                    }
+                },
+                editCallback = { lId ->
+                    navController.navigate(Screens.SelectLanguageScreen.name + "?listId=$lId")
+
+                },
+                deleteCallback = { lId ->
+                    listId.value = lId
+                    openBottomSheet = true
+
+                }
+            )
+
+        }
+
+
+        if (list.value.size > 3) {
+            items(list.value.subList(3, list.value.size)) {
+                AnimatedVisibility(visible = visible) {
+
+
+                    ItemList(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .padding(horizontal = 16.dp),
+                        id = it.id.orZero(),
+                        title = it.language.orEmpty(),
+                        subTitle = it.title.orEmpty(),
+                        tertiaryText = if (it.countOfTableTwoItems.orZero() == 0 || it.countOfTableTwoItems.orZero() == 1) stringResource(
+                            id = R.string.word_format,
+                            it.countOfTableTwoItems.orZero()
+                        ) else stringResource(
+                            id = R.string.words_format,
+                            it.countOfTableTwoItems.orZero()
+                        ),
+                        isSelected = it.isSelected.orFalse(),
+                        onClick = { id ->
+                            wordViewModel.selectList(id)
+                            navController.navigate(Screens.HomeScreen.name) {
+                                popUpTo(0)
+                            }
+                        },
+                        editCallback = { lId ->
+                            navController.navigate(Screens.SelectLanguageScreen.name + "?listId=$lId")
+
+                        },
+                        deleteCallback = { lId ->
+                            listId.value = lId
+                            openBottomSheet = true
+
+                        }
+                    )
+
+                }
+            }
+        }
+
+
+
+        item {
+            if (list.value.size > 3){
+                CustomButton(
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    text = if (visible) stringResource(id = R.string.show_less) else stringResource(id = R.string.show_more),
+                    style = ButtonStyle.TextOnly,
+                    size = ButtonSize.MD
+                ) {
+                    visible = !visible
+                }
+            }
+
+            Divider(
+                modifier = Modifier.padding(top = 12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                thickness = 2.dp
+            )
+
+            ItemOption(modifier = Modifier.padding(top = 16.dp), text = "bookmarks") {
+                
+            }
+            
+            ItemOption(text = stringResource(id = R.string.settings)) {
+                navController.navigate(Screens.SettingScreen.name)
+            }
+            
+            ItemOption(text = "Help & feedback") {
+                
+            }
+            
+            ItemOption(text = "Privacy Policy", divider = false) {
+
+            }
+
+
+            Text(modifier = Modifier.padding(top = 32.dp, bottom = 64.dp).fillMaxWidth(),text = stringResource(id = R.string.vocabs_for_android_ver), style = fontRegular12(MaterialTheme.colorScheme.outline), textAlign = TextAlign.Center)
+
+        }
+    }
+
+
+    if (openBottomSheet) {
+        ModalBottomSheet(onDismissRequest = { openBottomSheet = false }) {
+
+            Column(
+                Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.title_delete_list), style = fontMedium14(
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+
+                Text(
+                    modifier = Modifier.padding(top = 4.dp),
+                    text = stringResource(id = R.string.desc_delete_list),
+                    style = fontMedium12(
+                        MaterialTheme.colorScheme.outline
+                    )
+                )
+
+                Row(modifier = Modifier.padding(top = 16.dp)) {
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        text = stringResource(id = R.string.no),
+                        type = ButtonType.Secondary,
+                        style = ButtonStyle.Outline,
+                        size = ButtonSize.LG
+                    ) {
+                        openBottomSheet = false
+                    }
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp),
+                        text = stringResource(id = R.string.yes),
+                        type = ButtonType.Danger,
+                        size = ButtonSize.LG
+                    ) {
+                        deleteList = true
+                    }
+                }
+            }
+
+
+        }
     }
 
 

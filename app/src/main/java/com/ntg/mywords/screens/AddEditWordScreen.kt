@@ -336,9 +336,6 @@ private fun Content(
     }
 
 
-//    wordDataItems.first { it.shortDefinitions?.contains(definition.value).orFalse() }.
-
-
     LazyColumn(
         modifier = Modifier.padding(
             top = paddingValues.calculateTopPadding(),

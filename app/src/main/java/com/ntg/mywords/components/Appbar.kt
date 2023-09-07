@@ -36,6 +36,7 @@ fun Appbar(
     navigationOnClick: () -> Unit = {},
     navigateIconColor: Color = Secondary500,
     enableSearchbar: MutableState<Boolean> = remember { mutableStateOf(false) },
+    searchQueryText: MutableState<String> = remember { mutableStateOf("") },
     actions: List<AppbarItem> = emptyList(),
     popupItems: List<PopupItem> = emptyList(),
     actionOnClick: (Int) -> Unit = {},
@@ -44,6 +45,7 @@ fun Appbar(
 ) {
     if (enableSearchbar.value) {
         SearchBar(
+            searchQueryText,
             onQueryChange = { onQueryChange.invoke(it) },
             onDismiss = { enableSearchbar.value = false })
     } else {
@@ -91,7 +93,7 @@ fun Appbar(
                 colors = TopAppBarDefaults.topAppBarColors(
 //                        MaterialTheme.colorScheme.background
                 ),
-                scrollBehavior = scrollBehavior,
+//                scrollBehavior = scrollBehavior,
                 windowInsets = TopAppBarDefaults.windowInsets
             )
 
@@ -163,8 +165,12 @@ fun Popup(modifier: Modifier = Modifier, popupItems: List<PopupItem>, onClick: (
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar(onQueryChange: (String) -> Unit, onDismiss: () -> Unit) {
-    var text by remember { mutableStateOf("") }
+fun SearchBar(
+    searchQueryText: MutableState<String> = remember { mutableStateOf("") },
+    onQueryChange: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var text by remember { mutableStateOf(searchQueryText.value) }
 
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current

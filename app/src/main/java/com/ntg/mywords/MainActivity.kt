@@ -87,10 +87,17 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel:
         events.value = event
     }
 
+
+    timber("jefnlweakflwaejlfkjwelkfj ${events.value.name}")
+
     when (events.value) {
-        Lifecycle.Event.ON_START,
+        Lifecycle.Event.ON_START -> {
+            calendarViewModel.removeNullTime()
+        }
+
         Lifecycle.Event.ON_RESUME -> {
             LaunchedEffect(key1 = listId) {
+                calendarViewModel.stopLastTime()
                 delay(100)
                 calendarViewModel.insertSpendTime(
                     TimeSpent(

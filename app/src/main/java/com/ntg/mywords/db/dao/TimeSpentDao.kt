@@ -23,6 +23,9 @@ interface TimeSpentDao {
     @Query("DELETE FROM TimeSpent")
     suspend fun clear()
 
+    @Query("DELETE FROM TimeSpent WHERE endUnix IS NULL")
+    suspend fun removeNullTime()
+
     @Query("SELECT * FROM TimeSpent ORDER BY id DESC LIMIT 1")
     fun getLastItem(): LiveData<TimeSpent>
 

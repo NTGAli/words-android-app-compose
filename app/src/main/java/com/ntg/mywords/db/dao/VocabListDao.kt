@@ -2,9 +2,8 @@ package com.ntg.mywords.db.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.ntg.mywords.model.db.TimeSpent
+import com.ntg.mywords.model.VocabsListWithCount
 import com.ntg.mywords.model.db.VocabItemList
-import com.ntg.mywords.model.db.Word
 
 @Dao
 interface VocabListDao {
@@ -35,12 +34,18 @@ interface VocabListDao {
     fun findList(id: Int?): LiveData<VocabItemList>
 
     @Query("DELETE FROM VocabItemList WHERE id =:id")
-    fun deleteById(id: Int?)
+    suspend fun deleteById(id: Int?)
 
     @Query("SELECT * FROM VocabItemList WHERE isSelected=1")
     fun getDataOfListSelected(): LiveData<VocabItemList>
 
     @Query("SELECT COUNT(*) FROM VocabItemList WHERE title=:name AND language=:language")
     fun isExist(name: String, language: String): LiveData<Int>
+
+    @Query("SELECT VocabItemList.id, VocabItemList.title, VocabItemList.language, VocabItemList.isSelected, COUNT(Word.listId) AS countOfTableTwoItems FROM VocabItemList LEFT JOIN Word ON VocabItemList.id = Word.listId GROUP BY VocabItemList.id ORDER BY VocabItemList.id DESC")
+    fun getListWithNumberOfWords(): LiveData<List<VocabsListWithCount>>
+
+    @Query("UPDATE VocabItemList SET isSelected = CASE WHEN (SELECT COUNT(*) FROM VocabItemList WHERE isSelected = 0) = (SELECT COUNT(*) FROM VocabItemList) THEN 1 ELSE isSelected END WHERE id = (SELECT MIN(id) FROM VocabItemList)")
+    suspend fun updateFirstItemIfAllNotSelected()
 
 }

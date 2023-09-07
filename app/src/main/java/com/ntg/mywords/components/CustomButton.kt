@@ -258,11 +258,12 @@ fun CustomButton(
             if (!loading){
                 
                 if (iconStart != null){
-                    Icon(painter = iconStart, contentDescription = "icon start",tint = Color.Unspecified)
+                    Icon(painter = iconStart, contentDescription = "icon start",tint = if (type == ButtonType.Variance) Color.Unspecified else textColor)
                     Spacer(modifier = Modifier.padding(start = 8.dp))
                 }
                 
                 Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
                     text = text,
                     color = textColor,
                     style = textStyle

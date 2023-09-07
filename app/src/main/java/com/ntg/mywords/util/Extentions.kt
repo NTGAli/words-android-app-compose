@@ -62,22 +62,24 @@ fun notEmptyOrNull(
 
 fun String.hasEnoughDigits() = count(Char::isDigit) > 0
 
+fun Char?.ifNotNull(): String? = this?.toString()
+
 
 fun enoughDigitsForPass(
     str: String,
     errorMsg: String
-) =if (str.count(Char::isDigit) > 0){
-        Success(str)
-    }else{
-        Failure(errorMsg)
-    }
+) = if (str.count(Char::isDigit) > 0) {
+    Success(str)
+} else {
+    Failure(errorMsg)
+}
 
 fun longEnoughForPass(
     str: String,
     errorMsg: String
-) = if (str.length > 4){
+) = if (str.length > 4) {
     Success(str)
-}else{
+} else {
     Failure(errorMsg)
 }
 
@@ -126,10 +128,10 @@ fun getSecBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
 }
 
 @Composable
-fun CountDownTimer(start: Int, onTick:(Int) -> Unit){
+fun CountDownTimer(start: Int, onTick: (Int) -> Unit) {
     var time = start
     LaunchedEffect(Unit) {
-        while(true) {
+        while (true) {
             delay(1.seconds)
             onTick.invoke(time--)
         }

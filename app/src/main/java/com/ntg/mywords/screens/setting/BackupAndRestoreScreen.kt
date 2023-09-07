@@ -291,48 +291,6 @@ private fun BackupOnServer(wordViewModel: WordViewModel, resultCallback: (Boolea
     }
 }
 
-
-@Composable
-fun RestoreUserDataFromServer(wordViewModel: WordViewModel, resultCallback: (Boolean) -> Unit) {
-    val owner = LocalLifecycleOwner.current
-    val ctx = LocalContext.current
-    wordViewModel.restoreUserBackup("alintg14@gmail.com").observe(owner) {
-        when (it) {
-            is NetworkResult.Error -> {
-                timber("restoreUserBackup ERR ${it.message}")
-                resultCallback.invoke(
-                    false
-                )
-            }
-            is NetworkResult.Loading -> {
-                timber("restoreUserBackup Loading")
-            }
-            is NetworkResult.Success -> {
-                timber("restoreUserBackup ${it.data}")
-
-                if (it.data?.isSuccess.orFalse() && it.data?.data?.words != null) {
-                    wordViewModel.clearWordsTable()
-                    wordViewModel.clearTimesTable()
-                    wordViewModel.clearVocabListsTable()
-                    wordViewModel.addAllWords(it.data.data.words)
-                    wordViewModel.addAllTimeSpent(it.data.data.totalTimeSpent ?: listOf())
-                    wordViewModel.addAllVocabLists(it.data.data.vocabList ?: listOf())
-                    resultCallback.invoke(
-                        true
-                    )
-
-                } else {
-                    ctx.toast(it.data?.message ?: ctx.getString(R.string.sth_wrong))
-                    resultCallback.invoke(
-                        false
-                    )
-                }
-
-            }
-        }
-    }
-}
-
 @Composable
 private fun ShareUserBackup(wordViewModel: WordViewModel, resultCode: (Int) -> Unit) {
     val ctx = LocalContext.current
@@ -384,30 +342,3 @@ private fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) 
     }
 }
 
-
-@Composable
-fun ReadBackupFromStorage(launch: Boolean, data: (String?) -> Unit) {
-    val contentResolver = LocalContext.current.contentResolver
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let { selectedUri ->
-                timber("USER_BACKUP_STORAGE ::: 55555")
-                val inputStream = contentResolver.openInputStream(selectedUri)
-                val reader = BufferedReader(InputStreamReader(inputStream))
-                val content = StringBuilder()
-
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    content.append(line)
-                    content.append("\n")
-                }
-                reader.close()
-                data.invoke(
-                    content.toString()
-                )
-            }
-        }
-    if (launch) {
-        launcher.launch("text/plain")
-    }
-}
