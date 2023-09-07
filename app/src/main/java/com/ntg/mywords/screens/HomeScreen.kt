@@ -68,20 +68,6 @@ fun HomeScreen(
                     navController.navigate(Screens.AllWordsScreen.name+"?openSearch=${true}"+"&query=$it")
                 }
             )
-//            Appbar(
-//                title = stringResource(R.string.my_words),
-//                enableNavigation = false,
-//                scrollBehavior = scrollBehavior,
-//                actions = listOf(
-//                    AppbarItem(
-//                        id = 0,
-//                        imageVector = ImageVector.vectorResource(id = R.drawable.settings)
-//                    )
-//                ),
-//                actionOnClick = {
-//                    navController.navigate(Screens.SettingScreen.name)
-//                }
-//            )
         },
         content = { innerPadding ->
 
