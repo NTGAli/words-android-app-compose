@@ -67,7 +67,7 @@ fun AddEditWordScreen(
             }
 
         }, bottomBar = {
-            BottomBarContent {
+            BottomBarContent(wordId != -1) {
                 submitWord(wordData, wordViewModel, context, wordId != -1, navController)
             }
         }
@@ -77,7 +77,7 @@ fun AddEditWordScreen(
 
 
 @Composable
-private fun BottomBarContent(onClick: () -> Unit) {
+private fun BottomBarContent(isEdit: Boolean ,onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(start = 32.dp, end = 32.dp)
@@ -87,7 +87,7 @@ private fun BottomBarContent(onClick: () -> Unit) {
             modifier = Modifier
                 .padding(bottom = 16.dp)
                 .fillMaxWidth(),
-            text = "button",
+            text = if (isEdit) stringResource(id = R.string.edit) else stringResource(id = R.string.insert),
             size = ButtonSize.XL
         ) {
             onClick.invoke()
@@ -211,6 +211,8 @@ private fun Content(
     val lifecycleOwner = LocalLifecycleOwner.current
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
 
+    timber("LIST_ID_SELECTED :::: $listId")
+
 
     OpenVoiceSearch(launch = openVoiceToSpeech, voiceSearch = {
         if (it != null){
@@ -282,12 +284,26 @@ private fun Content(
     val scope = rememberCoroutineScope()
 
     val phonetics = listOf(
+        "ɪ",
         "ɛ",
         "æ",
         "ʌ",
         "ə",
         "ɚ",
         "ʊ",
+        "ɔ",
+        "ɑ",
+        "ɑɪ",
+        "ɑʊ",
+        "ɔɪ",
+        "p",
+        "ɵ",
+        "ð",
+        "ʃ",
+        "ʒ",
+        "ʧ",
+        "ʤ",
+        "ŋ",
     )
 
     val typeWordItems = arrayListOf(
@@ -521,7 +537,6 @@ private fun Content(
                         exampleList.add(it)
                         example.value = ""
 
-//                        example.value = example.value+"kk"?
                     }
                 }
             )

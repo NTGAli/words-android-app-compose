@@ -55,10 +55,14 @@ private fun Content(
     listForEdit: VocabItemList?
 ) {
     val list = listOf(
-        "english",
-        "franch",
-        "adawdwa",
-        "wdwadwad"
+        "English",
+        "French",
+        "Spanish",
+        "German",
+        "Italian",
+        "Japanese",
+        "Chinese",
+        "Arabic"
     )
 
     val ctx = LocalContext.current
@@ -204,7 +208,8 @@ private fun Content(
                 EditText(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 8.dp)
+                        .padding(bottom = 16.dp),
                     label = stringResource(id = R.string.language),
                     text = anotherLanguage
                 ) {

@@ -110,6 +110,9 @@
     <string name="share_vocab">Share Vocab</string>
     <string name="leave_us_review">Leave us a Review</string>
     <string name="sogn_out">Sign-out</string>
-    <string name="vocabs_for_android_ver">Vocabs for Android v1.0.0</string>
+    <string name="vocabs_for_android_ver">Vocabs for Android v1.0.0-debug</string>
+    <string name="no_word_for_review">there is no word for review</string>
+    <string name="need_to_word_review">for review, you need to add one😅</string>
+    <string name="insert">insert</string>
 
 </resources>

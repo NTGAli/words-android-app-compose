@@ -29,7 +29,7 @@ interface TimeSpentDao {
     @Query("SELECT * FROM TimeSpent ORDER BY id DESC LIMIT 1")
     fun getLastItem(): LiveData<TimeSpent>
 
-    @Query("UPDATE TimeSpent SET endUnix = :end WHERE id = ( SELECT id FROM TimeSpent ORDER BY 1 DESC LIMIT 1)")
+    @Query("UPDATE TimeSpent SET endUnix =:end WHERE id = ( SELECT id FROM TimeSpent ORDER BY 1 DESC LIMIT 1)")
     suspend fun stopTime(end: Long)
 
     @Query("SELECT * FROM TimeSpent WHERE startUnix IS NOT NULL AND endUnix IS NOT NULL AND listId=:listId")

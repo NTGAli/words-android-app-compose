@@ -85,7 +85,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                 is NetworkResult.Success -> {
                     timber("VERIFY_BY_PASS ::: ${it.data}")
                     loading.value = false
-                    when(it.data){
+                    when(it.data?.message){
 
                         TypeOfMessagePass.INVALID_TOKEN.name -> {
                             ctx.toast(ctx.getString(R.string.download_from_google_play))
@@ -108,17 +108,15 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                             navController.navigate(Screens.InsertEmailScreen.name)
                         }
 
-                        else -> {
-                            loginViewModel.setUsername(it.data.orEmpty())
+                        TypeOfMessagePass.USER_SET_NAME.name -> {
+                            loginViewModel.setUsername(it.data.data?.name.orEmpty())
                             loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.VocabularyListScreen.name){
+                            navController.navigate(Screens.VocabularyListScreen.name) {
                                 popUpTo(0)
                             }
                         }
 
                     }
-
-
                 }
             }
 
@@ -139,7 +137,12 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                 .padding(top = 64.dp),
             texts = listOf(
                 "password",
-                "رمز"
+                "Mot de passe",
+                "パスワード",
+                "Contraseña",
+                "Passwort",
+                "Parola d'ordine",
+                "كلمة المرور",
             ),
             cursor = "\uD83D\uDD12",
         )

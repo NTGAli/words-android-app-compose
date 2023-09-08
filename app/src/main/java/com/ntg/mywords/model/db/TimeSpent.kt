@@ -12,5 +12,7 @@ data class TimeSpent(
     val date: String? = null,
     val startUnix: Long? = null,
     var endUnix: Long? = null,
-    val type: Int? = null
-)
+    val type: Int? = null,
+    var synced: Boolean? = null,
+
+    )

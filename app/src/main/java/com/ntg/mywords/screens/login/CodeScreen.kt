@@ -156,7 +156,10 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                 .padding(top = 64.dp),
             texts = listOf(
                 "Code",
-                "کد"
+                "コード",
+                "Código",
+                "Codice",
+                "شفرة",
             ),
             cursor = "\uD83D\uDD12",
         )

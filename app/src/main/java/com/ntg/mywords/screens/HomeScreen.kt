@@ -94,6 +94,7 @@ private fun Content(
     navController: NavController
 ) {
 
+    val ctx = LocalContext.current
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
     val wordsList: State<List<Word>?> =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState()
@@ -197,7 +198,13 @@ private fun Content(
                     ),
                     imageTint = Warning500
                 ) {
-                    navController.navigate(Screens.RevisionScreen.name)
+                    if (needToReviewCount.value != 0){
+                        navController.navigate(Screens.RevisionScreen.name)
+                    }else if (numberOfAllWords.value != 0){
+                        ctx.toast(ctx.getString(R.string.no_word_for_review))
+                    }else{
+                        ctx.toast(ctx.getString(R.string.need_to_word_review))
+                    }
                 }
 
                 ShapeTileWidget(

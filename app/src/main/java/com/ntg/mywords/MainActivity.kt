@@ -1,6 +1,7 @@
 package com.ntg.mywords
 
 import android.content.Context
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,7 +16,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
+import androidx.room.Room.databaseBuilder
 import com.ntg.mywords.di.SettingsSerializer
 import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.db.TimeSpent
@@ -31,7 +33,10 @@ import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.SignInViewModel
 import com.ntg.mywords.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 
@@ -87,8 +92,7 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel:
         events.value = event
     }
 
-
-    timber("jefnlweakflwaejlfkjwelkfj ${events.value.name}")
+    timber("awawldjlkawjdlkjwald ${events.value.name}")
 
     when (events.value) {
         Lifecycle.Event.ON_START -> {
@@ -96,8 +100,8 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel:
         }
 
         Lifecycle.Event.ON_RESUME -> {
-            LaunchedEffect(key1 = listId) {
-                calendarViewModel.stopLastTime()
+            LaunchedEffect(key1 = events) {
+//                calendarViewModel.stopLastTime()
                 delay(100)
                 calendarViewModel.insertSpendTime(
                     TimeSpent(
@@ -111,10 +115,13 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel:
                 )
             }
         }
-        Lifecycle.Event.ON_STOP,
+        Lifecycle.Event.ON_STOP -> {
+            calendarViewModel.stopLastTime()
+        }
         Lifecycle.Event.ON_PAUSE -> {
             calendarViewModel.stopLastTime()
-
+        }
+        Lifecycle.Event.ON_DESTROY -> {
         }
         else -> {}
     }

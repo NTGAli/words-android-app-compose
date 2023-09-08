@@ -10,4 +10,6 @@ data class VocabItemList (
     var title: String,
     var language: String,
     var isSelected: Boolean,
-        )
+    var synced: Boolean? = null,
+
+    )

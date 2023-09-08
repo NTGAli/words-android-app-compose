@@ -17,9 +17,12 @@ data class Word (
     val definition: String? = null,
     val audio: String? = null,
     val example: List<String>? = null,
+    val synonyms: List<String>? = null,
+    val antonyms: List<String>? = null,
     val dateCreated: Long? = null,
     var revisionCount: Int = 0,
     var lastRevisionTime: Long? = null,
+    var synced: Boolean? = null,
         )
 
 data class VerbForms(
