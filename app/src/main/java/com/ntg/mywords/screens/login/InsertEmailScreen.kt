@@ -221,7 +221,12 @@ private fun Content(
                     .padding(top = 64.dp),
                 texts = listOf(
                     "Hello",
-                    "سلام"
+                    "Bonjour",
+                    "こんにちは",
+                    "Hola",
+                    "Hallo",
+                    "Ciao",
+                    "مرحبًا",
                 ),
                 cursor = "\uD83D\uDC4B",
             )

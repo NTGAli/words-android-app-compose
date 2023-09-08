@@ -396,6 +396,7 @@ private fun ShareUserBackup(
     wordViewModel: WordViewModel,
     resultCode: (Int?) -> Unit
 ) {
+    timber("isShare ${share.value}")
     val ctx = LocalContext.current
     val shareFileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()

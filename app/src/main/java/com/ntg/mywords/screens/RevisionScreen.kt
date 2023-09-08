@@ -62,15 +62,6 @@ fun RevisionScreen(
 
             Content(paddingValues = innerPadding, wordViewModel, navController)
 
-        }, floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screens.AddEditScreen.name)
-                },
-                containerColor = Primary200
-            ) {
-                Icon(imageVector = Icons.Rounded.Add, tint = Color.Black, contentDescription = "FL")
-            }
         }
     )
 
@@ -115,7 +106,7 @@ private fun Content(
                         .padding(horizontal = 24.dp),
                     text = stringResource(id = R.string.do_you_remeber_this_word),
                     style = fontRegular14(
-                        Secondary900
+                        MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }
@@ -128,7 +119,7 @@ private fun Content(
                         .padding(horizontal = 24.dp)
                         .padding(top = 32.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Secondary100),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
@@ -136,11 +127,11 @@ private fun Content(
                         modifier = Modifier.padding(top = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = word.word.orEmpty(), style = fontMedium24(Secondary900))
+                        Text(text = word.word.orEmpty(), style = fontMedium24(MaterialTheme.colorScheme.onSurface))
                         Text(
                             modifier = Modifier.padding(start = 8.dp),
                             text = word.type.orEmpty(),
-                            style = fontRegular14(Secondary500)
+                            style = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }
 
@@ -149,14 +140,14 @@ private fun Content(
                         Text(
                             modifier = Modifier.padding(top = 8.dp),
                             text = word.translation.orEmpty(),
-                            style = fontMedium14(Secondary800)
+                            style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }
 
                     Text(
                         modifier = Modifier.padding(top = 8.dp),
                         text = word.pronunciation.orEmpty(),
-                        style = fontMedium14(Secondary800)
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
 
                     Text(
@@ -165,7 +156,7 @@ private fun Content(
                             .padding(horizontal = 16.dp)
                             .align(Alignment.Start),
                         text = word.definition.orEmpty(),
-                        style = fontRegular12(Secondary900)
+                        style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
 
                 }
@@ -176,7 +167,8 @@ private fun Content(
                 CustomButton(
                     modifier = Modifier
                         .padding(top = 16.dp)
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth(),
                     text = stringResource(R.string.yes),
                     style = ButtonStyle.Contained,
                     type = ButtonType.Success,
@@ -191,7 +183,8 @@ private fun Content(
                 CustomButton(
                     modifier = Modifier
                         .padding(top = 16.dp)
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth(),
                     text = stringResource(R.string.no),
                     style = ButtonStyle.TextOnly,
                     type = ButtonType.Danger,

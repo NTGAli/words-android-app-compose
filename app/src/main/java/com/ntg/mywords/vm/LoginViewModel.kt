@@ -25,7 +25,7 @@ class LoginViewModel @Inject constructor(
 
     private var verifyUser: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyCode: MutableLiveData<NetworkResult<String>> = MutableLiveData()
-    private var verifyPass: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private var verifyPass: MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> = MutableLiveData()
     private var verifyGoogle: MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> = MutableLiveData()
     private var updateName: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private lateinit var userDataSettings: Flow<UserDataAndSetting>
@@ -69,7 +69,7 @@ class LoginViewModel @Inject constructor(
     fun verifyUserByPassword(
         email: String,
         password: String
-    ): MutableLiveData<NetworkResult<String>> {
+    ): MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> {
         viewModelScope.launch {
             verifyPass = safeApiCall(Dispatchers.IO){
                 api.verifyPassword(
@@ -77,7 +77,7 @@ class LoginViewModel @Inject constructor(
                     email = email,
                     password = password
                 )
-            } as MutableLiveData<NetworkResult<String>>
+            } as MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>>
         }
         return verifyPass
     }

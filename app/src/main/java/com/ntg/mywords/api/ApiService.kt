@@ -39,7 +39,7 @@ interface ApiService {
         @Query("token") token: String,
         @Query("email") email: String,
         @Query("pass") password: String
-    ): Response<String>
+    ): Response<ResponseBody<VerifyUserRes>>
 
     @FormUrlEncoded
     @POST("registration/verifyByGoogle.php")
