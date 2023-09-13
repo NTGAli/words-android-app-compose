@@ -239,7 +239,8 @@ private fun Content(
             SampleItem(
                 title = word.word.toString(),
                 id = word.id,
-                painter = painter
+                painter = painter,
+                isBookmarked = word.bookmarked.orFalse()
             ) { _, id, _ ->
                 navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
             }

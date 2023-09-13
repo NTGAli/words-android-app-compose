@@ -243,19 +243,19 @@ private fun Content(
                 thickness = 2.dp
             )
 
-            ItemOption(modifier = Modifier.padding(top = 16.dp), text = "bookmarks") {
-                
+            ItemOption(modifier = Modifier.padding(top = 16.dp), text = stringResource(R.string.bookmarks)) {
+                navController.navigate(Screens.BookmarkScreen.name)
             }
             
             ItemOption(text = stringResource(id = R.string.settings)) {
                 navController.navigate(Screens.SettingScreen.name)
             }
             
-            ItemOption(text = "Help & feedback") {
+            ItemOption(text = stringResource(R.string.help_and_feedback)) {
                 
             }
             
-            ItemOption(text = "Privacy Policy", divider = false) {
+            ItemOption(text = stringResource(R.string.privacy_policy), divider = false) {
 
             }
 
