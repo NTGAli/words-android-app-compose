@@ -105,7 +105,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
                         TypeOfVerifyCode.USER_VERIFIED_NO_NAME.name -> {
                             loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.NameScreen.name){
+                            navController.navigate(Screens.NameScreen.name+ "?email=${email}"){
                                 popUpTo(0)
                             }
                         }

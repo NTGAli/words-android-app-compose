@@ -184,18 +184,26 @@ private fun Content(
             }
 
             SettingTitle(title = stringResource(id = R.string.account))
-            ItemOption(text = stringResource(id = R.string.name)) {
 
-            }
-            ItemOption(text = stringResource(id = R.string.email)) {
+            if (isUserLogged.value.orFalse()){
+                ItemOption(text = stringResource(id = R.string.name)) {
+                    navController.navigate(Screens.NameScreen.name)
+                }
+                ItemOption(text = stringResource(id = R.string.email)) {
 
-            }
-            ItemOption(text = stringResource(id = R.string.change_password)) {
+                }
+                ItemOption(text = stringResource(id = R.string.change_password)) {
 
-            }
-            ItemOption(text = stringResource(id = R.string.delete_account), divider = false) {
+                }
+                ItemOption(text = stringResource(id = R.string.delete_account), divider = false) {
 
+                }
+            }else{
+                ItemOption(text = stringResource(id = R.string.login), divider = false) {
+
+                }
             }
+
 
 
             SettingTitle(title = stringResource(id = R.string.theme))

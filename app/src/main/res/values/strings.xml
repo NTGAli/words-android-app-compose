@@ -118,5 +118,6 @@
     <string name="bookmarks_format">bookmarks (%s)</string>
     <string name="help_and_feedback"><![CDATA[Help & feedback]]></string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="login">login</string>
 
 </resources>
