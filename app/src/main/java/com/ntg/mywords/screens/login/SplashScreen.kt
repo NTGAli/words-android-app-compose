@@ -25,6 +25,7 @@ fun SplashScreen(
 
     timber("VOCAB_LISTS ::::::: $lists")
     timber("USER_EMAIL :::::::: ${userData.value?.email}")
+    timber("USER_NAME :::::::: ${userData.value?.name}")
 
     LaunchedEffect(userData) {
         delay(200)

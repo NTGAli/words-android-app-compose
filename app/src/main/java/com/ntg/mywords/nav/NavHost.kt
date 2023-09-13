@@ -134,7 +134,8 @@ fun AppNavHost(
             arguments = listOf(navArgument("email")
             {
                 type = NavType.StringType
-                defaultValue = "-"
+                defaultValue = null
+                nullable = true
             })
         ) {
             NameScreen(navController, loginViewModel, it.arguments?.getString("email").orEmpty())
