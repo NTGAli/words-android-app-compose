@@ -5,16 +5,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.ui.theme.*
 
@@ -24,6 +24,7 @@ fun SampleItem(
     id: Int? = null,
     title: String,
     painter: Painter? = null,
+    isBookmarked: Boolean = false,
     enableRadioButton: Boolean = false,
     radioSelect: MutableState<Boolean> = remember { mutableStateOf(false) },
     onClick: ((String, Int?, Boolean?) -> Unit)? = null,
@@ -61,9 +62,19 @@ fun SampleItem(
                 text = title,
                 style = fontMedium16(MaterialTheme.colorScheme.onSurfaceVariant)
             )
+
+            if (isBookmarked) {
+                Icon(
+                    Icons.Rounded.Bookmark,
+                    contentDescription = "bookmarked",
+                    modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp).size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             if (painter != null) {
                 Image(
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp),
                     painter = painter,
                     contentDescription = "imageSampleItem"
                 )
@@ -71,6 +82,10 @@ fun SampleItem(
 
         }
     }
+}
 
-
+@Preview
+@Composable
+private fun SampleItemPreview() {
+    SampleItem(title = "test", isBookmarked = true)
 }

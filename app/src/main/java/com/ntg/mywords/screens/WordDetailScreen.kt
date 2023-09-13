@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,6 +29,7 @@ import com.ntg.mywords.model.components.*
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
+import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,6 +98,7 @@ private fun setupAppbar(
             )
         ),
         actionOnClick = {
+            wordViewModel.isBookmarked(!word?.bookmarked.orFalse(), wordId)
         },
         popupItemOnClick = {
             if (it == 1) {
@@ -100,23 +106,50 @@ private fun setupAppbar(
             } else {
                 openBottomSheet = true
             }
-        }
+        },
+        actions = listOf(
+            AppbarItem(
+                0,
+                if (word?.bookmarked.orFalse()) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder
+            )
+        )
     )
 
 
-    if (openBottomSheet){
-        ModalBottomSheet(onDismissRequest = { openBottomSheet = false },
-            sheetState = bottomSheetState) {
+    if (openBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { openBottomSheet = false },
+            sheetState = bottomSheetState
+        ) {
 
-            Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp)) {
-                Text(text = "Are you sure you want to delete this word?", style = fontMedium14(
-                    MaterialTheme.colorScheme.onBackground))
+            Column(
+                Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)) {
+                Text(
+                    text = "Are you sure you want to delete this word?", style = fontMedium14(
+                        MaterialTheme.colorScheme.onBackground
+                    )
+                )
 
                 Row(modifier = Modifier.padding(top = 16.dp)) {
-                    CustomButton(modifier = Modifier.weight(1f).padding(end = 4.dp), text = "no", type = ButtonType.Secondary, style = ButtonStyle.Outline){
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        text = "no",
+                        type = ButtonType.Secondary,
+                        style = ButtonStyle.Outline
+                    ) {
                         openBottomSheet = false
                     }
-                    CustomButton(modifier = Modifier.weight(1f).padding(start = 4.dp), text = "yes", type = ButtonType.Danger){
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp),
+                        text = "yes",
+                        type = ButtonType.Danger
+                    ) {
                         wordViewModel.deleteWord(word ?: Word())
                         openBottomSheet = false
                         navController.popBackStack()
@@ -148,7 +181,10 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                 modifier = Modifier.padding(top = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = word?.word.orEmpty(), style = fontMedium24(MaterialTheme.colorScheme.onBackground))
+                Text(
+                    text = word?.word.orEmpty(),
+                    style = fontMedium24(MaterialTheme.colorScheme.onBackground)
+                )
                 Text(
                     modifier = Modifier.padding(start = 24.dp),
                     text = word?.type.orEmpty(),
@@ -170,50 +206,51 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
 
         item {
             if (word?.verbForms?.pastSimple.orEmpty().isNotEmpty() &&
-                word?.verbForms?.pastParticiple.orEmpty().isNotEmpty()) {
+                word?.verbForms?.pastParticiple.orEmpty().isNotEmpty()
+            ) {
 
-                    Column(
+                Column(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable {
+                            visible = !visible
+                        }
+                ) {
+                    Text(
                         modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable {
-                                visible = !visible
-                            }
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .padding(start = 8.dp),
-                            text = stringResource(id = R.string.verb_forms),
-                            style = fontMedium14(
-                                MaterialTheme.colorScheme.primaryContainer
-                            )
+                            .padding(vertical = 8.dp)
+                            .padding(start = 8.dp),
+                        text = stringResource(id = R.string.verb_forms),
+                        style = fontMedium14(
+                            MaterialTheme.colorScheme.primaryContainer
                         )
+                    )
 
-                        AnimatedVisibility(visible = visible) {
+                    AnimatedVisibility(visible = visible) {
 
-                            Column(modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) {
-                                if (word?.verbForms?.pastSimple != null) {
-                                    TextWithContext(
-                                        title = stringResource(id = R.string.past_simple),
-                                        description = word.verbForms.pastSimple
-                                    )
-                                }
-
-                                if (word?.verbForms?.pastParticiple != null) {
-                                    TextWithContext(
-                                        modifier = Modifier.padding(top = 8.dp),
-                                        title = stringResource(id = R.string.past_participle),
-                                        description = word.verbForms.pastParticiple
-                                    )
-                                }
+                        Column(modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) {
+                            if (word?.verbForms?.pastSimple != null) {
+                                TextWithContext(
+                                    title = stringResource(id = R.string.past_simple),
+                                    description = word.verbForms.pastSimple
+                                )
                             }
 
+                            if (word?.verbForms?.pastParticiple != null) {
+                                TextWithContext(
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    title = stringResource(id = R.string.past_participle),
+                                    description = word.verbForms.pastParticiple
+                                )
+                            }
                         }
 
                     }
+
+                }
             }
         }
 

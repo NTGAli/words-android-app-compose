@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Words</string>
+    <string name="app_name">Vocabs</string>
     <string name="workout_report">Workout Report</string>
     <string name="words">Words</string>
     <string name="my_words">My Words</string>
@@ -114,5 +114,9 @@
     <string name="no_word_for_review">there is no word for review</string>
     <string name="need_to_word_review">for review, you need to add one😅</string>
     <string name="insert">insert</string>
+    <string name="bookmarks">bookmarks</string>
+    <string name="bookmarks_format">bookmarks (%s)</string>
+    <string name="help_and_feedback"><![CDATA[Help & feedback]]></string>
+    <string name="privacy_policy">Privacy Policy</string>
 
 </resources>

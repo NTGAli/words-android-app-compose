@@ -25,6 +25,7 @@ import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.Primary200
 import com.ntg.mywords.util.getIconStateRevision
+import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orZero
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.vm.WordViewModel
@@ -100,7 +101,8 @@ private fun Content(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 title = word.word.toString(),
                 id = word.id,
-                painter = painter
+                painter = painter,
+                isBookmarked = word.bookmarked.orFalse()
             ) { title, id, _ ->
 
                 timber("kawljdlkajwdlkjawlkdj $id")

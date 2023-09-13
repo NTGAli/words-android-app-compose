@@ -149,6 +149,10 @@ fun AppNavHost(
             ProfileScreen(navController, wordViewModel, loginViewModel)
         }
 
+        composable(Screens.BookmarkScreen.name) {
+            BookmarkScreen(navController, wordViewModel,false,"")
+        }
+
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",
             arguments = listOf(navArgument("wordId")

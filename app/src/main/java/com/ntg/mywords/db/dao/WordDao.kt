@@ -44,6 +44,12 @@ interface WordDao {
     @Query("SELECT * FROM Word WHERE (word LIKE '%' || :query || '%') AND listId=:listId")
     suspend fun search(query: String,listId: Int): List<Word>
 
+    @Query("SELECT * FROM Word WHERE (word LIKE '%' || :query || '%') AND listId=:listId AND bookmarked=1")
+    suspend fun searchOnBookmark(query: String,listId: Int): List<Word>
+
     @Query("SELECT * FROM Word WHERE word LIKE '%' || :query || '%' AND (dateCreated BETWEEN :start AND :end) AND listId=:listId")
     suspend fun searchOnRecent(query: String, start: Long, end: Long, listId: Int): List<Word>
+
+    @Query("UPDATE Word SET bookmarked=:isBookmarked WHERE id=:id")
+    suspend fun isBookmark(isBookmarked: Boolean, id: Int)
 }

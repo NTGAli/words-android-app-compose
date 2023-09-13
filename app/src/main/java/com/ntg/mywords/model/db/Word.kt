@@ -22,6 +22,7 @@ data class Word (
     val dateCreated: Long? = null,
     var revisionCount: Int = 0,
     var lastRevisionTime: Long? = null,
+    var bookmarked: Boolean? = false,
     var synced: Boolean? = null,
         )
 

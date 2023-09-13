@@ -47,12 +47,14 @@ class WordViewModel @Inject constructor(
     private var word: LiveData<Word> = MutableLiveData()
     private var dataList: LiveData<VocabItemList> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
+    var searchedWordOnBookmarked: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
     private var allValidTimeSpentBaseListId: LiveData<List<TimeSpent>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
     private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
-    private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =MutableLiveData()
+    private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =
+        MutableLiveData()
     private var lastUserBackupDate: MutableLiveData<NetworkResult<String>> =
         MutableLiveData()
     private lateinit var _recentLocations: Flow<UserDataAndSetting>
@@ -67,7 +69,18 @@ class WordViewModel @Inject constructor(
     fun searchOnRecentWords(query: String, listId: Int) {
         viewModelScope.launch {
             searchedRecentWord.value =
-                wordDao.searchOnRecent(query, 7.getUnixTimeNDaysAgo(), System.currentTimeMillis(), listId)
+                wordDao.searchOnRecent(
+                    query,
+                    7.getUnixTimeNDaysAgo(),
+                    System.currentTimeMillis(),
+                    listId
+                )
+        }
+    }
+
+    fun searchOnBookmarked(query: String, listId: Int) {
+        viewModelScope.launch {
+            searchedWordOnBookmarked.value = wordDao.searchOnBookmark(query, listId)
         }
     }
 
@@ -95,7 +108,7 @@ class WordViewModel @Inject constructor(
         }
     }
 
-    fun deleteWordsOfList(listId: Int){
+    fun deleteWordsOfList(listId: Int) {
         viewModelScope.launch {
             wordDao.deleteWordOfList(listId)
         }
@@ -237,7 +250,8 @@ class WordViewModel @Inject constructor(
 
     fun getListWithCount() = vocabListDao.getListWithNumberOfWords()
 
-    fun checkIfNoListSelected() = viewModelScope.launch { vocabListDao.updateFirstItemIfAllNotSelected() }
+    fun checkIfNoListSelected() =
+        viewModelScope.launch { vocabListDao.updateFirstItemIfAllNotSelected() }
 
     fun addNewVocabList(vocabItemList: VocabItemList) = viewModelScope.launch {
         vocabListDao.insert(vocabItemList)
@@ -312,5 +326,8 @@ class WordViewModel @Inject constructor(
         }
         return _recentLocations
     }
+
+    fun isBookmarked(isBookmarked: Boolean, id: Int) =
+        viewModelScope.launch { wordDao.isBookmark(isBookmarked, id) }
 
 }
