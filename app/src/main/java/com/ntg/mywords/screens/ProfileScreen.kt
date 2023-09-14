@@ -15,12 +15,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.ntg.mywords.R
-import com.ntg.mywords.components.Appbar
-import com.ntg.mywords.components.CustomButton
-import com.ntg.mywords.components.ItemList
-import com.ntg.mywords.components.ItemOption
+import com.ntg.mywords.components.*
 import com.ntg.mywords.model.VocabsListWithCount
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
@@ -56,7 +54,8 @@ fun ProfileScreen(
             Content(
                 paddingValues = innerPadding,
                 navController = navController,
-                wordViewModel = wordViewModel
+                wordViewModel = wordViewModel,
+                loginViewModel = loginViewModel
             )
 
         }
@@ -69,7 +68,8 @@ fun ProfileScreen(
 private fun Content(
     paddingValues: PaddingValues,
     navController: NavController,
-    wordViewModel: WordViewModel
+    wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel
 ) {
 
     val ctx = LocalContext.current
@@ -94,6 +94,8 @@ private fun Content(
     list.value = wordViewModel.getListWithCount()
         .observeAsState().value?.sortedByDescending { it.isSelected } ?: listOf()
 
+    val userData = loginViewModel.getUserData().asLiveData().observeAsState()
+
 
     if (deleteList) {
         wordViewModel.deleteListById(listId.value)
@@ -108,6 +110,22 @@ private fun Content(
         modifier = Modifier
             .padding(paddingValues)
     ) {
+
+
+        item {
+            UserDataView(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp, bottom = 24.dp),
+                userDataAndSetting = userData.value,
+                loginOnClick = {
+                    navController.navigate(Screens.InsertEmailScreen.name + "?skip=${false}")
+                },
+                editNameClick = {
+                    navController.navigate(Screens.NameScreen.name)
+
+                })
+        }
 
         item {
 
@@ -223,13 +241,15 @@ private fun Content(
 
 
         item {
-            if (list.value.size > 3){
+            if (list.value.size > 3) {
                 CustomButton(
                     modifier = Modifier
                         .padding(top = 12.dp)
                         .padding(horizontal = 16.dp)
                         .fillMaxWidth(),
-                    text = if (visible) stringResource(id = R.string.show_less) else stringResource(id = R.string.show_more),
+                    text = if (visible) stringResource(id = R.string.show_less) else stringResource(
+                        id = R.string.show_more
+                    ),
                     style = ButtonStyle.TextOnly,
                     size = ButtonSize.MD
                 ) {
@@ -243,24 +263,34 @@ private fun Content(
                 thickness = 2.dp
             )
 
-            ItemOption(modifier = Modifier.padding(top = 16.dp), text = stringResource(R.string.bookmarks)) {
+            ItemOption(
+                modifier = Modifier.padding(top = 16.dp),
+                text = stringResource(R.string.bookmarks)
+            ) {
                 navController.navigate(Screens.BookmarkScreen.name)
             }
-            
+
             ItemOption(text = stringResource(id = R.string.settings)) {
                 navController.navigate(Screens.SettingScreen.name)
             }
-            
+
             ItemOption(text = stringResource(R.string.help_and_feedback)) {
-                
+
             }
-            
+
             ItemOption(text = stringResource(R.string.privacy_policy), divider = false) {
 
             }
 
 
-            Text(modifier = Modifier.padding(top = 32.dp, bottom = 64.dp).fillMaxWidth(),text = stringResource(id = R.string.vocabs_for_android_ver), style = fontRegular12(MaterialTheme.colorScheme.outline), textAlign = TextAlign.Center)
+            Text(
+                modifier = Modifier
+                    .padding(top = 32.dp, bottom = 64.dp)
+                    .fillMaxWidth(),
+                text = stringResource(id = R.string.vocabs_for_android_ver),
+                style = fontRegular12(MaterialTheme.colorScheme.outline),
+                textAlign = TextAlign.Center
+            )
 
         }
     }

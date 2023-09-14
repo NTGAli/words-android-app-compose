@@ -154,6 +154,10 @@ fun AppNavHost(
             BookmarkScreen(navController, wordViewModel,false,"")
         }
 
+        composable(Screens.UpdateEmailScreen.name) {
+            UpdateEmailScreen(navController, loginViewModel)
+        }
+
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",
             arguments = listOf(navArgument("wordId")
