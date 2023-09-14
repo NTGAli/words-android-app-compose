@@ -139,19 +139,20 @@ fun CustomButton(
         ButtonType.Danger -> {
             when (style) {
                 ButtonStyle.Contained -> {
-                    background = Danger500
-                    borderColor = Danger500
-                    textColor = Color.White
+                    background = MaterialTheme.colorScheme.error
+                    borderColor = MaterialTheme.colorScheme.error
+                    textColor = MaterialTheme.colorScheme.onError
+                    loadingColor = MaterialTheme.colorScheme.onError
                 }
                 ButtonStyle.Outline -> {
                     background = Color.Transparent
-                    borderColor = Danger500
-                    textColor = Danger500
+                    borderColor = MaterialTheme.colorScheme.error
+                    textColor = MaterialTheme.colorScheme.onErrorContainer
                 }
                 ButtonStyle.TextOnly -> {
                     background = Color.Transparent
                     borderColor = Color.Transparent
-                    textColor = Danger500
+                    textColor = MaterialTheme.colorScheme.error
                 }
             }
         }

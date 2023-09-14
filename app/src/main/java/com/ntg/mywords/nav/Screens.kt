@@ -20,7 +20,9 @@ enum class Screens {
     LoginWithPasswordScreen,
     ProfileScreen,
     BookmarkScreen,
-    UpdateEmailScreen
+    UpdateEmailScreen,
+    DeleteAccountScreen,
+    FinishScreen
 
 
 }

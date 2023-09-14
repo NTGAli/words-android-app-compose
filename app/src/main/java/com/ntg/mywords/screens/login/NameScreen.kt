@@ -58,7 +58,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         mutableStateOf(false)
     }
 
-    if (userData != null && !isExistingUsernameApplied){
+    if (userData != null && !isExistingUsernameApplied && userData.name.orEmpty().isNotEmpty()){
         text = "I am ${userData.name} \uD83D\uDE0E"
         isExistingUsernameApplied = true
     }

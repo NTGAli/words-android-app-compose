@@ -114,7 +114,7 @@ private fun Content(
 
     if (restoreData) {
         restoreData = false
-        RestoreUserDataFromServer(wordViewModel) {
+        RestoreUserDataFromServer(email,wordViewModel) {
             loading = false
             if (it) ctx.toast(ctx.getString(R.string.restore_done))
             else ctx.toast(ctx.getString(R.string.restore_failed))
