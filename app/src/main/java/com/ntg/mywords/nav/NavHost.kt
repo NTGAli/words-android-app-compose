@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ntg.mywords.screens.*
 import com.ntg.mywords.screens.login.*
-import com.ntg.mywords.screens.setting.BackupAndRestoreScreen
 import com.ntg.mywords.screens.setting.SettingScreen
 import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orTrue
@@ -113,9 +112,9 @@ fun AppNavHost(
             LoginWithPasswordScreen(navController, it.arguments?.getString("email").orEmpty(), loginViewModel)
         }
 
-        composable(Screens.BackupAndRestoreScreen.name) {
-            BackupAndRestoreScreen(navController, wordViewModel)
-        }
+//        composable(Screens.BackupAndRestoreScreen.name) {
+//            BackupAndRestoreScreen(navController, wordViewModel)
+//        }
 
         composable(Screens.InsertEmailScreen.name+"?skip={skip}",
         arguments = listOf(navArgument("skip"){
@@ -157,6 +156,15 @@ fun AppNavHost(
         composable(Screens.UpdateEmailScreen.name) {
             UpdateEmailScreen(navController, loginViewModel)
         }
+
+        composable(Screens.DeleteAccountScreen.name) {
+            DeleteAccountScreen(navController, loginViewModel, wordViewModel)
+        }
+
+        composable(Screens.FinishScreen.name) {
+            FinishScreen(navController)
+        }
+
 
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",

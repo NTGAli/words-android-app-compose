@@ -99,4 +99,13 @@ interface ApiService {
         @Field("email") email: String,
     ): Response<String>
 
+
+    @FormUrlEncoded
+    @POST("registration/DeleteAccount.php")
+    suspend fun deleteAccount(
+        @Field("token") token: String,
+        @Field("email") email: String,
+        @Field("password") password: String,
+    ): Response<ResponseBody<Nothing>>
+
 }

@@ -109,7 +109,7 @@
     <string name="light_mode">Light mode</string>
     <string name="share_vocab">Share Vocab</string>
     <string name="leave_us_review">Leave us a Review</string>
-    <string name="sogn_out">Sign-out</string>
+    <string name="sign_out">Sign-out</string>
     <string name="vocabs_for_android_ver">Vocabs for Android v1.0.0-debug</string>
     <string name="no_word_for_review">there is no word for review</string>
     <string name="need_to_word_review">for review, you need to add one😅</string>
@@ -126,5 +126,16 @@
     <string name="invalid_new_mail">invalid email</string>
     <string name="hey_format">Hey, %s</string>
     <string name="havent_logged">You haven\'t logged in yet.</string>
+    <string name="title_delete_account">I understand that by checking this box and proceeding with the account deletion process, I am confirming the following:</string>
+    <string name="option_one_delete_account">All data associated with my account, including my email address and name, will be permanently deleted and cannot be recovered.</string>
+    <string name="option_two_delete_account">Any backups of my lists, word and others stored on the server will also be deleted, and I will not be able to access them again.</string>
+    <string name="footer_delete_account">I acknowledge that this action is irreversible and that I am solely responsible for any consequences that may arise from the deletion of my account.</string>
+    <string name="delete_my_account">Delete my account</string>
+    <string name="logout_instead">logout instead</string>
+    <string name="password_not_match">Password doesn\'t match!</string>
+    <string name="finish">finish</string>
+    <string name="before_logout">Before logout</string>
+    <string name="logout_message">Make sure you have a backup, when you log out, the words and lists you created will be deleted!</string>
+    <string name="cancel">cancel</string>
 
 </resources>

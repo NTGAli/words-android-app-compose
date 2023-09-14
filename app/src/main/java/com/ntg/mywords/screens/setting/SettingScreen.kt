@@ -1,6 +1,5 @@
 package com.ntg.mywords.screens.setting
 
-import android.content.ClipData.Item
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -105,25 +104,31 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    val userEmail = remember {
+        mutableStateOf("")
+    }
+
     isUserLogged.value =
         loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty() != ""
 
+    userEmail.value =
+        loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
 
-    if (setBackupOnServer.value) {
-        BackupOnServer(wordViewModel) {
-            setBackupOnServer.value = false
-            if (it) {
-                ctx.toast(ctx.getString(R.string.backup_done))
-                visibleSuccess.value = true
 
-            } else {
-                ctx.toast(ctx.getString(R.string.backup_failed))
-            }
+    BackupOnServer(setBackupOnServer, userEmail.value, wordViewModel) {
+
+        setBackupOnServer.value = false
+        if (it) {
+            ctx.toast(ctx.getString(R.string.backup_done))
+            visibleSuccess.value = true
+
+        } else {
+            ctx.toast(ctx.getString(R.string.backup_failed))
         }
     }
 
     if (restoreFromServer.value) {
-        RestoreUserDataFromServer(wordViewModel = wordViewModel) {
+        RestoreUserDataFromServer(wordViewModel = wordViewModel, email = userEmail.value) {
             restoreFromServer.value = false
             if (it) {
                 visibleSuccess.value = true
@@ -185,7 +190,7 @@ private fun Content(
 
             SettingTitle(title = stringResource(id = R.string.account))
 
-            if (isUserLogged.value.orFalse()){
+            if (isUserLogged.value.orFalse()) {
                 ItemOption(text = stringResource(id = R.string.name)) {
                     navController.navigate(Screens.NameScreen.name)
                 }
@@ -196,9 +201,9 @@ private fun Content(
 //
 //                }
                 ItemOption(text = stringResource(id = R.string.delete_account), divider = false) {
-
+                    navController.navigate(Screens.DeleteAccountScreen.name)
                 }
-            }else{
+            } else {
                 ItemOption(text = stringResource(id = R.string.login), divider = false) {
 
                 }
@@ -220,7 +225,7 @@ private fun Content(
             }
 
             SettingTitle(title = stringResource(id = R.string.other))
-            ItemOption(text = stringResource(id = R.string.sogn_out), divider = false) {
+            ItemOption(text = stringResource(id = R.string.sign_out), divider = false) {
 
             }
         }
@@ -249,7 +254,6 @@ private fun Content(
                         visibleWithAnimation = visibleSuccess,
                         subText = if (isUserLogged.value) null else stringResource(id = R.string.loggin_required)
                     ) {
-
                         if (isUserLogged.value) {
                             setBackupOnServer.value = true
                         } else {
@@ -334,22 +338,29 @@ private fun SettingTitle(title: String) {
 
 
 @Composable
-private fun BackupOnServer(wordViewModel: WordViewModel, resultCallback: (Boolean) -> Unit) {
+private fun BackupOnServer(
+    setBackup: MutableState<Boolean> = remember { mutableStateOf(false) },
+    email: String,
+    wordViewModel: WordViewModel,
+    resultCallback: (Boolean) -> Unit
+) {
+    timber("SET_BACKUP_STATUS ${setBackup.value}")
     val owner = LocalLifecycleOwner.current
     UserBackup(wordViewModel = wordViewModel) { wordData ->
-        wordViewModel.upload(wordData, "alintg14@gmail.com").observe(owner) {
-
-            when (it) {
-                is NetworkResult.Error -> {
-                    timber("BackupUserData :::: ERR ${it.message}")
-                    resultCallback.invoke(false)
-                }
-                is NetworkResult.Loading -> {
-                    timber("BackupUserData :::: LD")
-                }
-                is NetworkResult.Success -> {
-                    timber("BackupUserData :::: ${it.data}")
-                    resultCallback.invoke(true)
+        if (setBackup.value) {
+            wordViewModel.upload(wordData, email).observe(owner) {
+                when (it) {
+                    is NetworkResult.Error -> {
+                        timber("BackupUserData :::: ERR ${it.message}")
+                        resultCallback.invoke(false)
+                    }
+                    is NetworkResult.Loading -> {
+                        timber("BackupUserData :::: LD")
+                    }
+                    is NetworkResult.Success -> {
+                        timber("BackupUserData :::: ${it.data}")
+                        resultCallback.invoke(true)
+                    }
                 }
             }
         }
@@ -358,10 +369,14 @@ private fun BackupOnServer(wordViewModel: WordViewModel, resultCallback: (Boolea
 
 
 @Composable
-fun RestoreUserDataFromServer(wordViewModel: WordViewModel, resultCallback: (Boolean) -> Unit) {
+fun RestoreUserDataFromServer(
+    email: String,
+    wordViewModel: WordViewModel,
+    resultCallback: (Boolean) -> Unit
+) {
     val owner = LocalLifecycleOwner.current
     val ctx = LocalContext.current
-    wordViewModel.restoreUserBackup("alintg14@gmail.com").observe(owner) {
+    wordViewModel.restoreUserBackup(email).observe(owner) {
         when (it) {
             is NetworkResult.Error -> {
                 timber("restoreUserBackup ERR ${it.message}")
@@ -404,7 +419,7 @@ private fun ShareUserBackup(
     wordViewModel: WordViewModel,
     resultCode: (Int?) -> Unit
 ) {
-    timber("isShare ${share.value}")
+    timber("IS_SHARE_STATUS ${share.value}")
     val ctx = LocalContext.current
     val shareFileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()

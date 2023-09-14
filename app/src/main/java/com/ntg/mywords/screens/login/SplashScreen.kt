@@ -28,7 +28,7 @@ fun SplashScreen(
     timber("USER_NAME :::::::: ${userData.value?.name}")
 
     LaunchedEffect(userData) {
-        delay(200)
+        delay(900)
         if (userData.value?.email.orEmpty().isEmpty()) {
             if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0)) {
 
