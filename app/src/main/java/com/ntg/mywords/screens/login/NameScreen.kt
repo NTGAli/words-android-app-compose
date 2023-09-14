@@ -74,7 +74,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
         loginViewModel.updateName(
             name = text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""),
-            email = email ?: userData?.email.orEmpty()
+            email = email.orEmpty().ifEmpty { userData?.email.orEmpty() }
         ).observe(owner){
 
             when(it.data){

@@ -189,12 +189,12 @@ private fun Content(
                 ItemOption(text = stringResource(id = R.string.name)) {
                     navController.navigate(Screens.NameScreen.name)
                 }
-                ItemOption(text = stringResource(id = R.string.email)) {
-
-                }
-                ItemOption(text = stringResource(id = R.string.change_password)) {
-
-                }
+//                ItemOption(text = stringResource(id = R.string.email)) {
+//                    navController.navigate(Screens.UpdateEmailScreen.name)
+//                }
+//                ItemOption(text = stringResource(id = R.string.change_password)) {
+//
+//                }
                 ItemOption(text = stringResource(id = R.string.delete_account), divider = false) {
 
                 }

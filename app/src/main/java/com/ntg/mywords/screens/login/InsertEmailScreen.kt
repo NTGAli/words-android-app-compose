@@ -213,7 +213,7 @@ private fun Content(
                 .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
 
-            ) {
+        ) {
 
             TypewriterText(
                 modifier = Modifier

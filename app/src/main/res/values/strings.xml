@@ -119,5 +119,12 @@
     <string name="help_and_feedback"><![CDATA[Help & feedback]]></string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="login">login</string>
+    <string name="current_email">current email</string>
+    <string name="new_mail">new Email</string>
+    <string name="invalid_current_email">current email is invalid</string>
+    <string name="change">change</string>
+    <string name="invalid_new_mail">invalid email</string>
+    <string name="hey_format">Hey, %s</string>
+    <string name="havent_logged">You haven\'t logged in yet.</string>
 
 </resources>

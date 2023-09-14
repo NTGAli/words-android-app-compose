@@ -58,6 +58,15 @@ interface ApiService {
     ): Response<String>
 
 
+    @POST("registration/updateEmail.php")
+    @FormUrlEncoded
+    suspend fun updateEmail(
+        @Field("token") token: String,
+        @Field("newEmail") newEmail: String,
+        @Field("currentEmail") currentEmail: String,
+    ): Response<String>
+
+
     @Multipart
     @POST("backup/Backup.php") // Replace with your server URL
     suspend fun uploadFile(

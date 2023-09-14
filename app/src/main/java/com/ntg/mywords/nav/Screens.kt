@@ -19,7 +19,8 @@ enum class Screens {
     SelectLanguageScreen,
     LoginWithPasswordScreen,
     ProfileScreen,
-    BookmarkScreen
+    BookmarkScreen,
+    UpdateEmailScreen
 
 
 }

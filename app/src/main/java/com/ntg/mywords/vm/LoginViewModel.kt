@@ -28,6 +28,7 @@ class LoginViewModel @Inject constructor(
     private var verifyPass: MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> = MutableLiveData()
     private var verifyGoogle: MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> = MutableLiveData()
     private var updateName: MutableLiveData<NetworkResult<String>> = MutableLiveData()
+    private var updateEmail: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private lateinit var userDataSettings: Flow<UserDataAndSetting>
 
 
@@ -116,6 +117,22 @@ class LoginViewModel @Inject constructor(
             } as MutableLiveData<NetworkResult<String>>
         }
         return updateName
+    }
+
+    fun updateEmail(
+        email: String,
+        newEmail: String,
+    ): MutableLiveData<NetworkResult<String>> {
+        viewModelScope.launch {
+            updateEmail = safeApiCall(Dispatchers.IO){
+                api.updateEmail(
+                    token = BuildConfig.VOCAB_API_KEY,
+                    currentEmail = email,
+                    newEmail = newEmail
+                )
+            } as MutableLiveData<NetworkResult<String>>
+        }
+        return updateEmail
     }
 
     fun setUserEmail(email: String) = viewModelScope.launch {
