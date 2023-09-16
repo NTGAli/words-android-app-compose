@@ -1,7 +1,11 @@
 package com.ntg.mywords.vm
 
+import android.content.Context
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.ntg.mywords.BuildConfig
 import com.ntg.mywords.UserDataAndSetting
@@ -10,6 +14,8 @@ import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.di.DataRepository
 import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.VerifyUserRes
+import com.ntg.mywords.util.UserStore
+import com.ntg.mywords.util.dataStore
 import com.ntg.mywords.util.safeApiCall
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val api: ApiService,
-    private val dataRepository: DataRepository
+    private val dataRepository: DataRepository,
+    private val userStore: UserStore
 ): ViewModel() {
 
     private var verifyUser: MutableLiveData<NetworkResult<String>> = MutableLiveData()
@@ -31,6 +38,7 @@ class LoginViewModel @Inject constructor(
     private var deleteAccountStatus: MutableLiveData<NetworkResult<ResponseBody<Nothing>>> = MutableLiveData()
     private var updateEmail: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private lateinit var userDataSettings: Flow<UserDataAndSetting>
+
 
 
 
@@ -172,6 +180,14 @@ class LoginViewModel @Inject constructor(
     }
 
     fun clearUserData() = viewModelScope.launch { dataRepository.clearAllUserData() }
+
+    fun setTheme(theme: String){
+        viewModelScope.launch {
+            userStore.saveToken(theme)
+        }
+    }
+
+    fun getTheme() = userStore.getAccessToken.asLiveData()
 
 
 }

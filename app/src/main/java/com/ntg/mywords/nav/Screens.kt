@@ -22,7 +22,9 @@ enum class Screens {
     BookmarkScreen,
     UpdateEmailScreen,
     DeleteAccountScreen,
-    FinishScreen
+    FinishScreen,
+    ThemeScreen,
+    PrivacyPolicyScreen
 
 
 }

@@ -279,7 +279,7 @@ private fun Content(
             }
 
             ItemOption(text = stringResource(R.string.privacy_policy), divider = false) {
-
+                navController.navigate(Screens.PrivacyPolicyScreen.name)
             }
 
 

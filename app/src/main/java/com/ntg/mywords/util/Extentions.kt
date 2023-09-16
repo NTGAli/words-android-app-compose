@@ -11,6 +11,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.*
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberPermissionState
@@ -19,6 +23,7 @@ import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Result
 import com.ntg.mywords.model.Success
+import com.ntg.mywords.util.Constant.DATA_STORE_FILE_NAME
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
@@ -82,6 +87,8 @@ fun longEnoughForPass(
 } else {
     Failure(errorMsg)
 }
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 fun validEmail(email: String): Result<String> =
     if (email.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")))

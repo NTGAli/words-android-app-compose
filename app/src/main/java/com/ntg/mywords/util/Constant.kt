@@ -14,6 +14,10 @@ object Constant {
     const val DATA_STORE_FILE_NAME = "UserData"
 
 
+//    object PreferenceKeys {
+//        val USER_NAME = preferencesKey<String>("user_name")
+//        val USER_ID = preferencesKey<Int>("user_id")
+//    }
 
 
 }

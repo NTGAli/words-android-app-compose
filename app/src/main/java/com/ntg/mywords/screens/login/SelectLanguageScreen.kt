@@ -1,5 +1,6 @@
 package com.ntg.mywords.screens.login
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,12 +23,17 @@ import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.EditText
 import com.ntg.mywords.components.ItemSelectable
 import com.ntg.mywords.components.TypewriterText
+import com.ntg.mywords.model.Failure
+import com.ntg.mywords.model.Success
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.model.then
 import com.ntg.mywords.ui.theme.fontMedium14
+import com.ntg.mywords.util.notEmptyOrNull
+import com.ntg.mywords.util.timber
 import com.ntg.mywords.util.toast
 import com.ntg.mywords.vm.WordViewModel
 
@@ -35,12 +41,19 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewModel, listId: Int?) {
 
+    timber("akwjdklawjdlkwjadlkjawlkdjw $listId")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val submitList = remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
             val listData = wordViewModel.findList(listId)?.observeAsState()
-            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value)
+            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value, submitList)
+        },
+        bottomBar = {
+            BottomBar(submitList, listId != -1)
         }
     )
 
@@ -52,7 +65,8 @@ private fun Content(
     paddingValues: PaddingValues,
     navController: NavController,
     wordViewModel: WordViewModel,
-    listForEdit: VocabItemList?
+    listForEdit: VocabItemList?,
+    submitList: MutableState<Boolean> = remember { mutableStateOf(false) }
 ) {
     val list = listOf(
         "English",
@@ -67,17 +81,13 @@ private fun Content(
 
     val ctx = LocalContext.current
     var language by remember {
-        mutableStateOf("english")
+        mutableStateOf("English")
     }
     val name = remember {
         mutableStateOf("")
     }
     val anotherLanguage = remember {
         mutableStateOf("")
-    }
-
-    var submitList by remember {
-        mutableStateOf(false)
     }
 
     var isApplied by remember {
@@ -98,31 +108,41 @@ private fun Content(
         language = language
     ).observeAsState().value != 0
 
-    if (submitList) {
+    if (submitList.value) {
 
-        if (listForEdit != null) {
-            listForEdit.language = language
-            listForEdit.title = name.value
-            wordViewModel.updateVocabList(
-                listForEdit
-            )
-            navController.popBackStack()
+        val result = notEmptyOrNull(name.value, stringResource(id = R.string.choose_name_for_list))
+            .then { notEmptyOrNull(language, ctx.getString(R.string.select_a_language)) }
 
-        } else if (isExist) {
-            ctx.toast(ctx.getString(R.string.this_list_already_exist))
-        } else {
-            wordViewModel.addNewVocabList(
-                VocabItemList(
-                    0,
-                    title = name.value,
-                    language = language,
-                    isSelected = false
+        if (result is Success){
+            if (listForEdit != null) {
+                listForEdit.language = language
+                listForEdit.title = name.value
+                wordViewModel.updateVocabList(
+                    listForEdit
                 )
-            )
-            navController.popBackStack()
+                navController.popBackStack()
 
+            } else if (isExist) {
+                ctx.toast(ctx.getString(R.string.this_list_already_exist))
+            } else {
+                wordViewModel.addNewVocabList(
+                    VocabItemList(
+                        0,
+                        title = name.value,
+                        language = language,
+                        isSelected = false
+                    )
+                )
+                navController.popBackStack()
+
+            }
+        }else if (result is Failure){
+            ctx.toast(result.errorMessage)
         }
-        submitList = false
+
+
+
+        submitList.value = false
 
 
     }
@@ -180,7 +200,7 @@ private fun Content(
         item {
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 8.dp, bottom = 100.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .border(
                     width = 2.dp,
@@ -217,20 +237,26 @@ private fun Content(
                 }
             }
         }
+    }
+}
 
-        item {
-            CustomButton(
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .fillMaxWidth(),
-                text = if (listForEdit == null) stringResource(id = R.string.save) else stringResource(id = R.string.edit),
-                enable = language.isNotEmpty() && name.value.isNotEmpty(),
-                size = ButtonSize.XL
-            ) {
-                submitList = true
-            }
+@Composable
+private fun BottomBar(
+    submitList: MutableState<Boolean> = remember { mutableStateOf(false) },
+    isEdit: Boolean
+){
+    Column(modifier = Modifier.padding(horizontal = 32.dp).background(MaterialTheme.colorScheme.background)) {
+        Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
+
+        CustomButton(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
+            text = if (isEdit) stringResource(id = R.string.edit) else stringResource(id = R.string.save),
+            size = ButtonSize.XL
+        ) {
+            submitList.value = true
         }
     }
-
 
 }

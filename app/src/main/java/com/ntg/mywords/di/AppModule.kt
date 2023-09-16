@@ -1,6 +1,7 @@
 package com.ntg.mywords.di
 
 import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
@@ -29,6 +30,7 @@ import com.ntg.mywords.util.Constant.DATA_STORE_FILE_NAME
 import com.ntg.mywords.util.Constant.DICTIONARY_API_URL
 import com.ntg.mywords.util.Constant.PREFERENCE_DATA_STORE_NAME
 import com.ntg.mywords.util.Constant.VOCAB_API_URL
+import com.ntg.mywords.util.UserStore
 import dagger.Component
 import dagger.Module
 import dagger.Provides
@@ -183,6 +185,12 @@ class AppModule {
             context,
             recentLocationsDataStore
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): UserStore {
+        return UserStore(context)
     }
 
 }

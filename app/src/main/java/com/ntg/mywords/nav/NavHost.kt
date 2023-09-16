@@ -1,6 +1,8 @@
 package com.ntg.mywords.nav
 
 import android.os.Bundle
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.*
@@ -10,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ntg.mywords.screens.*
 import com.ntg.mywords.screens.login.*
 import com.ntg.mywords.screens.setting.SettingScreen
+import com.ntg.mywords.screens.setting.ThemeScreen
 import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orTrue
 import com.ntg.mywords.vm.CalendarViewModel
@@ -41,7 +44,9 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None }
     ) {
 
         composable(Screens.SplashScreen.name) {
@@ -88,8 +93,16 @@ fun AppNavHost(
             SettingScreen(navController, loginViewModel, wordViewModel)
         }
 
-        composable(Screens.CodeScreen.name) {
+        composable(route = Screens.CodeScreen.name) {
             CodeScreen(navController, "", loginViewModel)
+        }
+
+        composable(route = Screens.PrivacyPolicyScreen.name) {
+            PrivacyPolicyScreen(navController)
+        }
+
+        composable(Screens.ThemeScreen.name) {
+            ThemeScreen(navController, loginViewModel)
         }
 
         composable(Screens.CodeScreen.name+ "?email={email}",

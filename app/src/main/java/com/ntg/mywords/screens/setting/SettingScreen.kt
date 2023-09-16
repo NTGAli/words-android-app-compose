@@ -1,5 +1,6 @@
 package com.ntg.mywords.screens.setting
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,7 +20,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.ntg.mywords.BuildConfig
@@ -29,13 +35,15 @@ import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.ItemOption
 import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.nav.Screens
+import com.ntg.mywords.screens.login.logoutBottomSheet
 import com.ntg.mywords.ui.theme.fontMedium14
-import com.ntg.mywords.util.orFalse
-import com.ntg.mywords.util.timber
-import com.ntg.mywords.util.toast
+import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -49,9 +57,6 @@ fun SettingScreen(
     loginViewModel: LoginViewModel,
     wordViewModel: WordViewModel
 ) {
-
-    val context = LocalContext.current
-
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -83,6 +88,7 @@ private fun Content(
 ) {
 
     val ctx = LocalContext.current
+    val store = UserStore(LocalContext.current)
     val openBackupDialog = remember { mutableStateOf(false) }
     val openRestoreDialog = remember { mutableStateOf(false) }
     val setBackupOnServer = remember {
@@ -108,12 +114,35 @@ private fun Content(
         mutableStateOf("")
     }
 
+    val openBottomSheet = remember {
+        mutableStateOf(false)
+    }
+
+
     isUserLogged.value =
         loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty() != ""
 
     userEmail.value =
         loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
 
+    val theme = store.getAccessToken.collectAsState(initial = stringResource(id = R.string.system_default))
+
+
+
+
+    if (openBottomSheet.value) {
+        logoutBottomSheet(openBottomSheet) {
+            wordViewModel.clearWordsTable()
+            wordViewModel.clearVocabListsTable()
+            wordViewModel.clearTimesTable()
+            loginViewModel.clearUserData()
+            openBottomSheet.value = false
+            navController.navigate(Screens.InsertEmailScreen.name) {
+                popUpTo(0)
+            }
+        }
+
+    }
 
     BackupOnServer(setBackupOnServer, userEmail.value, wordViewModel) {
 
@@ -205,15 +234,15 @@ private fun Content(
                 }
             } else {
                 ItemOption(text = stringResource(id = R.string.login), divider = false) {
-
+                    navController.navigate(Screens.InsertEmailScreen.name + "?skip=${false}")
                 }
             }
 
 
 
             SettingTitle(title = stringResource(id = R.string.theme))
-            ItemOption(text = stringResource(id = R.string.light_mode), divider = false) {
-
+            ItemOption(text = theme.value, divider = false) {
+                navController.navigate(Screens.ThemeScreen.name)
             }
 
             SettingTitle(title = stringResource(id = R.string.support_us))
@@ -226,7 +255,7 @@ private fun Content(
 
             SettingTitle(title = stringResource(id = R.string.other))
             ItemOption(text = stringResource(id = R.string.sign_out), divider = false) {
-
+                openBottomSheet.value = true
             }
         }
 
