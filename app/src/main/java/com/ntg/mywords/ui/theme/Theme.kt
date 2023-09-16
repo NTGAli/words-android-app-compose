@@ -1,17 +1,24 @@
 package com.ntg.mywords.ui.theme
 
 import android.app.Activity
+import android.content.res.Configuration
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import com.ntg.mywords.R
+import com.ntg.mywords.util.UserStore
 
 
 private val LightColors = lightColorScheme(
@@ -82,22 +89,56 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun AppTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
-    val colors = if (!useDarkTheme) {
+    val dataStore = UserStore(LocalContext.current)
+    val userTheme = dataStore.getAccessToken.collectAsState(initial = stringResource(id = R.string.system_default))
+
+    val colors = if (userTheme.value == stringResource(id = R.string.system_default)){
+        if (!useDarkTheme) {
+            LightColors
+        } else {
+            DarkColors
+        }
+    }else if (userTheme.value == stringResource(id = R.string.light_mode)){
         LightColors
-    } else {
+    }else{
         DarkColors
     }
+
+
+//    val colors = if (!useDarkTheme) {
+//        LightColors
+//    } else {
+//        DarkColors
+//    }
 
 
     val view = LocalView.current
     (view.context as Activity).window.statusBarColor = colors.background.toArgb()
     (view.context as Activity).window.navigationBarColor = colors.background.toArgb()
 
-    ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !useDarkTheme
-    ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !useDarkTheme
+    ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = userTheme.value != stringResource(
+        id = R.string.dark_mode
+    )
+    ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = userTheme.value != stringResource(
+        id = R.string.dark_mode
+    )
 
+
+
+
+
+//
+//    if (!view.isInEditMode) {
+//        SideEffect {
+//            val window = (view.context as Activity).window
+//            window.statusBarColor = colors.primary.toArgb()
+//            WindowCompat
+//                .getInsetsController(window, view)
+//                .isAppearanceLightStatusBars = useDarkTheme
+//        }
+//    }
 
 //    WindowCompat.setDecorFitsSystemWindows((view.context as Activity).window, false)
 //

@@ -137,5 +137,9 @@
     <string name="before_logout">Before logout</string>
     <string name="logout_message">Make sure you have a backup, when you log out, the words and lists you created will be deleted!</string>
     <string name="cancel">cancel</string>
+    <string name="choose_name_for_list">choose a name for your list</string>
+    <string name="select_a_language">select a language</string>
+    <string name="dark_mode">Dark mode</string>
+    <string name="system_default">System default</string>
 
 </resources>

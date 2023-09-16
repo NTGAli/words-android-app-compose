@@ -16,13 +16,14 @@
         android:name=".MyApp"
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
-        android:theme="@style/Theme.MyWords"
+        android:theme="@style/Theme.MyWord"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:configChanges="uiMode"
             android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.MyWords">
+            android:theme="@style/Theme.MyWord">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

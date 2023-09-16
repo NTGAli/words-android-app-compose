@@ -251,6 +251,7 @@ private fun Content(
                         size = ButtonSize.LG
                     ) {
                         deleteList = true
+                        openBottomSheet = false
                     }
                 }
             }

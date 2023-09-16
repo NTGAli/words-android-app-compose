@@ -203,7 +203,7 @@ private fun Content(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun logoutBottomSheet(
+fun logoutBottomSheet(
     openBottomSheet: MutableState<Boolean> = remember { mutableStateOf(false) },
     onClick: () -> Unit
 ) {
