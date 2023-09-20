@@ -25,26 +25,26 @@ class MyApp: Application() {
 
     }
 
-    override fun setTheme(resid: Int) {
-        val dataStore = UserStore(this)
-        dataStore.getAccessToken.asLiveData().observeForever {
-            when (it) {
-                getString(R.string.light_mode) -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                }
-                getString(R.string.dark_mode) -> {
-                    timber("wajhdlawfjhalwfjkhwkjahfkwajhf $it")
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                }
-                else -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-            }
-        }
-
-        super.setTheme(resid)
-
-    }
+//    override fun setTheme(resid: Int) {
+//        val dataStore = UserStore(this)
+//        dataStore.getAccessToken.asLiveData().observeForever {
+//            when (it) {
+//                getString(R.string.light_mode) -> {
+//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+//                }
+//                getString(R.string.dark_mode) -> {
+//                    timber("wajhdlawfjhalwfjkhwkjahfkwajhf $it")
+//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+//                }
+//                else -> {
+//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+//                }
+//            }
+//        }
+//
+//        super.setTheme(resid)
+//
+//    }
 
     private fun initTimber() {
         Timber.plant(Timber.DebugTree())

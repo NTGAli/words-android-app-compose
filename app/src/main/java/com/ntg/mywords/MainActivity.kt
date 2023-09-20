@@ -55,7 +55,6 @@ class MainActivity : ComponentActivity() {
     private val signInViewModel: SignInViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme()
         super.onCreate(savedInstanceState)
 
         setContent {
@@ -81,23 +80,23 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    fun setTheme() {
-        val dataStore = UserStore(this)
-        dataStore.getAccessToken.asLiveData().observeForever {
-            when (it) {
-                getString(R.string.light_mode) -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                }
-                getString(R.string.dark_mode) -> {
-                    timber("wajhdlawfjhalwfjkhwkjahfsssssssssssssskwajhf $it")
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                }
-                else -> {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-            }
-        }
-    }
+//    fun setTheme() {
+//        val dataStore = UserStore(this)
+//        dataStore.getAccessToken.asLiveData().observeForever {
+//            when (it) {
+//                getString(R.string.light_mode) -> {
+//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+//                }
+//                getString(R.string.dark_mode) -> {
+//                    timber("wajhdlawfjhalwfjkhwkjahfsssssssssssssskwajhf $it")
+//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+//                }
+//                else -> {
+//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+//                }
+//            }
+//        }
+//    }
 
 
 
