@@ -3,6 +3,8 @@ package com.ntg.mywords.nav
 import android.os.Bundle
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.*
@@ -29,7 +31,7 @@ fun AppNavHost(
     calendarViewModel: CalendarViewModel,
     loginViewModel: LoginViewModel,
     signInViewModel: SignInViewModel,
-    onDestinationChangedListener:(NavController, NavDestination, Bundle?) -> Unit
+    onDestinationChangedListener: (NavController, NavDestination, Bundle?) -> Unit
 ) {
 
     navController.addOnDestinationChangedListener { controller, destination, arguments ->
@@ -49,40 +51,51 @@ fun AppNavHost(
         exitTransition = { ExitTransition.None }
     ) {
 
-        composable(Screens.SplashScreen.name) {
-            SplashScreen(navController,loginViewModel, wordViewModel)
+        composable(Screens.SplashScreen.name, enterTransition = {  ->
+            EnterTransition.None
+        }) {
+            SplashScreen(navController, loginViewModel, wordViewModel)
         }
 
-        composable(Screens.HomeScreen.name) {
+        composable(Screens.HomeScreen.name,enterTransition = {  ->
+            EnterTransition.None
+        }) {
             HomeScreen(navController, wordViewModel, loginViewModel)
         }
 
-        composable(Screens.AllWordsScreen.name+ "?openSearch={openSearch}"+"&query={query}",
+        composable(Screens.AllWordsScreen.name + "?openSearch={openSearch}" + "&query={query}",
             arguments = listOf(navArgument("openSearch")
             {
                 type = NavType.BoolType
                 defaultValue = false
             },
-            navArgument("query")
-            {
-                type = NavType.StringType
-                defaultValue = ""
-            }
+                navArgument("query")
+                {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
             )) {
-            AllWordsScreen(navController, wordViewModel,it.arguments?.getBoolean("openSearch").orFalse(), it.arguments?.getString("query").orEmpty())
+            AllWordsScreen(
+                navController,
+                wordViewModel,
+                it.arguments?.getBoolean("openSearch").orFalse(),
+                it.arguments?.getString("query").orEmpty()
+            )
         }
 
         composable(Screens.RecentWordScreen.name) {
             RecentWordScreen(navController, wordViewModel)
         }
 
-        composable(Screens.SelectLanguageScreen.name+ "?listId={listId}",
+        composable(
+            Screens.SelectLanguageScreen.name + "?listId={listId}",
             arguments = listOf(navArgument("listId")
             {
                 type = NavType.IntType
                 defaultValue = -1
-            })) {
-            SelectLanguageScreen(navController, wordViewModel,it.arguments?.getInt("listId"))
+            })
+        ) {
+            SelectLanguageScreen(navController, wordViewModel, it.arguments?.getInt("listId"))
         }
 
         composable(Screens.TimeScreen.name) {
@@ -105,7 +118,8 @@ fun AppNavHost(
             ThemeScreen(navController, loginViewModel)
         }
 
-        composable(Screens.CodeScreen.name+ "?email={email}",
+        composable(
+            Screens.CodeScreen.name + "?email={email}",
             arguments = listOf(navArgument("email")
             {
                 type = NavType.StringType
@@ -115,34 +129,52 @@ fun AppNavHost(
             CodeScreen(navController, it.arguments?.getString("email").orEmpty(), loginViewModel)
         }
 
-        composable(Screens.LoginWithPasswordScreen.name+ "?email={email}",
+        composable(
+            Screens.LoginWithPasswordScreen.name + "?email={email}&isNew={isNew}",
             arguments = listOf(navArgument("email")
             {
                 type = NavType.StringType
                 defaultValue = "your"
-            })
+            },
+                navArgument("isNew")
+                {
+                    type = NavType.BoolType
+                    defaultValue = false
+                })
         ) {
-            LoginWithPasswordScreen(navController, it.arguments?.getString("email").orEmpty(), loginViewModel)
+            LoginWithPasswordScreen(
+                navController,
+                it.arguments?.getString("email").orEmpty(),
+                it.arguments?.getBoolean("isNew").orFalse(),
+                loginViewModel
+            )
         }
 
 //        composable(Screens.BackupAndRestoreScreen.name) {
 //            BackupAndRestoreScreen(navController, wordViewModel)
 //        }
 
-        composable(Screens.InsertEmailScreen.name+"?skip={skip}",
-        arguments = listOf(navArgument("skip"){
-            type = NavType.BoolType
-            defaultValue = true
-        })
+        composable(
+            Screens.InsertEmailScreen.name + "?skip={skip}",
+            arguments = listOf(navArgument("skip") {
+                type = NavType.BoolType
+                defaultValue = true
+            })
         ) {
-            InsertEmailScreen(navController, loginViewModel, signInViewModel, it.arguments?.getBoolean("skip").orTrue())
+            InsertEmailScreen(
+                navController,
+                loginViewModel,
+                signInViewModel,
+                it.arguments?.getBoolean("skip").orTrue()
+            )
         }
 
         composable(Screens.VocabularyListScreen.name) {
             VocabularyListScreen(navController, wordViewModel, loginViewModel)
         }
 
-        composable(Screens.NameScreen.name+ "?email={email}",
+        composable(
+            Screens.NameScreen.name + "?email={email}",
             arguments = listOf(navArgument("email")
             {
                 type = NavType.StringType
@@ -163,7 +195,7 @@ fun AppNavHost(
         }
 
         composable(Screens.BookmarkScreen.name) {
-            BookmarkScreen(navController, wordViewModel,false,"")
+            BookmarkScreen(navController, wordViewModel, false, "")
         }
 
         composable(Screens.UpdateEmailScreen.name) {

@@ -37,13 +37,15 @@ import com.ntg.mywords.vm.LoginViewModel
 fun LoginWithPasswordScreen(
     navController: NavController,
     email: String,
+    isNew: Boolean,
     loginViewModel: LoginViewModel
 ) {
+    timber("jahdjkawhdjkhwakjhdwjkhd $isNew -- $email")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController = navController, email, loginViewModel)
+            Content(paddingValues = innerPadding, navController = navController, email, loginViewModel, isNew)
 //            Content(paddingValues = innerPadding, navController = navController)
         }
     )
@@ -51,7 +53,7 @@ fun LoginWithPasswordScreen(
 
 
 @Composable
-private fun Content(paddingValues: PaddingValues, navController: NavController, email: String, loginViewModel: LoginViewModel) {
+private fun Content(paddingValues: PaddingValues, navController: NavController, email: String, loginViewModel: LoginViewModel, isNew: Boolean) {
     val owner = LocalLifecycleOwner.current
     val ctx = LocalContext.current
 
@@ -153,7 +155,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                 .padding(top = 64.dp)
                 .fillMaxWidth(), label = stringResource(id = R.string.password), text = password,
             setError = setError,
-            supportText = stringResource(id = R.string.set_password, email),
+            supportText = if (isNew) stringResource(id = R.string.enter_your_password, email) else stringResource(
+                id = R.string.enter_password_choice, email
+            ),
             isPassword = true
         ){
             setError.value = false
@@ -161,7 +165,8 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
 
         CustomButton(
-            modifier = Modifier.padding(top = 32.dp)
+            modifier = Modifier
+                .padding(top = 32.dp)
                 .fillMaxWidth(),
             text = stringResource(id = R.string.next),
             type = ButtonType.Primary,
@@ -185,7 +190,9 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         }
         
         
-        CustomButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), text = stringResource(id = R.string.use_verification_code), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
+        CustomButton(modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth(), text = stringResource(id = R.string.use_verification_code), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
 //            navController.navigate(Screens.CodeScreen.name)
             navController.popBackStack()
         }

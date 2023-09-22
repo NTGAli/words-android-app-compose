@@ -26,10 +26,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.asLiveData
 import androidx.room.Room
 import androidx.room.Room.databaseBuilder
+import com.ntg.mywords.components.LoadingView
 import com.ntg.mywords.di.SettingsSerializer
 import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.nav.AppNavHost
+import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.AppTheme
 import com.ntg.mywords.util.*
 import com.ntg.mywords.util.Constant.DATA_STORE_FILE_NAME
@@ -59,11 +61,48 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme {
+                val userData = loginViewModel.getUserData().asLiveData().observeAsState()
+                val lists = wordViewModel.getAllVocabList().observeAsState()
+                val startDes = remember {
+                    mutableStateOf(Screens.SplashScreen.name)
+                }
+
+                timber("VOCAB_LISTS ::::::: $lists")
+                timber("USER_EMAIL :::::::: ${userData.value?.email}")
+                timber("USER_NAME :::::::: ${userData.value?.name}")
+
+                LaunchedEffect(userData) {
+                    delay(500)
+                    if (userData.value?.email.orEmpty().isEmpty()) {
+                        if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0)) {
+
+                            if (lists.value?.filter { it.isSelected }
+                                    .orEmpty()
+                                    .isNotEmpty()) {
+                                startDes.value = Screens.HomeScreen.name
+                            } else {
+                                startDes.value = Screens.VocabularyListScreen.name
+                            }
+                        } else {
+                            startDes.value = Screens.InsertEmailScreen.name
+                        }
+                    } else if (lists.value?.size.orZero() == 0 || lists.value?.filter { it.isSelected }
+                            .orEmpty()
+                            .isEmpty()
+                    ) {
+                        startDes.value = Screens.VocabularyListScreen.name
+                    } else {
+                        startDes.value = Screens.HomeScreen.name
+                    }
+                }
+
+
                 AppNavHost(
                     wordViewModel = wordViewModel,
                     calendarViewModel = calendarViewModel,
                     loginViewModel = loginViewModel,
-                    signInViewModel = signInViewModel
+                    signInViewModel = signInViewModel,
+                    startDestination = startDes.value
                 ) { _, navDestination, _ ->
                     timber("onDestinationChangeListener ${navDestination.route}")
                 }
@@ -75,49 +114,7 @@ class MainActivity : ComponentActivity() {
 
 
         }
-
-
-
     }
-
-//    fun setTheme() {
-//        val dataStore = UserStore(this)
-//        dataStore.getAccessToken.asLiveData().observeForever {
-//            when (it) {
-//                getString(R.string.light_mode) -> {
-//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-//                }
-//                getString(R.string.dark_mode) -> {
-//                    timber("wajhdlawfjhalwfjkhwkjahfsssssssssssssskwajhf $it")
-//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-//                }
-//                else -> {
-//                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-//                }
-//            }
-//        }
-//    }
-
-
-
-//    override fun setTheme(resid: Int) {
-//        try {
-//            when (loginViewModel.getTheme().value) {
-//                getString(R.string.light_mode) -> {
-//                    super.setTheme(R.style.Theme_MyWordsLight)
-//                }
-//                getString(R.string.dark_mode) -> {
-//                    super.setTheme(R.style.Theme_MyWordsDark)
-//                }
-//                else -> {
-//                    super.setTheme(R.style.Theme_MyWords)
-//                }
-//            }
-//        }catch (e: Exception){
-//
-//        }
-//
-//    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -155,14 +152,18 @@ private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel:
                 )
             }
         }
+
         Lifecycle.Event.ON_STOP -> {
             calendarViewModel.stopLastTime()
         }
+
         Lifecycle.Event.ON_PAUSE -> {
             calendarViewModel.stopLastTime()
         }
+
         Lifecycle.Event.ON_DESTROY -> {
         }
+
         else -> {}
     }
 }

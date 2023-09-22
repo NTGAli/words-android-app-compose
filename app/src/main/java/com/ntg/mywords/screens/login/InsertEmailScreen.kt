@@ -33,6 +33,7 @@ import com.ntg.mywords.model.enums.TypeOfMessagePass
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.fontRegular12
 import com.ntg.mywords.util.GoogleAuthUiClient
+import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.timber
 import com.ntg.mywords.util.toast
 import com.ntg.mywords.util.validEmail
@@ -265,7 +266,7 @@ private fun Content(
             ) {
                 if (email.value.validEmail()) {
 
-                    loginViewModel.sendCode(email.value).observe(owner) {
+                    loginViewModel.loginWithEmail(email.value).observe(owner) {
 
                         when (it) {
                             is NetworkResult.Error -> {
@@ -276,14 +277,19 @@ private fun Content(
                                 loading.value = true
                             }
                             is NetworkResult.Success -> {
-                                timber("VerifyUser:::")
-                                loading.value = false
-
-                                if (it.data == "200") {
-                                    navController.navigate(Screens.CodeScreen.name + "?email=${email.value}")
-                                } else {
+                                timber("VerifyUser::: S :: ${it.data}")
+                                if (it.data?.isSuccess.orFalse()){
+                                    timber("VerifyUser:::")
+                                    timber("VerifyUser 1111111111")
+                                    navController.navigate(Screens.LoginWithPasswordScreen.name + "?email=${email.value}&isNew=${it.data?.message.orEmpty() == "NEW_USER"}")
+                                }else if (it.data?.message == "INVALID_TOKEN"){
+                                    timber("VerifyUser 222222222")
+                                    context.toast(context.getString(R.string.download_from_google_play))
+                                }else{
+                                    timber("VerifyUser 3333333")
                                     context.toast(context.getString(R.string.sth_wrong))
                                 }
+                                timber("VerifyUser 444444444444")
                             }
                         }
                     }
