@@ -25,6 +25,12 @@ interface ApiService {
         @Query("email") email: String
     ): Response<String>
 
+    @GET("registration/LoginWithEmail.php")
+    suspend fun loginWithEmail(
+        @Query("token") token: String,
+        @Query("email") email: String
+    ): Response<ResponseBody<Nothing>>
+
 
     @GET("registration/VerifyCode.php")
     suspend fun verifyCode(

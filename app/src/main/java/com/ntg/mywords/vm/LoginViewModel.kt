@@ -38,6 +38,8 @@ class LoginViewModel @Inject constructor(
     private var deleteAccountStatus: MutableLiveData<NetworkResult<ResponseBody<Nothing>>> = MutableLiveData()
     private var updateEmail: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private lateinit var userDataSettings: Flow<UserDataAndSetting>
+    private var verifyByEmail: MutableLiveData<NetworkResult<ResponseBody<Nothing>>> = MutableLiveData()
+
 
 
 
@@ -57,6 +59,21 @@ class LoginViewModel @Inject constructor(
             } as MutableLiveData<NetworkResult<String>>
         }
         return verifyUser
+    }
+
+
+    fun loginWithEmail(
+        email: String
+    ): MutableLiveData<NetworkResult<ResponseBody<Nothing>>> {
+        viewModelScope.launch {
+            verifyByEmail = safeApiCall(Dispatchers.IO){
+                api.loginWithEmail(
+                    token = BuildConfig.VOCAB_API_KEY,
+                    email = email
+                )
+            } as MutableLiveData<NetworkResult<ResponseBody<Nothing>>>
+        }
+        return verifyByEmail
     }
 
     fun verifyUserByCode(
