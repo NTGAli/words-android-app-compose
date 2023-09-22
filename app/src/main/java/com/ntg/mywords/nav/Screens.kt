@@ -24,7 +24,8 @@ enum class Screens {
     DeleteAccountScreen,
     FinishScreen,
     ThemeScreen,
-    PrivacyPolicyScreen
+    PrivacyPolicyScreen,
+    HelpAndFeedbackScreen
 
 
 }

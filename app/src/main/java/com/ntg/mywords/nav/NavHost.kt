@@ -178,6 +178,10 @@ fun AppNavHost(
             FinishScreen(navController)
         }
 
+        composable(Screens.HelpAndFeedbackScreen.name) {
+            HelpAndFeedbackScreen(navController)
+        }
+
 
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",
