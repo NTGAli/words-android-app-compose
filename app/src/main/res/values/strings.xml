@@ -141,5 +141,15 @@
     <string name="select_a_language">select a language</string>
     <string name="dark_mode">Dark mode</string>
     <string name="system_default">System default</string>
+    <string name="frequency_questions">frequency questions</string>
+    <string name="fq1">How do I backup my words, lists, and other data?</string>
+    <string name="fq1_desc">a</string>
+    <string name="fq2">How do i restore my backup?</string>
+    <string name="fq2_desc"><![CDATA[To Restore Your Backup, Follow These Steps:\nAccess Settings: Open the app or device\'s \"Settings\" menu.\nSelect Backup & Restore: In the first section, labeled \"Backup & Restore,\" click on the \"Restore\" option.\nChoose Your Source:\nFrom Server: If you previously backed up your data on the server, select the \"On Server\" option to restore it.\nFrom Local Storage: If you saved your backup on your device or elsewhere, use the \"Import\" option to restore it.]]></string>
+    <string name="fq3">Does the app automatically back up new words or lists to the server?</string>
+    <string name="fq3_desc">No, currently, there is no automatic backup feature. We recommend manually backing up your data periodically, such as after each review session or at regular intervals, to ensure your data is stored either on the server or on your phone.</string>
+    <string name="send_feedback">Send feedback</string>
+    <string name="report_bug">Report Bug</string>
+    <string name="support_email">noreply@myvocabulary.ntgt.ir</string>
 
 </resources>

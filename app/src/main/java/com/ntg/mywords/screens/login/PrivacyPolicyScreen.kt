@@ -40,6 +40,7 @@ private fun Content(paddingValues: PaddingValues){
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             webViewClient = WebViewClient()
+            clearCache(true)
             loadUrl(mUrl)
         }
     }, update = {

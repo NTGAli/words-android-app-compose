@@ -275,7 +275,7 @@ private fun Content(
             }
 
             ItemOption(text = stringResource(R.string.help_and_feedback)) {
-
+                navController.navigate(Screens.HelpAndFeedbackScreen.name)
             }
 
             ItemOption(text = stringResource(R.string.privacy_policy), divider = false) {
