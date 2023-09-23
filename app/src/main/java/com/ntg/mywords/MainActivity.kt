@@ -66,6 +66,9 @@ class MainActivity : ComponentActivity() {
                 val startDes = remember {
                     mutableStateOf(Screens.SplashScreen.name)
                 }
+                val currentDes = remember {
+                    mutableStateOf("")
+                }
 
                 timber("VOCAB_LISTS ::::::: $lists")
                 timber("USER_EMAIL :::::::: ${userData.value?.email}")
@@ -76,9 +79,7 @@ class MainActivity : ComponentActivity() {
                     if (userData.value?.email.orEmpty().isEmpty()) {
                         if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0)) {
 
-                            if (lists.value?.filter { it.isSelected }
-                                    .orEmpty()
-                                    .isNotEmpty()) {
+                            if (lists.value?.filter { it.isSelected }.orEmpty().isNotEmpty()) {
                                 startDes.value = Screens.HomeScreen.name
                             } else {
                                 startDes.value = Screens.VocabularyListScreen.name
@@ -87,9 +88,7 @@ class MainActivity : ComponentActivity() {
                             startDes.value = Screens.InsertEmailScreen.name
                         }
                     } else if (lists.value?.size.orZero() == 0 || lists.value?.filter { it.isSelected }
-                            .orEmpty()
-                            .isEmpty()
-                    ) {
+                            .orEmpty().isEmpty()) {
                         startDes.value = Screens.VocabularyListScreen.name
                     } else {
                         startDes.value = Screens.HomeScreen.name
@@ -105,87 +104,76 @@ class MainActivity : ComponentActivity() {
                     startDestination = startDes.value
                 ) { _, navDestination, _ ->
                     timber("onDestinationChangeListener ${navDestination.route}")
+                    currentDes.value = navDestination.route.orEmpty()
                 }
+
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    HandleLifecycle(calendarViewModel, wordViewModel, currentDes.value)
+                }
+
             }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                HandleLifecycle(calendarViewModel, wordViewModel)
-            }
-
-
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel: WordViewModel) {
+private fun HandleLifecycle(
+    calendarViewModel: CalendarViewModel, wordViewModel: WordViewModel, destination: String
+) {
+    timber("akljlkjaadkawkljdlw ${destination}")
+
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value
     val events = remember {
         mutableStateOf(Lifecycle.Event.ON_START)
     }
 
-    OnLifecycleEvent { owner, event ->
-        events.value = event
-    }
+    if (listId?.id != null) {
+        OnLifecycleEvent { owner, event ->
+            events.value = event
+        }
 
     timber("awawldjlkawjdlkjwald ${events.value.name}")
 
-    when (events.value) {
-        Lifecycle.Event.ON_START -> {
-            calendarViewModel.removeNullTime()
-        }
-
-        Lifecycle.Event.ON_RESUME -> {
-            LaunchedEffect(key1 = events) {
-//                calendarViewModel.stopLastTime()
-                delay(100)
-                calendarViewModel.insertSpendTime(
-                    TimeSpent(
-                        id = 0,
-                        listId = listId?.id.orZero(),
-                        date = LocalDate.now().toString(),
-                        startUnix = System.currentTimeMillis(),
-                        endUnix = null,
-                        type = SpendTimeType.Learning.ordinal
-                    )
-                )
+        when (events.value) {
+            Lifecycle.Event.ON_START -> {
+                calendarViewModel.removeNullTime()
             }
-        }
 
-        Lifecycle.Event.ON_STOP -> {
-            calendarViewModel.stopLastTime()
-        }
+            Lifecycle.Event.ON_RESUME -> {
+                LaunchedEffect(key1 = events) {
+                    if (destination != Screens.RevisionScreen.name) {
+                        delay(100)
+                        calendarViewModel.insertSpendTime(
+                            TimeSpent(
+                                id = 0,
+                                listId = listId.id,
+                                date = LocalDate.now().toString(),
+                                startUnix = System.currentTimeMillis(),
+                                endUnix = null,
+                                type = SpendTimeType.Learning.ordinal
+                            )
+                        )
+                    }
 
-        Lifecycle.Event.ON_PAUSE -> {
-            calendarViewModel.stopLastTime()
-        }
+                }
+            }
 
-        Lifecycle.Event.ON_DESTROY -> {
-        }
+            Lifecycle.Event.ON_STOP -> {
+                calendarViewModel.stopLastTime()
+            }
 
-        else -> {}
+            Lifecycle.Event.ON_PAUSE -> {
+                calendarViewModel.stopLastTime()
+            }
+
+            Lifecycle.Event.ON_DESTROY -> {
+            }
+
+            else -> {}
+        }
     }
+
+
 }
-
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(
-    uiMode = UI_MODE_NIGHT_YES,
-    name = "DefaultPreviewDark"
-)
-@Preview(
-    uiMode = UI_MODE_NIGHT_NO,
-    name = "DefaultPreviewLight"
-)
-@Composable
-fun DefaultPreview() {
-    AppTheme {
-        Greeting("Android")
-    }
-}
-

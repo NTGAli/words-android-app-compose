@@ -1,5 +1,6 @@
 package com.ntg.mywords.screens
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,25 +20,31 @@ import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.ntg.mywords.R
 import com.ntg.mywords.components.*
+import com.ntg.mywords.model.SpendTimeType
 import com.ntg.mywords.model.VocabsListWithCount
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
+import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.fontMedium12
 import com.ntg.mywords.ui.theme.fontMedium14
 import com.ntg.mywords.ui.theme.fontRegular12
 import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orZero
+import com.ntg.mywords.util.timber
+import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    calendarViewModel: CalendarViewModel
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -55,7 +62,8 @@ fun ProfileScreen(
                 paddingValues = innerPadding,
                 navController = navController,
                 wordViewModel = wordViewModel,
-                loginViewModel = loginViewModel
+                loginViewModel = loginViewModel,
+                calendarViewModel = calendarViewModel
             )
 
         }
@@ -69,7 +77,8 @@ private fun Content(
     paddingValues: PaddingValues,
     navController: NavController,
     wordViewModel: WordViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    calendarViewModel: CalendarViewModel
 ) {
 
     val ctx = LocalContext.current
@@ -179,6 +188,24 @@ private fun Content(
                 isSelected = it.isSelected.orFalse(),
                 onClick = { id ->
                     wordViewModel.selectList(id)
+
+                    timber("alkjdkwljlfkskljflejlkjef 1111111111111")
+                    wordViewModel.selectList(id)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        timber("alkjdkwljlfkskljflejlkjef")
+                        calendarViewModel.stopLastTime()
+                        calendarViewModel.insertSpendTime(
+                            TimeSpent(
+                                id = 0,
+                                listId = id,
+                                date = LocalDate.now().toString(),
+                                startUnix = System.currentTimeMillis(),
+                                endUnix = null,
+                                type = SpendTimeType.Learning.ordinal
+                            )
+                        )
+                    }
+
                     navController.navigate(Screens.HomeScreen.name) {
                         popUpTo(0)
                     }
@@ -218,7 +245,23 @@ private fun Content(
                         ),
                         isSelected = it.isSelected.orFalse(),
                         onClick = { id ->
+                            timber("alkjdkwljlfkskljflejlkjef 1111111111111")
                             wordViewModel.selectList(id)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                timber("alkjdkwljlfkskljflejlkjef")
+                                calendarViewModel.stopLastTime()
+                                calendarViewModel.insertSpendTime(
+                                    TimeSpent(
+                                        id = 0,
+                                        listId = id,
+                                        date = LocalDate.now().toString(),
+                                        startUnix = System.currentTimeMillis(),
+                                        endUnix = null,
+                                        type = SpendTimeType.Learning.ordinal
+                                    )
+                                )
+                            }
+
                             navController.navigate(Screens.HomeScreen.name) {
                                 popUpTo(0)
                             }
