@@ -191,7 +191,7 @@ fun AppNavHost(
         }
 
         composable(Screens.ProfileScreen.name) {
-            ProfileScreen(navController, wordViewModel, loginViewModel)
+            ProfileScreen(navController, wordViewModel, loginViewModel, calendarViewModel)
         }
 
         composable(Screens.BookmarkScreen.name) {
