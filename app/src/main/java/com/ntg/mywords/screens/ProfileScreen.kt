@@ -102,9 +102,11 @@ private fun Content(
     }
     list.value = wordViewModel.getListWithCount()
         .observeAsState().value?.sortedByDescending { it.isSelected } ?: listOf()
-
     val userData = loginViewModel.getUserData().asLiveData().observeAsState()
 
+    if (listId.value != -1 && !list.value.any { it.isSelected.orFalse() }){
+        navController.navigate(Screens.VocabularyListScreen.name)
+    }
 
     if (deleteList) {
         wordViewModel.deleteListById(listId.value)
@@ -188,11 +190,8 @@ private fun Content(
                 isSelected = it.isSelected.orFalse(),
                 onClick = { id ->
                     wordViewModel.selectList(id)
-
-                    timber("alkjdkwljlfkskljflejlkjef 1111111111111")
                     wordViewModel.selectList(id)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        timber("alkjdkwljlfkskljflejlkjef")
                         calendarViewModel.stopLastTime()
                         calendarViewModel.insertSpendTime(
                             TimeSpent(
@@ -245,10 +244,8 @@ private fun Content(
                         ),
                         isSelected = it.isSelected.orFalse(),
                         onClick = { id ->
-                            timber("alkjdkwljlfkskljflejlkjef 1111111111111")
                             wordViewModel.selectList(id)
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                timber("alkjdkwljlfkskljflejlkjef")
                                 calendarViewModel.stopLastTime()
                                 calendarViewModel.insertSpendTime(
                                     TimeSpent(

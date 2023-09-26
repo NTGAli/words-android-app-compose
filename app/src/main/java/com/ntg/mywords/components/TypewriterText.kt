@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import com.ntg.mywords.ui.theme.fontBold24
 import com.ntg.mywords.ui.theme.fontMedium24
 import com.ntg.mywords.util.timber
 import kotlinx.coroutines.delay
+import java.time.format.TextStyle
 import kotlin.streams.toList
 
 @Composable
@@ -28,7 +30,9 @@ fun TypewriterText(
     texts:List<String>,
     cursor: String="",
     speedType: Long = 40L,
-    singleText: Boolean = false
+    singleText: Boolean = false,
+    enableVibrate: Boolean = true,
+    style: androidx.compose.ui.text.TextStyle = fontBold24()
 ) {
 //    var name = rememberSaveable { mutableStateOf("") }
 
@@ -71,7 +75,7 @@ fun TypewriterText(
                     )
 //                Log.e("Abhi", "$charIndex $textToDisplay")
                 delay(speedType)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && enableVibrate) {
                     vib.vibrate(VibrationEffect.createOneShot(3L,20))
                 }
 
@@ -88,15 +92,14 @@ fun TypewriterText(
         }
     }
 
-    Row(modifier = modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.Center) {
         Text(
             text = textToDisplay,
             style = fontBold24(MaterialTheme.colorScheme.onBackground)
         )
         Text(
             text = cursor,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
+            style = style
         )
     }
 }
