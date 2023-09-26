@@ -44,6 +44,7 @@ fun AddEditWordScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val context = LocalContext.current
     var wordData = Word()
+    var example = ""
 
 
     Scaffold(
@@ -61,13 +62,24 @@ fun AddEditWordScreen(
             Content(
                 paddingValues = innerPadding,
                 wordEdit = word?.value,
-                wordViewModel = wordViewModel
-            ) {
-                wordData = it
-            }
+                wordViewModel = wordViewModel,
+                wordData = {
+                    wordData = it
+                },
+                exampleField = {
+                    example = it
+                }
+            )
 
         }, bottomBar = {
             BottomBarContent(wordId != -1) {
+                timber("sklfjelkjflkejf $example")
+                if (example !in wordData.example.orEmpty() && example.isNotEmpty()){
+                    val ex: MutableList<String> = wordData.example as MutableList<String>
+                    ex.add(example)
+                    wordData.example = ex.toList()
+                    timber("sklfjelkjflkejf ${ex.toList()} ----- ${wordData.example}")
+                }
                 submitWord(wordData, wordViewModel, context, wordId != -1, navController)
             }
         }
@@ -77,7 +89,7 @@ fun AddEditWordScreen(
 
 
 @Composable
-private fun BottomBarContent(isEdit: Boolean ,onClick: () -> Unit) {
+private fun BottomBarContent(isEdit: Boolean, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(start = 32.dp, end = 32.dp)
@@ -144,7 +156,8 @@ private fun Content(
     paddingValues: PaddingValues,
     wordEdit: Word?,
     wordViewModel: WordViewModel,
-    wordData: (Word) -> Unit
+    wordData: (Word) -> Unit,
+    exampleField: (String) -> Unit
 ) {
 
     val word = remember {
@@ -215,8 +228,8 @@ private fun Content(
 
 
     OpenVoiceSearch(launch = openVoiceToSpeech, voiceSearch = {
-        if (it != null){
-            when{
+        if (it != null) {
+            when {
                 voiceForWord -> {
                     word.value = it
                     voiceForWord = false
@@ -358,9 +371,11 @@ private fun Content(
                     context.toast(context.getString(R.string.error_occurred))
                     fetchDataWord.value = false
                 }
+
                 is NetworkResult.Loading -> {
                     timber("WORD_DATA ::  LD")
                 }
+
                 is NetworkResult.Success -> {
                     timber("WORD_DATA :: ${it.data}")
                     if (it.data.orEmpty().isNotEmpty()) {
@@ -538,6 +553,9 @@ private fun Content(
                         example.value = ""
 
                     }
+                },
+                onChange = {
+                    exampleField.invoke(it)
                 }
             )
         }
