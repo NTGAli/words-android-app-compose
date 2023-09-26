@@ -16,7 +16,7 @@ data class Word (
     val pronunciation: String? = null,
     val definition: String? = null,
     val audio: String? = null,
-    val example: List<String>? = null,
+    var example: List<String>? = null,
     val synonyms: List<String>? = null,
     val antonyms: List<String>? = null,
     val dateCreated: Long? = null,
