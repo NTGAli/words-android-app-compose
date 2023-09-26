@@ -241,7 +241,7 @@ private fun Content(
 
 
             SettingTitle(title = stringResource(id = R.string.theme))
-            ItemOption(text = theme.value, divider = false) {
+            ItemOption(text = theme.value.ifEmpty { stringResource(id = R.string.system_default) }, divider = false) {
                 navController.navigate(Screens.ThemeScreen.name)
             }
 

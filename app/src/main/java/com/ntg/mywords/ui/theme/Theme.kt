@@ -142,18 +142,8 @@ fun AppTheme(
 
             when (userTheme.value) {
 
-                ctx.getString(R.string.system_default) -> {
-                    WindowCompat
-                        .getInsetsController(window, view)
-                        .isAppearanceLightStatusBars = !useDarkTheme
-
-                    WindowCompat
-                        .getInsetsController(window, view)
-                        .isAppearanceLightNavigationBars = !useDarkTheme
-
-                }
-
-                else -> {
+                ctx.getString(R.string.light_mode),
+                ctx.getString(R.string.dark_mode) -> {
                     WindowCompat
                         .getInsetsController(window, view)
                         .isAppearanceLightStatusBars =
@@ -169,17 +159,24 @@ fun AppTheme(
                         )
                 }
 
+
+                else -> {
+                    WindowCompat
+                        .getInsetsController(window, view)
+                        .isAppearanceLightStatusBars = !useDarkTheme
+
+                    WindowCompat
+                        .getInsetsController(window, view)
+                        .isAppearanceLightNavigationBars = !useDarkTheme
+
+                }
+
+
             }
 
 
         }
     }
-
-//    WindowCompat.setDecorFitsSystemWindows((view.context as Activity).window, false)
-//
-//
-//    (view.context as Activity).window.statusBarColor = Color.Transparent.toArgb()
-//    (view.context as Activity).window.navigationBarColor = Color.Transparent.toArgb()
 
     MaterialTheme(
         colorScheme = colors,

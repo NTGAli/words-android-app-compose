@@ -1,5 +1,6 @@
 package com.ntg.mywords.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,31 +13,38 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ntg.mywords.R
-import com.ntg.mywords.components.Appbar
+import com.ntg.mywords.components.BubblePopupExample
+import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.HomeAppbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
-import com.ntg.mywords.model.components.AppbarItem
+import com.ntg.mywords.components.TextDescriptionAnimated
+import com.ntg.mywords.components.TypewriterText
+import com.ntg.mywords.model.components.ButtonStyle
+import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.WordViewModel
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -245,8 +253,31 @@ private fun Content(
                 navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
             }
         }
+
+        item {
+            if (wordsList.value != null && wordsList.value?.size == 0){
+                TypewriterText(modifier = Modifier
+                    .padding(top = 64.dp)
+                    .fillMaxWidth(), texts = getRandomWord(ctx), enableVibrate = false, style = fontMedium24(MaterialTheme.colorScheme.outline))
+                CustomButton(modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth(), text = "add first word for this list", style = ButtonStyle.TextOnly, type = ButtonType.Primary){
+                    navController.navigate(Screens.AddEditScreen.name)
+                }
+            }
+
+        }
     }
 
+}
+
+private fun getRandomWord(ctx: Context): List<String> {
+    val inputStream = ctx.resources.openRawResource(R.raw.sample_words)
+    val reader = BufferedReader(InputStreamReader(inputStream))
+    val wordsList = reader.readLines()
+    reader.close()
+    val shuffledWords = wordsList.shuffled()
+    return shuffledWords.take(200)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -280,5 +311,45 @@ fun FullScreenDialog(showDialog: Boolean, onClose: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun LottieExample() {
+
+    var isPlaying by remember {
+        mutableStateOf(true)
+    }
+    var speed by remember {
+        mutableStateOf(1f)
+    }
+
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec
+            .RawRes(R.raw.add_word)
+    )
+
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever,
+        isPlaying = isPlaying,
+        speed = speed,
+        restartOnPlay = false
+
+    )
+
+    Column(
+        Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LottieAnimation(
+            composition,
+            progress,
+            modifier = Modifier
+                .size(400.dp)
+                .background(MaterialTheme.colorScheme.primary)
+        )
     }
 }
