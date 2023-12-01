@@ -1,13 +1,6 @@
 package com.ntg.mywords
 
 import android.app.Application
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.asLiveData
-import com.ntg.mywords.util.UserStore
-import com.ntg.mywords.util.timber
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 

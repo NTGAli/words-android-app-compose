@@ -171,7 +171,8 @@ private fun Content(
                     painter = painterResource(
                         id = R.drawable.ic_new
                     ),
-                    imageTint = Success500
+                    imageTint = Success500,
+                    imageBackground = Success100
                 ) {
                     navController.navigate(Screens.RecentWordScreen.name)
 
@@ -187,7 +188,8 @@ private fun Content(
                     painter = painterResource(
                         id = R.drawable.icons8_w_1
                     ),
-                    imageTint = Primary500
+                    imageTint = Primary500,
+                    imageBackground = Primary100
                 ) {
                     navController.navigate(Screens.AllWordsScreen.name)
                 }
@@ -204,7 +206,8 @@ private fun Content(
                     painter = painterResource(
                         id = R.drawable.icons8_eye_1
                     ),
-                    imageTint = Warning500
+                    imageTint = Warning500,
+                    imageBackground = Warning100
                 ) {
                     if (needToReviewCount.value != 0){
                         navController.navigate(Screens.RevisionScreen.name)
@@ -225,7 +228,8 @@ private fun Content(
                     painter = painterResource(
                         id = R.drawable.icons8_clock_1_1
                     ),
-                    imageTint = Secondary500
+                    imageTint = Secondary500,
+                    imageBackground = Secondary100
                 ) {
                     navController.navigate(Screens.TimeScreen.name)
                 }

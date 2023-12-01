@@ -1,6 +1,7 @@
 package com.ntg.mywords.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -27,6 +28,7 @@ fun ShapeTileWidget(
     painter: Painter,
     aspectRatio: Float = 2.75f,
     imageTint: Color? = null,
+    imageBackground: Color = Color.White,
     onClick:() -> Unit ={}
 
     ) {
@@ -35,7 +37,8 @@ fun ShapeTileWidget(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.background)
+            .border(width = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(8.dp))
             .aspectRatio(aspectRatio)
             .clickable(
                 onClick = onClick,
@@ -51,10 +54,10 @@ fun ShapeTileWidget(
 
             Box(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
+                    .padding(vertical = 12.dp)
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White),
+                    .background(imageBackground),
                 contentAlignment = Alignment.Center
 
             ) {
