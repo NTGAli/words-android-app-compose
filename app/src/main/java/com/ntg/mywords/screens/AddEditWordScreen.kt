@@ -27,6 +27,8 @@ import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
+import com.ntg.mywords.model.response.Definition
+import com.ntg.mywords.model.response.PronunciationVocab
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
 import com.ntg.mywords.util.*
@@ -219,6 +221,10 @@ private fun Content(
         mutableStateListOf<String>()
     }
 
+    val definitionList = remember {
+        mutableStateListOf<Definition>()
+    }
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
@@ -364,52 +370,85 @@ private fun Content(
     if (fetchDataWord.value) {
 
 
-
-
-
-
-        wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
-            when (it) {
+        wordViewModel.getWord(word.value, type.value).observe(lifecycleOwner){
+            when(it){
                 is NetworkResult.Error -> {
-                    timber("WORD_DATA :: ERR ${it.message}")
-                    context.toast(context.getString(R.string.error_occurred))
-                    fetchDataWord.value = false
-                }
 
+                }
                 is NetworkResult.Loading -> {
-                    timber("WORD_DATA ::  LD")
-                }
 
+                }
                 is NetworkResult.Success -> {
-                    timber("WORD_DATA :: ${it.data}")
-                    if (it.data.orEmpty().isNotEmpty()) {
+                    if (it.data != null){
+                        timber("WORD_DATA_VOCAB :: ${it.data}")
                         listOfDefinitions.clear()
-                        wordDataItems = it.data.orEmpty()
+//                        wordDataItems = it.data.orEmpty()
                         pronunciation.value =
-                            it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
-                        it.data?.filter { it.functionalLabel == type.value }?.forEach {
-                            it.shortDefinitions?.forEach { def ->
-                                listOfDefinitions.add(def)
-                            }
+                            it.data.data?.pronunciations?.first { it.accent == "am" }?.pronunciation.orEmpty()
+
+
+                        it.data.data?.definitions?.sortedBy { it.number }?.forEach {
+                            listOfDefinitions.add(it.definition.orEmpty())
+                            definitionList.add(it)
                         }
+
                         if (type.value == "verb") {
-                            pastSimple.value =
-                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
-                                    0
-                                )?.infection.orEmpty()
-                            pastParticiple.value =
-                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
-                                    1
-                                )?.infection.orEmpty()
+                            pastSimple.value = it.data.data?.wordForms?.pastSimple.orEmpty()
+                            pastParticiple.value = it.data.data?.wordForms?.pastParticiple.orEmpty()
                         }
-                    } else {
+                    }else{
                         context.toast(context.getString(R.string.not_exist))
                     }
+
                     fetchDataWord.value = false
                 }
             }
-
         }
+
+
+
+//        wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
+//            when (it) {
+//                is NetworkResult.Error -> {
+//                    timber("WORD_DATA :: ERR ${it.message}")
+//                    context.toast(context.getString(R.string.error_occurred))
+//                    fetchDataWord.value = false
+//                }
+//
+//                is NetworkResult.Loading -> {
+//                    timber("WORD_DATA ::  LD")
+//                }
+//
+//                is NetworkResult.Success -> {
+//                    timber("WORD_DATA :: ${it.data}")
+//                    if (it.data.orEmpty().isNotEmpty()) {
+//                        listOfDefinitions.clear()
+//                        wordDataItems = it.data.orEmpty()
+//                        pronunciation.value =
+//                            it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
+//                        it.data?.filter { it.functionalLabel == type.value }?.forEach {
+//                            it.shortDefinitions?.forEach { def ->
+//                                listOfDefinitions.add(def)
+//                            }
+//                        }
+//                        if (type.value == "verb") {
+//                            pastSimple.value =
+//                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
+//                                    0
+//                                )?.infection.orEmpty()
+//                            pastParticiple.value =
+//                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
+//                                    1
+//                                )?.infection.orEmpty()
+//                        }
+//                    } else {
+//                        context.toast(context.getString(R.string.not_exist))
+//                    }
+//                    fetchDataWord.value = false
+//                }
+//            }
+//
+//        }
     }
 
 
@@ -538,6 +577,11 @@ private fun Content(
                     radioSelect = mutableStateOf(definition.value == it),
                     onClick = { text, _, isSelect ->
                         definition.value = text
+
+                        definitionList.first{ it.definition == definition.value }.examples?.forEach {
+                            exampleList.add(it)
+                        }
+
                     })
             }
 

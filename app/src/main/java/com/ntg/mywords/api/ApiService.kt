@@ -4,6 +4,7 @@ import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.req.VerifyUserReq
 import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.VerifyUserRes
+import com.ntg.mywords.model.response.WordVocab
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -113,5 +114,12 @@ interface ApiService {
         @Field("email") email: String,
         @Field("password") password: String,
     ): Response<ResponseBody<Nothing>>
+
+    @GET("DictionaryFiles/word.php")
+    suspend fun getWord(
+        @Query("word") word: String,
+        @Query("type") type: String,
+    ): Response<ResponseBody<WordVocab?>>
+
 
 }

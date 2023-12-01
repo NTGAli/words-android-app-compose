@@ -20,6 +20,7 @@ import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.WordDataItem
+import com.ntg.mywords.model.response.WordVocab
 import com.ntg.mywords.util.getUnixTimeNDaysAgo
 import com.ntg.mywords.util.safeApiCall
 import com.ntg.mywords.util.timber
@@ -52,6 +53,7 @@ class WordViewModel @Inject constructor(
     private var allValidTimeSpentBaseListId: LiveData<List<TimeSpent>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
+    private var wordVocab: MutableLiveData<NetworkResult<ResponseBody<WordVocab?>>> = MutableLiveData()
     private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =
         MutableLiveData()
@@ -195,6 +197,16 @@ class WordViewModel @Inject constructor(
             wordData
         }
 
+    }
+
+
+    fun getWord(word: String, type: String): MutableLiveData<NetworkResult<ResponseBody<WordVocab?>>> {
+        viewModelScope.launch {
+            wordVocab = safeApiCall(Dispatchers.IO){
+                vocabApi.getWord(word, type)
+            } as MutableLiveData<NetworkResult<ResponseBody<WordVocab?>>>
+        }
+        return wordVocab
     }
 
     fun addAllTimeSpent(timeSpent: List<TimeSpent>) {
