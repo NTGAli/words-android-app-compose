@@ -45,6 +45,11 @@ fun ItemList(
     val popupItems = listOf(
         PopupItem(
             id = 0,
+            icon = painterResource(id = R.drawable.folder),
+            title = stringResource(id = R.string.open_list)
+        ),
+        PopupItem(
+            id = 0,
             icon = painterResource(id = R.drawable.edit_16_1_5),
             title = stringResource(id = R.string.edit)
         ),
@@ -105,10 +110,16 @@ fun ItemList(
             Modifier
                 .align(Alignment.CenterEnd), popupItems = popupItems
         ) {
-            if (it == 0){
-                editCallback.invoke(id)
-            }else{
-                deleteCallback.invoke(id)
+            when (it) {
+                0 -> {
+                    onClick.invoke(id)
+                }
+                1 -> {
+                    editCallback.invoke(id)
+                }
+                else -> {
+                    deleteCallback.invoke(id)
+                }
             }
         }
 

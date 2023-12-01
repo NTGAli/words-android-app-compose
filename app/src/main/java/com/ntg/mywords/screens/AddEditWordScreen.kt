@@ -78,7 +78,6 @@ fun AddEditWordScreen(
                     val ex: MutableList<String> = wordData.example as MutableList<String>
                     ex.add(example)
                     wordData.example = ex.toList()
-                    timber("sklfjelkjflkejf ${ex.toList()} ----- ${wordData.example}")
                 }
                 submitWord(wordData, wordViewModel, context, wordId != -1, navController)
             }
@@ -363,6 +362,11 @@ private fun Content(
 
 
     if (fetchDataWord.value) {
+
+
+
+
+
 
         wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
             when (it) {

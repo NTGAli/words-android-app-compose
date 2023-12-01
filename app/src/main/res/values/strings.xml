@@ -153,5 +153,6 @@
     <string name="support_email">noreply@myvocabulary.ntgt.ir</string>
     <string name="enter_your_password">Please enter your password, for %s</string>
     <string name="enter_password_choice">Enter the password of your choice, for %s</string>
+    <string name="open_list">open list</string>
 
 </resources>
