@@ -1,8 +1,18 @@
 package com.ntg.mywords
 
 import android.app.Application
+import android.text.TextUtils
+import android.util.Log
+import com.google.android.gms.tasks.Task
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.ktx.messaging
+import com.ntg.mywords.util.MyFirebaseMessagingService
+import com.ntg.mywords.util.timber
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
+import javax.inject.Inject
 
 
 @HiltAndroidApp
@@ -14,10 +24,31 @@ class MyApp: Application() {
         initTimber()
 //        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
 
-
-
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token: String ->
+            if (!TextUtils.isEmpty(token)) {
+                timber("FCM_TOKEN ::::: $token")
+            } else {
+                timber("FCM_TOKEN ::::: NULL TOKEN")
+            }
+        }.addOnFailureListener { e: Exception? -> }.addOnCanceledListener {}
+            .addOnCompleteListener { task: Task<String> ->
+                try {
+                    timber("FCM_TOKEN_FAIL ::::: ${task.result}")
+                }catch (e: Exception){
+                    e.printStackTrace()
+                }
+            }
     }
 
+    private fun runtimeEnableAutoInit() {
+        // [START fcm_runtime_enable_auto_init]
+        FirebaseMessaging.getInstance().isAutoInitEnabled = true
+        // [END fcm_runtime_enable_auto_init]
+    }
+
+    private suspend fun getAndStoreRegToken(): String {
+        return Firebase.messaging.token.await()
+    }
 //    override fun setTheme(resid: Int) {
 //        val dataStore = UserStore(this)
 //        dataStore.getAccessToken.asLiveData().observeForever {

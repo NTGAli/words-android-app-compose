@@ -5,6 +5,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
+import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.CountDownTimer
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -69,6 +71,11 @@ fun Context.toast(msg: String) {
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
 
+fun Context.openInBrowser(url: String){
+    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    this.startActivity(browserIntent)
+}
+
 fun notEmptyOrNull(
     value: String?,
     errorMessage: String = "error!"
@@ -83,6 +90,9 @@ fun String.hasEnoughDigits() = count(Char::isDigit) > 0
 
 fun Char?.ifNotNull(): String? = this?.toString()
 
+fun Context.checkInternet(): Boolean {
+    return (this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo != null
+}
 
 fun enoughDigitsForPass(
     str: String,
@@ -466,7 +476,7 @@ suspend fun <T> safeApiCall(
         } catch (e: HttpException) {
             emit(NetworkResult.Error(message = "HttpException ::: ${e.message}"))
         } catch (e: IOException) {
-            emit(NetworkResult.Error(message = "IOException ::: ${e.message}"))
+            emit(NetworkResult.Error(message = "IOException ::: ${e.message} --- ${e.printStackTrace()}"))
         } catch (e: Exception) {
             emit(NetworkResult.Error(message = "Exception ::: ${e.message}"))
         }

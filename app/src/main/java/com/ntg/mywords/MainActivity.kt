@@ -24,6 +24,7 @@ import androidx.datastore.dataStore
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.asLiveData
+import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import androidx.room.Room.databaseBuilder
 import com.ntg.mywords.components.LoadingView
@@ -37,6 +38,7 @@ import com.ntg.mywords.util.*
 import com.ntg.mywords.util.Constant.DATA_STORE_FILE_NAME
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
+import com.ntg.mywords.vm.MessageBoxViewModel
 import com.ntg.mywords.vm.SignInViewModel
 import com.ntg.mywords.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,6 +57,7 @@ class MainActivity : ComponentActivity() {
     private val calendarViewModel: CalendarViewModel by viewModels()
     private val loginViewModel: LoginViewModel by viewModels()
     private val signInViewModel: SignInViewModel by viewModels()
+    private val messageBoxViewModel: MessageBoxViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,21 +98,48 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val navController = rememberNavController()
 
                 AppNavHost(
                     wordViewModel = wordViewModel,
+                    navController = navController,
                     calendarViewModel = calendarViewModel,
                     loginViewModel = loginViewModel,
                     signInViewModel = signInViewModel,
+                    messageBoxViewModel = messageBoxViewModel,
                     startDestination = startDes.value
                 ) { _, navDestination, _ ->
+
+
+                    if (navDestination.route.orEmpty() == currentDes.value) return@AppNavHost
+
                     timber("onDestinationChangeListener ${navDestination.route}")
                     currentDes.value = navDestination.route.orEmpty()
+
+                    when (navDestination.route) {
+                        Screens.MessagesBoxScreen.name -> {
+                            if (!checkInternet()){
+//                                navController.popBackStack()
+                                navController.navigate(Screens.NoInternetConnection.name + "?screen=${navDestination.route}")
+                            }
+                        }
+
+                    }
+
                 }
+
+
 
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     HandleLifecycle(calendarViewModel, wordViewModel, currentDes.value)
+                }
+
+
+                if (intent.getStringExtra(Constant.ACTION).orEmpty().isNotEmpty()) {
+                    startDes.value = Screens.MessagesBoxScreen.name
+                    intent.action = ""
+                    intent.putExtra(Constant.ACTION, "")
                 }
 
             }
@@ -122,7 +152,6 @@ class MainActivity : ComponentActivity() {
 private fun HandleLifecycle(
     calendarViewModel: CalendarViewModel, wordViewModel: WordViewModel, destination: String
 ) {
-    timber("akljlkjaadkawkljdlw ${destination}")
 
     val listId = wordViewModel.getIdOfListSelected().observeAsState().value
     val events = remember {
@@ -133,9 +162,6 @@ private fun HandleLifecycle(
         OnLifecycleEvent { owner, event ->
             events.value = event
         }
-
-    timber("awawldjlkawjdlkjwald ${events.value.name}")
-
         when (events.value) {
             Lifecycle.Event.ON_START -> {
                 calendarViewModel.removeNullTime()

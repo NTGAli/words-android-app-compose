@@ -1,10 +1,15 @@
 package com.ntg.mywords.screens
 
 import android.content.Context
+import android.content.res.XmlResourceParser
+import androidx.compose.animation.AnimatedVisibility
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -17,23 +22,37 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.ntg.mywords.R
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.*
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Success
+import com.ntg.mywords.model.VerbData
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.response.Definition
+import com.ntg.mywords.model.response.DefinitionText
+import com.ntg.mywords.model.response.DefinitionX
+import com.ntg.mywords.model.response.Meaning
 import com.ntg.mywords.model.response.PronunciationVocab
+import com.ntg.mywords.model.response.SenseItem
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
+import com.ntg.mywords.ui.theme.fontMedium14
 import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.WordViewModel
 import kotlinx.coroutines.launch
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.Reader
+import java.io.StringWriter
+import java.io.Writer
+import kotlin.reflect.javaType
+import kotlin.reflect.typeOf
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +95,7 @@ fun AddEditWordScreen(
         }, bottomBar = {
             BottomBarContent(wordId != -1) {
                 timber("sklfjelkjflkejf $example")
-                if (example !in wordData.example.orEmpty() && example.isNotEmpty()){
+                if (example !in wordData.example.orEmpty() && example.isNotEmpty()) {
                     val ex: MutableList<String> = wordData.example as MutableList<String>
                     ex.add(example)
                     wordData.example = ex.toList()
@@ -151,7 +170,7 @@ private fun submitWord(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalStdlibApi::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -189,6 +208,10 @@ private fun Content(
         mutableStateOf("")
     }
 
+    val dictionaryApi = remember {
+        mutableIntStateOf(0)
+    }
+
     val example = remember {
         mutableStateOf("")
     }
@@ -223,6 +246,14 @@ private fun Content(
 
     val definitionList = remember {
         mutableStateListOf<Definition>()
+    }
+
+    val definitionListFreeApi = remember {
+        mutableStateListOf<DefinitionX>()
+    }
+
+    val definitionListApi = remember {
+        mutableStateListOf<DefinitionX>()
     }
 
     val context = LocalContext.current
@@ -299,6 +330,10 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var visible by remember {
+        mutableStateOf(false)
+    }
+
     val scope = rememberCoroutineScope()
 
     val phonetics = listOf(
@@ -367,89 +402,237 @@ private fun Content(
     }
 
 
-    if (fetchDataWord.value) {
+    val raw = context.resources.openRawResource(R.raw.word_forms)
+    val writer: Writer = StringWriter()
+    val buffer = CharArray(1024)
+    raw.use { rawData ->
+        val reader: Reader = BufferedReader(InputStreamReader(rawData, "UTF-8"))
+        var n: Int
+        while (reader.read(buffer).also { n = it } != -1) {
+            writer.write(buffer, 0, n)
+        }
+    }
+    val jsonString = writer.toString()
+    val itemType = object : TypeToken<List<VerbData>>() {}.type
+    val verbList = Gson().fromJson<List<VerbData>>(jsonString, itemType)
 
 
-        wordViewModel.getWord(word.value, type.value).observe(lifecycleOwner){
-            when(it){
-                is NetworkResult.Error -> {
 
+
+
+    LaunchedEffect(key1 = fetchDataWord.value, block = {
+
+        if (fetchDataWord.value) {
+
+            when (dictionaryApi.intValue) {
+                1 -> {
+                    wordViewModel.getDataWordFromFreeDictionary(word.value)
+                        .observe(lifecycleOwner) {
+
+                            when (it) {
+                                is NetworkResult.Error -> {
+                                    timber("getDataWordFromFreeDictionary ::: ER ${it.message}")
+                                }
+
+                                is NetworkResult.Loading -> {
+                                    timber("getDataWordFromFreeDictionary ::: LD")
+
+                                }
+
+                                is NetworkResult.Success -> {
+                                    timber("getDataWordFromFreeDictionary ::: SC ::: ${it.data}")
+                                    fetchDataWord.value = false
+                                    exampleList.clear()
+                                    example.value = ""
+                                    definition.value = ""
+
+                                    if (it.data != null) {
+                                        timber("WORD_DATA_VOCAB :: ${it.data}")
+                                        listOfDefinitions.clear()
+                                        definitionListFreeApi.clear()
+
+                                        pronunciation.value = it.data[0].phonetic.orEmpty()
+//                                        it.data[0].meanings?.filter { it.partOfSpeech == type.value }
+//                                            ?.forEach {
+//                                                it.definitions.orEmpty().forEach {
+//                                                    listOfDefinitions.add(it.definition.orEmpty())
+//                                                }
+//                                            }
+
+                                        try {
+                                            it.data.forEach {
+                                                it.meanings?.filter { it.partOfSpeech == type.value }
+                                                    ?.forEach {
+                                                        it.definitions.orEmpty().forEach {
+                                                            listOfDefinitions.add(it.definition.orEmpty())
+                                                            definitionListFreeApi.add(it)
+                                                        }
+
+                                                    }
+                                            }
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
+
+//                                        try {
+//                                            it.data[0].meanings.orEmpty()
+//                                                .filter { it.partOfSpeech.orEmpty() == type.value }[0].definitions.orEmpty()
+//                                                .forEach {
+//                                                    definitionListFreeApi.add(it)
+//
+//                                                }
+//                                        } catch (e: Exception) {
+//                                            e.printStackTrace()
+//                                        }
+
+                                        if (type.value == "verb") {
+                                            pastSimple.value =
+                                                verbList.first { it.word == word.value }.past_simple.orEmpty()
+                                            pastParticiple.value =
+                                                verbList.first { it.word == word.value }.pp.orEmpty()
+                                        }
+
+
+                                    } else {
+                                        context.toast(context.getString(R.string.not_exist))
+                                    }
+                                }
+                            }
+
+                        }
                 }
-                is NetworkResult.Loading -> {
 
-                }
-                is NetworkResult.Success -> {
-                    if (it.data != null){
-                        timber("WORD_DATA_VOCAB :: ${it.data}")
-                        listOfDefinitions.clear()
-//                        wordDataItems = it.data.orEmpty()
-                        pronunciation.value =
-                            it.data.data?.pronunciations?.first { it.accent == "am" }?.pronunciation.orEmpty()
+                2 -> {
+                    wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
+                        when (it) {
+                            is NetworkResult.Error -> {
+                                timber("WORD_DATA :: ERR ${it.message}")
+                                context.toast(context.getString(R.string.error_occurred))
+                                fetchDataWord.value = false
+                            }
 
+                            is NetworkResult.Loading -> {
+                                timber("WORD_DATA ::  LD")
+                            }
 
-                        it.data.data?.definitions?.sortedBy { it.number }?.forEach {
-                            listOfDefinitions.add(it.definition.orEmpty())
-                            definitionList.add(it)
+                            is NetworkResult.Success -> {
+                                timber("WORD_DATA :: ${it.data}")
+                                fetchDataWord.value = false
+                                exampleList.clear()
+                                example.value = ""
+                                definition.value = ""
+                                if (it.data.orEmpty().isNotEmpty()) {
+                                    listOfDefinitions.clear()
+                                    wordDataItems = it.data.orEmpty()
+                                    pronunciation.value =
+                                        it.data?.get(0)?.headwordInformation?.pronunciations?.get(
+                                            0
+                                        )?.mw.orEmpty()
+                                    it.data?.filter { it.functionalLabel == type.value }
+                                        ?.forEach {
+                                            it.shortDefinitions?.forEach { def ->
+                                                listOfDefinitions.add(def)
+                                            }
+                                        }
+
+//                                    it.data?.forEach {
+//                                        it.definitionSection?.forEach {
+//                                            it.sseq?.forEach {
+//                                                it.forEach {
+//                                                    it.forEach {
+//
+//                                                        timber("ajkaefhjeahfkjehkfjhew ${it}")
+//                                                        val gson = Gson()
+//                                                        val definition = gson.fromJson(it.toString(), WordDataItem::class.java)
+////                                                        try {
+////                                                            (it as SenseItem).dt?.forEach {
+////                                                                it.forEach {
+////                                                                    timber("ajkaefhjeahfkjehkfjhew ${it.text}")
+////                                                                }
+////                                                            }
+////                                                        }catch (e: Exception){
+////                                                            e.printStackTrace()
+////                                                        }
+//
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+
+                                    if (type.value == "verb") {
+                                        pastSimple.value =
+                                            verbList.first { it.word == word.value }.past_simple.orEmpty()
+                                        pastParticiple.value =
+                                            verbList.first { it.word == word.value }.pp.orEmpty()
+                                    }
+//                                    if (type.value == "verb") {
+//                                        pastSimple.value =
+//                                            it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
+//                                                0
+//                                            )?.infection.orEmpty()
+//                                        pastParticiple.value =
+//                                            it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
+//                                                2
+//                                            )?.infection.orEmpty()
+//                                    }
+                                } else {
+                                    context.toast(context.getString(R.string.not_exist))
+                                }
+                            }
                         }
 
-                        if (type.value == "verb") {
-                            pastSimple.value = it.data.data?.wordForms?.pastSimple.orEmpty()
-                            pastParticiple.value = it.data.data?.wordForms?.pastParticiple.orEmpty()
-                        }
-                    }else{
-                        context.toast(context.getString(R.string.not_exist))
                     }
 
-                    fetchDataWord.value = false
+                }
+
+                3 -> {
+                    wordViewModel.getWord(word.value, type.value).observe(lifecycleOwner) {
+                        when (it) {
+                            is NetworkResult.Error -> {
+
+                            }
+
+                            is NetworkResult.Loading -> {
+
+                            }
+
+                            is NetworkResult.Success -> {
+                                if (it.data != null) {
+                                    timber("WORD_DATA_VOCAB :: ${it.data}")
+                                    listOfDefinitions.clear()
+                                    //                        wordDataItems = it.data.orEmpty()
+                                    pronunciation.value =
+                                        it.data.data?.pronunciations?.first { it.accent == "am" }?.pronunciation.orEmpty()
+
+
+                                    it.data.data?.definitions?.sortedBy { it.number }?.forEach {
+                                        listOfDefinitions.add(it.definition.orEmpty())
+                                        definitionList.add(it)
+                                    }
+
+                                    if (type.value == "verb") {
+                                        pastSimple.value =
+                                            it.data.data?.wordForms?.pastSimple.orEmpty()
+                                        pastParticiple.value =
+                                            it.data.data?.wordForms?.pastParticiple.orEmpty()
+                                    }
+                                } else {
+                                    context.toast(context.getString(R.string.not_exist))
+                                }
+
+                                fetchDataWord.value = false
+                            }
+                        }
+                    }
+
                 }
             }
+
         }
 
+    })
 
-
-//        wordViewModel.getDataWord(word.value).observe(lifecycleOwner) {
-//            when (it) {
-//                is NetworkResult.Error -> {
-//                    timber("WORD_DATA :: ERR ${it.message}")
-//                    context.toast(context.getString(R.string.error_occurred))
-//                    fetchDataWord.value = false
-//                }
-//
-//                is NetworkResult.Loading -> {
-//                    timber("WORD_DATA ::  LD")
-//                }
-//
-//                is NetworkResult.Success -> {
-//                    timber("WORD_DATA :: ${it.data}")
-//                    if (it.data.orEmpty().isNotEmpty()) {
-//                        listOfDefinitions.clear()
-//                        wordDataItems = it.data.orEmpty()
-//                        pronunciation.value =
-//                            it.data?.get(0)?.headwordInformation?.pronunciations?.get(0)?.mw.orEmpty()
-//                        it.data?.filter { it.functionalLabel == type.value }?.forEach {
-//                            it.shortDefinitions?.forEach { def ->
-//                                listOfDefinitions.add(def)
-//                            }
-//                        }
-//                        if (type.value == "verb") {
-//                            pastSimple.value =
-//                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
-//                                    0
-//                                )?.infection.orEmpty()
-//                            pastParticiple.value =
-//                                it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
-//                                    1
-//                                )?.infection.orEmpty()
-//                        }
-//                    } else {
-//                        context.toast(context.getString(R.string.not_exist))
-//                    }
-//                    fetchDataWord.value = false
-//                }
-//            }
-//
-//        }
-    }
 
 
     LazyColumn(
@@ -486,17 +669,35 @@ private fun Content(
             )
 
             if (word.value.isNotEmpty() && type.value.isNotEmpty()) {
-                CustomButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    text = stringResource(id = R.string.auto_fill),
-                    size = ButtonSize.SM,
-                    type = ButtonType.Primary,
-                    style = ButtonStyle.TextOnly
-                ) {
-                    fetchDataWord.value = true
+
+                Row(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)) {
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        text = stringResource(id = R.string.auto_fill_from_first),
+                        size = ButtonSize.LG,
+                        type = ButtonType.Secondary,
+                        style = ButtonStyle.Contained
+                    ) {
+                        fetchDataWord.value = true
+                        dictionaryApi.intValue = 1
+                    }
+
+                    CustomButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp),
+                        text = stringResource(id = R.string.auto_fill_from_second),
+                        size = ButtonSize.LG,
+                        type = ButtonType.Secondary,
+                        style = ButtonStyle.Contained
+                    ) {
+                        fetchDataWord.value = true
+                        dictionaryApi.intValue = 2
+                    }
                 }
+
             }
 
             if (type.value == "verb") {
@@ -570,7 +771,15 @@ private fun Content(
 
         if (listOfDefinitions.isNotEmpty()) {
 
-            items(listOfDefinitions) {
+            item {
+                Text(
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                    text = stringResource(id = R.string.select_a_definition),
+                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+            }
+
+            items(listOfDefinitions.take(3)) {
                 SampleItem(
                     title = it,
                     enableRadioButton = true,
@@ -578,11 +787,71 @@ private fun Content(
                     onClick = { text, _, isSelect ->
                         definition.value = text
 
-                        definitionList.first{ it.definition == definition.value }.examples?.forEach {
-                            exampleList.add(it)
+                        if (dictionaryApi.intValue == 1) {
+                            exampleList.clear()
+                            if (definitionListFreeApi.first { it.definition == definition.value }.example.orEmpty()
+                                    .isNotEmpty()
+                            ) {
+                                exampleList.add(definitionListFreeApi.first { it.definition == definition.value }.example!!)
+                            }
+                        } else if (dictionaryApi.intValue == 2) {
+
+                        } else if (dictionaryApi.intValue == 3) {
+                            definitionList.first { it.definition == definition.value }.examples?.forEach {
+                                exampleList.add(it)
+                            }
                         }
 
                     })
+
+            }
+
+            items(listOfDefinitions.subList(3, listOfDefinitions.size)) {
+                AnimatedVisibility(visible = visible) {
+                    SampleItem(
+                        title = it,
+                        enableRadioButton = true,
+                        radioSelect = mutableStateOf(definition.value == it),
+                        onClick = { text, _, isSelect ->
+                            definition.value = text
+
+                            if (dictionaryApi.intValue == 1) {
+                                exampleList.clear()
+                                if (definitionListFreeApi.first { it.definition == definition.value }.example.orEmpty()
+                                        .isNotEmpty()
+                                ) {
+                                    exampleList.add(definitionListFreeApi.first { it.definition == definition.value }.example!!)
+                                }
+                            } else if (dictionaryApi.intValue == 2) {
+
+                            } else if (dictionaryApi.intValue == 3) {
+                                definitionList.first { it.definition == definition.value }.examples?.forEach {
+                                    exampleList.add(it)
+                                }
+                            }
+
+                        })
+                }
+
+            }
+            item {
+                if (listOfDefinitions.size > 3) {
+                    CustomButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = if (visible) stringResource(id = R.string.show_less) else stringResource(
+                            id = R.string.show_more
+                        ),
+                        style = ButtonStyle.TextOnly,
+                        type = ButtonType.Secondary,
+                        size = ButtonSize.MD
+                    ) {
+                        visible = !visible
+                    }
+                }
+            }
+
+            item() {
+
             }
 
         }
