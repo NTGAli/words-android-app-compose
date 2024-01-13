@@ -18,7 +18,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ntg.mywords.UserDataAndSetting
 import com.ntg.mywords.api.ApiService
+import com.ntg.mywords.api.AuthorizeInterceptor
 import com.ntg.mywords.api.DictionaryApiService
+import com.ntg.mywords.api.FreeDictionaryApi
 import com.ntg.mywords.api.LoggingInterceptor
 import com.ntg.mywords.db.AppDB
 import com.ntg.mywords.db.dao.TimeSpentDao
@@ -28,6 +30,7 @@ import com.ntg.mywords.util.Constant
 import com.ntg.mywords.util.Constant.DATABASE_NAME
 import com.ntg.mywords.util.Constant.DATA_STORE_FILE_NAME
 import com.ntg.mywords.util.Constant.DICTIONARY_API_URL
+import com.ntg.mywords.util.Constant.FREE_DICTIONARY_API_URL
 import com.ntg.mywords.util.Constant.PREFERENCE_DATA_STORE_NAME
 import com.ntg.mywords.util.Constant.VOCAB_API_URL
 import com.ntg.mywords.util.UserStore
@@ -102,6 +105,7 @@ class AppModule {
             .readTimeout(15, TimeUnit.SECONDS)
             .connectTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(LoggingInterceptor().httpLoggingInterceptor())
+            .addInterceptor(AuthorizeInterceptor())
             .build()
     }
 
@@ -111,6 +115,17 @@ class AppModule {
     fun provideRetrofit( okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(DICTIONARY_API_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @Named("FREE_DICTIONARY_API")
+    fun provideFreeDictionaryRetrofit( okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(FREE_DICTIONARY_API_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -141,6 +156,13 @@ class AppModule {
     @Singleton
     fun provideApiService(@Named("VOCAB_API")retrofit: Retrofit): ApiService{
         return retrofit.create(ApiService::class.java)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideFreeDictionaryApiService(@Named("FREE_DICTIONARY_API")retrofit: Retrofit): FreeDictionaryApi{
+        return retrofit.create(FreeDictionaryApi::class.java)
     }
 
 

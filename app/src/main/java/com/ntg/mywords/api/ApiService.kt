@@ -2,6 +2,7 @@ package com.ntg.mywords.api
 
 import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.req.VerifyUserReq
+import com.ntg.mywords.model.response.RecentMessage
 import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.VerifyUserRes
 import com.ntg.mywords.model.response.WordVocab
@@ -120,6 +121,10 @@ interface ApiService {
         @Query("word") word: String,
         @Query("type") type: String,
     ): Response<ResponseBody<WordVocab?>>
+
+    @GET("MessageBox/recentMessages.php")
+    suspend fun recentMessages()
+    : Response<ResponseBody<List<RecentMessage>?>>
 
 
 }

@@ -4,8 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class WordDataItem(
     val date: String?,
-//    @SerializedName("def")
-//    val definitionSection: List<DefinitionSection>?,
+    @SerializedName("def")
+    val definitionSection: List<DefItem>?,
     @SerializedName("dros")
     val definedRunOns: List<DefinedRunOns>?,
 //    @SerializedName("et")

@@ -25,7 +25,9 @@ enum class Screens {
     FinishScreen,
     ThemeScreen,
     PrivacyPolicyScreen,
-    HelpAndFeedbackScreen
+    HelpAndFeedbackScreen,
+    MessagesBoxScreen,
+    NoInternetConnection
 
 
 }

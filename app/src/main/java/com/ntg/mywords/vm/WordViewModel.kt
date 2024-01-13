@@ -9,6 +9,7 @@ import com.ntg.mywords.BuildConfig
 import com.ntg.mywords.UserDataAndSetting
 import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
+import com.ntg.mywords.api.FreeDictionaryApi
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.VocabListDao
@@ -18,6 +19,7 @@ import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.req.BackupUserData
+import com.ntg.mywords.model.response.DictionaryResItem
 import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.response.WordVocab
@@ -37,6 +39,7 @@ class WordViewModel @Inject constructor(
     private val timeSpentDao: TimeSpentDao,
     private val vocabListDao: VocabListDao,
     private val api: DictionaryApiService,
+    private val freeApiDic: FreeDictionaryApi,
     private val vocabApi: ApiService,
     private val dataRepository: DataRepository
 ) : ViewModel() {
@@ -54,6 +57,7 @@ class WordViewModel @Inject constructor(
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
     private var wordVocab: MutableLiveData<NetworkResult<ResponseBody<WordVocab?>>> = MutableLiveData()
+    private var wordFreeDic: MutableLiveData<NetworkResult<List<DictionaryResItem>?>> = MutableLiveData()
     private var uploadStatus: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var userBackup: MutableLiveData<NetworkResult<ResponseBody<BackupUserData>>> =
         MutableLiveData()
@@ -197,6 +201,16 @@ class WordViewModel @Inject constructor(
             wordData
         }
 
+    }
+
+
+    fun getDataWordFromFreeDictionary(word: String): MutableLiveData<NetworkResult<List<DictionaryResItem>?>> {
+        viewModelScope.launch {
+            wordFreeDic = safeApiCall(Dispatchers.IO) {
+                freeApiDic.getDataWord(word)
+            } as MutableLiveData<NetworkResult<List<DictionaryResItem>?>>
+        }
+        return wordFreeDic
     }
 
 

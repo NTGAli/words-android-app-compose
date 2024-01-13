@@ -54,8 +54,6 @@ fun HomeScreen(
     loginViewModel: LoginViewModel
 ) {
 
-    val context = LocalContext.current
-    val owner = LocalLifecycleOwner.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -69,11 +67,13 @@ fun HomeScreen(
                     navController.navigate(Screens.ProfileScreen.name)
                 },
                 searchCallback = {
-                                 navController.navigate(Screens.AllWordsScreen.name+"?openSearch=${true}")
+                    navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}")
                 },
-                notificationCallback = {},
+                notificationCallback = {
+                    navController.navigate(Screens.MessagesBoxScreen.name)
+                },
                 voiceSearch = {
-                    navController.navigate(Screens.AllWordsScreen.name+"?openSearch=${true}"+"&query=$it")
+                    navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}" + "&query=$it")
                 }
             )
         },
@@ -209,11 +209,11 @@ private fun Content(
                     imageTint = Warning500,
                     imageBackground = Warning100
                 ) {
-                    if (needToReviewCount.value != 0){
+                    if (needToReviewCount.value != 0) {
                         navController.navigate(Screens.RevisionScreen.name)
-                    }else if (numberOfAllWords.value != 0){
+                    } else if (numberOfAllWords.value != 0) {
                         ctx.toast(ctx.getString(R.string.no_word_for_review))
-                    }else{
+                    } else {
                         ctx.toast(ctx.getString(R.string.need_to_word_review))
                     }
                 }
@@ -259,13 +259,23 @@ private fun Content(
         }
 
         item {
-            if (wordsList.value != null && wordsList.value?.size == 0){
-                TypewriterText(modifier = Modifier
-                    .padding(top = 64.dp)
-                    .fillMaxWidth(), texts = getRandomWord(ctx), enableVibrate = false, style = fontMedium24(MaterialTheme.colorScheme.outline))
-                CustomButton(modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth(), text = "add first word for this list", style = ButtonStyle.TextOnly, type = ButtonType.Primary){
+            if (wordsList.value != null && wordsList.value?.size == 0) {
+                TypewriterText(
+                    modifier = Modifier
+                        .padding(top = 64.dp)
+                        .fillMaxWidth(),
+                    texts = getRandomWord(ctx),
+                    enableVibrate = false,
+                    style = fontMedium24(MaterialTheme.colorScheme.outline)
+                )
+                CustomButton(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth(),
+                    text = "add first word for this list",
+                    style = ButtonStyle.TextOnly,
+                    type = ButtonType.Primary
+                ) {
                     navController.navigate(Screens.AddEditScreen.name)
                 }
             }

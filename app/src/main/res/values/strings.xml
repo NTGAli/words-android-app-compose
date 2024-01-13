@@ -40,6 +40,8 @@
     <string name="backup_on_storage">on phone storage</string>
     <string name="backup_on_server">on server</string>
     <string name="auto_fill">Auto filling of other fields</string>
+    <string name="auto_fill_from_first">fill with Dictionary 1</string>
+    <string name="auto_fill_from_second">fill with Dictionary 2</string>
     <string name="error_occurred">An error has occurred</string>
     <string name="not_exist">not exist!</string>
     <string name="email">email</string>
@@ -154,5 +156,10 @@
     <string name="enter_your_password">Please enter your password, for %s</string>
     <string name="enter_password_choice">Enter the password of your choice, for %s</string>
     <string name="open_list">open list</string>
+    <string name="message_box">Message Box</string>
+    <string name="no_internet">no internet :(</string>
+    <string name="try_again">try again</string>
+    <string name="can_not_load">can not load</string>
+    <string name="select_a_definition">Select a definition from the list below.</string>
 
 </resources>

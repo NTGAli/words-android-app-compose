@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ntg.mywords.R
 import com.ntg.mywords.ui.theme.*
@@ -60,7 +61,8 @@ fun EditText(
         },
         label = {
             if (!label.isNullOrEmpty()) {
-                Text(text = label)
+                Text(text = label, maxLines = 1,
+                    overflow = TextOverflow.Ellipsis)
             }
         },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),

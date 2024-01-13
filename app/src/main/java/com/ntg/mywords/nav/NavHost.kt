@@ -19,6 +19,7 @@ import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orTrue
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.LoginViewModel
+import com.ntg.mywords.vm.MessageBoxViewModel
 import com.ntg.mywords.vm.SignInViewModel
 import com.ntg.mywords.vm.WordViewModel
 
@@ -31,6 +32,7 @@ fun AppNavHost(
     calendarViewModel: CalendarViewModel,
     loginViewModel: LoginViewModel,
     signInViewModel: SignInViewModel,
+    messageBoxViewModel: MessageBoxViewModel,
     onDestinationChangedListener: (NavController, NavDestination, Bundle?) -> Unit
 ) {
 
@@ -186,6 +188,19 @@ fun AppNavHost(
         }
 
 
+        composable(
+            Screens.NoInternetConnection.name + "?screen={screen}",
+            arguments = listOf(navArgument("screen")
+            {
+                type = NavType.StringType
+                defaultValue = null
+                nullable = true
+            })
+        ) {
+            NoInternetConnection(navController, it.arguments?.getString("screen").orEmpty())
+        }
+
+
         composable(Screens.RevisionScreen.name) {
             RevisionScreen(navController, wordViewModel, calendarViewModel)
         }
@@ -214,6 +229,9 @@ fun AppNavHost(
             HelpAndFeedbackScreen(navController)
         }
 
+        composable(Screens.MessagesBoxScreen.name) {
+            MessagesBoxScreen(navController, messageBoxViewModel)
+        }
 
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",
