@@ -33,7 +33,6 @@ import com.ntg.mywords.util.*
 import com.ntg.mywords.vm.CalendarViewModel
 import com.ntg.mywords.vm.WordViewModel
 import java.time.LocalDate
-import java.time.format.FormatStyle
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,7 +114,7 @@ private fun TimeContentItem(
     wordViewModel: WordViewModel
 ) {
     val list = calendarViewModel.finalData.observeAsState().value.orEmpty().toMutableList()
-    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val listId = wordViewModel.currentList().observeAsState().value?.id
 
     val dateTime = remember {
         mutableStateOf(LocalDate.now())

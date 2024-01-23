@@ -11,10 +11,12 @@ import com.ntg.mywords.api.ApiService
 import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.FreeDictionaryApi
 import com.ntg.mywords.api.NetworkResult
+import com.ntg.mywords.db.dao.GermanNounsDao
 import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.VocabListDao
 import com.ntg.mywords.db.dao.WordDao
 import com.ntg.mywords.di.DataRepository
+import com.ntg.mywords.model.db.GermanNouns
 import com.ntg.mywords.model.db.TimeSpent
 import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
@@ -37,6 +39,7 @@ import javax.inject.Inject
 class WordViewModel @Inject constructor(
     private val wordDao: WordDao,
     private val timeSpentDao: TimeSpentDao,
+    private val germanNounsDao: GermanNounsDao,
     private val vocabListDao: VocabListDao,
     private val api: DictionaryApiService,
     private val freeApiDic: FreeDictionaryApi,
@@ -50,6 +53,7 @@ class WordViewModel @Inject constructor(
     private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
     private var dataList: LiveData<VocabItemList> = MutableLiveData()
+    private var germanNounSize: LiveData<Int> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedWordOnBookmarked: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
@@ -137,6 +141,19 @@ class WordViewModel @Inject constructor(
         viewModelScope.launch {
             vocabListDao.clear()
         }
+    }
+
+    fun insertAllGermanNouns(list: List<GermanNouns>){
+        viewModelScope.launch {
+            germanNounsDao.insertAll(list)
+        }
+    }
+
+    fun sizeGermanNoun(): LiveData<Int> {
+        viewModelScope.launch {
+            germanNounSize = germanNounsDao.size()
+        }
+        return germanNounSize
     }
 
     fun getWordsBaseListId(listId: Int): LiveData<List<Word>> {
@@ -306,7 +323,7 @@ class WordViewModel @Inject constructor(
 
     }
 
-    fun getIdOfListSelected() = vocabListDao.getDataOfListSelected()
+    fun currentList() = vocabListDao.getDataOfListSelected()
 
     fun isListExist(name: String, language: String) = vocabListDao.isExist(name, language)
 

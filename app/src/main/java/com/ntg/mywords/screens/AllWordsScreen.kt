@@ -29,7 +29,7 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel, openSearch: Boolean, query: String) {
 
-    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val listId = wordViewModel.currentList().observeAsState().value?.id
     val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
     val enableSearchBar = remember { mutableStateOf(openSearch) }
     val userSearchVoiceQuery = remember { mutableStateOf(query) }

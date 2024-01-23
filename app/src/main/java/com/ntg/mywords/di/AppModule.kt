@@ -23,6 +23,7 @@ import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.FreeDictionaryApi
 import com.ntg.mywords.api.LoggingInterceptor
 import com.ntg.mywords.db.AppDB
+import com.ntg.mywords.db.dao.GermanNounsDao
 import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.VocabListDao
 import com.ntg.mywords.db.dao.WordDao
@@ -90,6 +91,12 @@ class AppModule {
     @Singleton
     fun provideSpendTimeDao(appDB: AppDB): TimeSpentDao {
         return appDB.timeSpentDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideGermanNouns(appDB: AppDB): GermanNounsDao {
+        return appDB.germanNounsDao()
     }
 
     @Provides
