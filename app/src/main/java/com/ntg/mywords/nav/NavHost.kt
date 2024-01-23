@@ -5,6 +5,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.*
@@ -18,6 +19,7 @@ import com.ntg.mywords.screens.setting.ThemeScreen
 import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orTrue
 import com.ntg.mywords.vm.CalendarViewModel
+import com.ntg.mywords.vm.DataViewModel
 import com.ntg.mywords.vm.LoginViewModel
 import com.ntg.mywords.vm.MessageBoxViewModel
 import com.ntg.mywords.vm.SignInViewModel
@@ -25,7 +27,7 @@ import com.ntg.mywords.vm.WordViewModel
 
 @Composable
 fun AppNavHost(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxSize(),
     navController: NavHostController = rememberNavController(),
     startDestination: String = Screens.SplashScreen.name,
     wordViewModel: WordViewModel,
@@ -33,6 +35,7 @@ fun AppNavHost(
     loginViewModel: LoginViewModel,
     signInViewModel: SignInViewModel,
     messageBoxViewModel: MessageBoxViewModel,
+    dataViewModel: DataViewModel,
     onDestinationChangedListener: (NavController, NavDestination, Bundle?) -> Unit
 ) {
 
@@ -49,8 +52,8 @@ fun AppNavHost(
         modifier = modifier,
         navController = navController,
         startDestination = startDestination,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None }
+//        enterTransition = { EnterTransition.None },
+//        exitTransition = { ExitTransition.None }
     ) {
 
         composable(Screens.SplashScreen.name, enterTransition = {  ->
@@ -219,6 +222,14 @@ fun AppNavHost(
 
         composable(Screens.DeleteAccountScreen.name) {
             DeleteAccountScreen(navController, loginViewModel, wordViewModel)
+        }
+
+        composable(Screens.SearchScreen.name) {
+            SearchScreen(navController)
+        }
+
+        composable(Screens.DownloadScreen.name) {
+            DownloadScreen(navController, dataViewModel, wordViewModel)
         }
 
         composable(Screens.FinishScreen.name) {

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,7 +12,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -23,7 +21,6 @@ import com.ntg.mywords.components.Appbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.model.components.AppbarItem
 import com.ntg.mywords.nav.Screens
-import com.ntg.mywords.ui.theme.Primary200
 import com.ntg.mywords.util.getIconStateRevision
 import com.ntg.mywords.util.orFalse
 import com.ntg.mywords.util.orZero
@@ -33,7 +30,7 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun BookmarkScreen(navController: NavController, wordViewModel: WordViewModel, openSearch: Boolean, query: String) {
 
-    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val listId = wordViewModel.currentList().observeAsState().value?.id
     val numberOfBookmarkedWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().filter { it.bookmarked.orFalse() }.size
     val enableSearchBar = remember { mutableStateOf(openSearch) }
     val userSearchVoiceQuery = remember { mutableStateOf(query) }

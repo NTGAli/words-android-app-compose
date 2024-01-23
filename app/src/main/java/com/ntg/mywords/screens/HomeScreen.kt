@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,13 +27,10 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ntg.mywords.R
-import com.ntg.mywords.components.BubblePopupExample
 import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.HomeAppbar
 import com.ntg.mywords.components.SampleItem
 import com.ntg.mywords.components.ShapeTileWidget
-import com.ntg.mywords.components.TextDescriptionAnimated
-import com.ntg.mywords.components.TypewriterText
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.Word
@@ -67,7 +63,8 @@ fun HomeScreen(
                     navController.navigate(Screens.ProfileScreen.name)
                 },
                 searchCallback = {
-                    navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}")
+//                    navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}")
+                    navController.navigate(Screens.SearchScreen.name)
                 },
                 notificationCallback = {
                     navController.navigate(Screens.MessagesBoxScreen.name)
@@ -103,7 +100,7 @@ private fun Content(
 ) {
 
     val ctx = LocalContext.current
-    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val listId = wordViewModel.currentList().observeAsState().value?.id
     val wordsList: State<List<Word>?> =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState()
 
@@ -259,18 +256,27 @@ private fun Content(
         }
 
         item {
+            if (wordsList.value.orEmpty().isNotEmpty()){
+                Spacer(modifier = Modifier.padding(vertical = 64.dp))
+            }
+        }
+
+        item {
             if (wordsList.value != null && wordsList.value?.size == 0) {
-                TypewriterText(
-                    modifier = Modifier
-                        .padding(top = 64.dp)
-                        .fillMaxWidth(),
-                    texts = getRandomWord(ctx),
-                    enableVibrate = false,
-                    style = fontMedium24(MaterialTheme.colorScheme.outline)
-                )
+
+                LottieExample()
+
+//                TypewriterText(
+//                    modifier = Modifier
+//                        .padding(top = 64.dp)
+//                        .fillMaxWidth(),
+//                    texts = getRandomWord(ctx),
+//                    enableVibrate = false,
+//                    style = fontMedium24(MaterialTheme.colorScheme.outline)
+//                )
                 CustomButton(
                     modifier = Modifier
-                        .padding(top = 16.dp)
+                        .offset(y = -(24).dp)
                         .fillMaxWidth(),
                     text = "add first word for this list",
                     style = ButtonStyle.TextOnly,
@@ -340,7 +346,7 @@ fun LottieExample() {
 
     val composition by rememberLottieComposition(
         LottieCompositionSpec
-            .RawRes(R.raw.add_word)
+            .RawRes(R.raw.ghost_animation)
     )
 
     val progress by animateLottieCompositionAsState(
@@ -354,16 +360,15 @@ fun LottieExample() {
 
     Column(
         Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LottieAnimation(
             composition,
             progress,
-            modifier = Modifier
-                .size(400.dp)
-                .background(MaterialTheme.colorScheme.primary)
+            modifier = Modifier.size(250.dp)
         )
     }
 }

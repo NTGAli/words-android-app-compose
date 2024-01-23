@@ -1,15 +1,25 @@
 package com.ntg.mywords.screens
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
-import android.content.res.XmlResourceParser
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.media.MediaPlayer
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.provider.Settings
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -21,8 +31,14 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.PackageManagerCompat.LOG_TAG
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.ntg.mywords.R
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.*
@@ -35,24 +51,26 @@ import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.response.Definition
-import com.ntg.mywords.model.response.DefinitionText
 import com.ntg.mywords.model.response.DefinitionX
-import com.ntg.mywords.model.response.Meaning
-import com.ntg.mywords.model.response.PronunciationVocab
-import com.ntg.mywords.model.response.SenseItem
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
+import com.ntg.mywords.nav.Screens
+import com.ntg.mywords.playback.AndroidAudioPlayer
+import com.ntg.mywords.record.AndroidAudioRecorder
 import com.ntg.mywords.ui.theme.fontMedium14
 import com.ntg.mywords.util.*
+import com.ntg.mywords.vm.PermissionViewModel
 import com.ntg.mywords.vm.WordViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
+import java.io.File
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.Reader
 import java.io.StringWriter
 import java.io.Writer
-import kotlin.reflect.javaType
-import kotlin.reflect.typeOf
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,6 +100,7 @@ fun AddEditWordScreen(
             val word = wordViewModel.findWord(wordId)?.observeAsState()
             Content(
                 paddingValues = innerPadding,
+                navController = navController,
                 wordEdit = word?.value,
                 wordViewModel = wordViewModel,
                 wordData = {
@@ -170,15 +189,75 @@ private fun submitWord(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalStdlibApi::class)
+
+//private var audioFile: File? = null
+
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalStdlibApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
+    navController: NavController,
     wordEdit: Word?,
     wordViewModel: WordViewModel,
     wordData: (Word) -> Unit,
     exampleField: (String) -> Unit
 ) {
+
+
+    val ccc = LocalContext.current
+
+    val recorder by lazy {
+        AndroidAudioRecorder(ccc)
+    }
+
+    val player by lazy {
+        AndroidAudioPlayer(ccc)
+    }
+
+    var audioFile by remember {
+        mutableStateOf<File?>(null)
+    }
+
+    var audioFileName by remember {
+        mutableStateOf("")
+    }
+
+    var imageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    var bitmap by remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+
+    LaunchedEffect(key1 = Unit, block = {
+        audioFileName = System.currentTimeMillis().toString()
+    })
+
+    val mediaPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            imageUri = uri
+        })
+
+    LaunchedEffect(key1 = imageUri) {
+        imageUri?.let { uri ->
+            bitmap = if (Build.VERSION.SDK_INT < 28) {
+                MediaStore.Images
+                    .Media.getBitmap(ccc.contentResolver,uri)
+            } else {
+                val source = ImageDecoder
+                    .createSource(ccc.contentResolver,uri)
+                ImageDecoder.decodeBitmap(source)
+            }
+        }
+    }
+
+
+    val language = wordViewModel.currentList().observeAsState().value?.language
 
     val word = remember {
         mutableStateOf("")
@@ -196,6 +275,14 @@ private fun Content(
         mutableStateOf("")
     }
 
+    val article = remember {
+        mutableStateOf("")
+    }
+
+    val plural = remember {
+        mutableStateOf("")
+    }
+
     val pastSimple = remember {
         mutableStateOf("")
     }
@@ -205,6 +292,10 @@ private fun Content(
     }
 
     val definition = remember {
+        mutableStateOf("")
+    }
+
+    val soundUrl = remember {
         mutableStateOf("")
     }
 
@@ -258,7 +349,7 @@ private fun Content(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val listId = wordViewModel.currentList().observeAsState().value?.id
 
     timber("LIST_ID_SELECTED :::: $listId")
 
@@ -330,9 +421,44 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var openArticleBottomSheet by remember {
+        mutableStateOf(false)
+    }
+
+    var openCaseBottomSheet by remember {
+        mutableStateOf(false)
+    }
+
     var visible by remember {
         mutableStateOf(false)
     }
+
+    var micStart by remember {
+        mutableStateOf(false)
+    }
+
+
+    var allowRecording by remember {
+        mutableStateOf(false)
+    }
+
+    allowRecording =
+        rememberPermissionState(Manifest.permission.RECORD_AUDIO).status.isGranted
+
+    val permissionViewModel = viewModel<PermissionViewModel>()
+    val dialogQueue = permissionViewModel.visiblePermissionDialogQueue
+
+    val cameraPermissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            permissionViewModel.onPermissionResult(
+                permission = Manifest.permission.RECORD_AUDIO,
+                isGranted = isGranted
+            )
+            allowRecording = true
+        }
+    )
+
 
     val scope = rememberCoroutineScope()
 
@@ -402,6 +528,71 @@ private fun Content(
     }
 
 
+    if (openArticleBottomSheet) {
+
+        ModalBottomSheet(
+            onDismissRequest = { openArticleBottomSheet = false },
+            sheetState = bottomSheetState,
+        ) {
+
+
+            LazyColumn(Modifier.padding(6.dp)) {
+
+                items(
+                    listOf(
+                        "die",
+                        "das",
+                        "der"
+                    )
+                ) {
+                    SampleItem(title = it) { title, _, _ ->
+                        article.value = title
+                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                            if (!bottomSheetState.isVisible) {
+                                openArticleBottomSheet = false
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    if (openCaseBottomSheet) {
+
+        ModalBottomSheet(
+            onDismissRequest = { openCaseBottomSheet = false },
+            sheetState = bottomSheetState,
+        ) {
+
+
+            LazyColumn(Modifier.padding(6.dp)) {
+
+                items(
+                    listOf(
+                        "Nominativ",
+                        "Genitiv",
+                        "Dativ",
+                        "Akkusativ"
+                    )
+                ) {
+                    SampleItem(title = it) { title, _, _ ->
+                        article.value = title
+                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                            if (!bottomSheetState.isVisible) {
+                                openCaseBottomSheet = false
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+
     val raw = context.resources.openRawResource(R.raw.word_forms)
     val writer: Writer = StringWriter()
     val buffer = CharArray(1024)
@@ -423,6 +614,7 @@ private fun Content(
     LaunchedEffect(key1 = fetchDataWord.value, block = {
 
         if (fetchDataWord.value) {
+            soundUrl.value = ""
 
             when (dictionaryApi.intValue) {
                 1 -> {
@@ -458,6 +650,10 @@ private fun Content(
 //                                                    listOfDefinitions.add(it.definition.orEmpty())
 //                                                }
 //                                            }
+
+                                        try {
+                                            soundUrl.value = it.data[0].phonetics?.first()?.audio.orEmpty()
+                                        }catch (e: Exception){e.printStackTrace()}
 
                                         try {
                                             it.data.forEach {
@@ -534,6 +730,13 @@ private fun Content(
                                                 listOfDefinitions.add(def)
                                             }
                                         }
+
+                                    try {
+                                        val audio = it.data?.first()?.headwordInformation?.pronunciations?.first()?.sound?.audio
+                                        if (audio != null){
+                                            soundUrl.value = "https://media.merriam-webster.com/audio/prons/en/us/mp3/${getSubdirectory(audio)}/$audio.mp3"
+                                        }
+                                    }catch (e: Exception){ e.printStackTrace() }
 
 //                                    it.data?.forEach {
 //                                        it.definitionSection?.forEach {
@@ -668,7 +871,9 @@ private fun Content(
                 }
             )
 
-            if (word.value.isNotEmpty() && type.value.isNotEmpty()) {
+            if (word.value.isNotEmpty() && type.value.isNotEmpty() &&
+                language == "English"
+            ) {
 
                 Row(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)) {
                     CustomButton(
@@ -700,6 +905,20 @@ private fun Content(
 
             }
 
+            if (language == "German"){
+                CustomButton(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = stringResource(id = R.string.download_auto_fill),
+                    size = ButtonSize.LG,
+                    type = ButtonType.Secondary,
+                    style = ButtonStyle.Contained
+                ) {
+                    navController.navigate(Screens.DownloadScreen.name)
+                }
+            }
+
+
             if (type.value == "verb") {
                 Row(modifier = Modifier.padding(top = 4.dp)) {
                     EditText(
@@ -719,6 +938,38 @@ private fun Content(
                         enabled = !fetchDataWord.value
                     )
                 }
+            } else if ((type.value == "noun" || type.value == "pronoun") && language == "German") {
+                EditText(
+                    Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth(),
+                    text = article,
+                    label = stringResource(R.string.article),
+                    readOnly = true,
+                    onClick = {
+                        openArticleBottomSheet = true
+                    }
+                )
+
+//                EditText(
+//                    Modifier
+//                        .padding(top = 8.dp)
+//                        .fillMaxWidth(),
+//                    text = article,
+//                    label = stringResource(R.string.grammatical_case),
+//                    readOnly = true,
+//                    onClick = {
+//                        openCaseBottomSheet = true
+//                    }
+//                )
+
+                EditText(
+                    Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth(),
+                    text = plural,
+                    label = stringResource(R.string.plural)
+                )
             }
 
             EditText(
@@ -736,9 +987,11 @@ private fun Content(
                 label = stringResource(R.string.pronunciation),
                 enabled = !fetchDataWord.value
             )
-
-
         }
+
+//        items(1) {
+//            Table()
+//        }
 
 
         item {
@@ -752,6 +1005,83 @@ private fun Content(
                         })
                 }
             }
+        }
+
+        item {
+
+            Row(modifier = Modifier.padding(top = 16.dp)) {
+                ButtonIcon(modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 4.dp),
+                    icon = if (micStart) R.drawable.stop else if (audioFile != null) R.drawable.play else R.drawable.microphone,
+                    subText = if (micStart) "recording" else null,
+                    removeBtn = audioFile != null && !micStart,
+                    removeOnClick = {
+                        audioFile = null
+                    }) {
+                    if (!allowRecording) {
+                        cameraPermissionResultLauncher.launch(
+                            Manifest.permission.RECORD_AUDIO
+                        )
+                    } else if (micStart) {
+                        recorder.stop()
+                        micStart = false
+                    }else if (audioFile != null){
+                        if (player.isPlaying()) return@ButtonIcon
+                        player.playFile(audioFile ?: return@ButtonIcon)
+                        timber("voice-file-path ${audioFile?.absoluteFile}")
+                    }else {
+                        File(context.cacheDir, "audio_${audioFileName}.mp3").also {
+                            recorder.start(it)
+                            audioFile = it
+                        }
+                        micStart = true
+                    }
+
+
+                }
+                ButtonIcon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp), icon = R.drawable.speaker,
+                    enable = soundUrl.value.isNotEmpty()
+                ) {
+                    val mp = MediaPlayer()
+                    try {
+                        scope.launch {
+                            timber("URLLLLLLLLLLLLLLLLLL ::: ${soundUrl.value}")
+                            mp.setDataSource(soundUrl.value)
+//                            mp.prepare()
+                            CoroutineScope(Dispatchers.IO).launch {
+                                mp.prepare()
+                            }
+                            mp.setOnPreparedListener {
+                                mp.start()
+                            }
+                        }
+                    } catch (e: IOException) {
+                        timber("ERR ::: ${e.printStackTrace()}")
+                    }
+                }
+            }
+
+            ButtonIcon(
+                modifier = Modifier.padding(top = 16.dp),
+                icon = R.drawable.image_rectangle,
+                bitmap = bitmap
+            ) {
+                if (bitmap == null){
+                    mediaPicker
+                        .launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            ))
+                }else{
+                    imageUri = null
+                    bitmap = null
+                }
+            }
+
         }
 
         item {
@@ -806,33 +1136,35 @@ private fun Content(
 
             }
 
-            items(listOfDefinitions.subList(3, listOfDefinitions.size)) {
-                AnimatedVisibility(visible = visible) {
-                    SampleItem(
-                        title = it,
-                        enableRadioButton = true,
-                        radioSelect = mutableStateOf(definition.value == it),
-                        onClick = { text, _, isSelect ->
-                            definition.value = text
+            if (listOfDefinitions.size > 3){
+                items(listOfDefinitions.subList(2, listOfDefinitions.size-1)) {
+                    AnimatedVisibility(visible = visible) {
+                        SampleItem(
+                            title = it,
+                            enableRadioButton = true,
+                            radioSelect = mutableStateOf(definition.value == it),
+                            onClick = { text, _, isSelect ->
+                                definition.value = text
 
-                            if (dictionaryApi.intValue == 1) {
-                                exampleList.clear()
-                                if (definitionListFreeApi.first { it.definition == definition.value }.example.orEmpty()
-                                        .isNotEmpty()
-                                ) {
-                                    exampleList.add(definitionListFreeApi.first { it.definition == definition.value }.example!!)
+                                if (dictionaryApi.intValue == 1) {
+                                    exampleList.clear()
+                                    if (definitionListFreeApi.first { it.definition == definition.value }.example.orEmpty()
+                                            .isNotEmpty()
+                                    ) {
+                                        exampleList.add(definitionListFreeApi.first { it.definition == definition.value }.example!!)
+                                    }
+                                } else if (dictionaryApi.intValue == 2) {
+
+                                } else if (dictionaryApi.intValue == 3) {
+                                    definitionList.first { it.definition == definition.value }.examples?.forEach {
+                                        exampleList.add(it)
+                                    }
                                 }
-                            } else if (dictionaryApi.intValue == 2) {
 
-                            } else if (dictionaryApi.intValue == 3) {
-                                definitionList.first { it.definition == definition.value }.examples?.forEach {
-                                    exampleList.add(it)
-                                }
-                            }
+                            })
+                    }
 
-                        })
                 }
-
             }
             item {
                 if (listOfDefinitions.size > 3) {
@@ -848,10 +1180,6 @@ private fun Content(
                         visible = !visible
                     }
                 }
-            }
-
-            item() {
-
             }
 
         }
@@ -886,3 +1214,12 @@ private fun Content(
 
     }
 }
+
+fun Activity.openAppSettings() {
+    Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", packageName, null)
+    ).also(::startActivity)
+}
+
+

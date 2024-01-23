@@ -27,7 +27,9 @@ enum class Screens {
     PrivacyPolicyScreen,
     HelpAndFeedbackScreen,
     MessagesBoxScreen,
-    NoInternetConnection
+    NoInternetConnection,
+    SearchScreen,
+    DownloadScreen
 
 
 }

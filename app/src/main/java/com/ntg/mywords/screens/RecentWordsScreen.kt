@@ -34,7 +34,7 @@ import com.ntg.mywords.vm.WordViewModel
 @Composable
 fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel) {
 
-    val listId = wordViewModel.getIdOfListSelected().observeAsState().value?.id
+    val listId = wordViewModel.currentList().observeAsState().value?.id
     val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
     val enableSearchBar = remember { mutableStateOf(false) }
 

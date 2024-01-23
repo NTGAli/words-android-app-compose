@@ -161,5 +161,14 @@
     <string name="try_again">try again</string>
     <string name="can_not_load">can not load</string>
     <string name="select_a_definition">Select a definition from the list below.</string>
+    <string name="all_words">all words</string>
+    <string name="your_words">your words</string>
+    <string name="plural">plural</string>
+    <string name="article">article</string>
+    <string name="grammatical_case">Grammatical case</string>
+    <string name="remove_audio">remove audio</string>
+    <string name="dowanloads">Downloads</string>
+    <string name="download_auto_fill">Download auto fill</string>
+    <string name="progress_format">%s \%%</string>
 
 </resources>

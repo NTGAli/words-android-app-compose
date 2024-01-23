@@ -181,6 +181,15 @@ fun Int.minutesToTimeFormat(): String {
     return "$formattedHours:$formattedMinutes"
 }
 
+fun getSubdirectory(audio: String): String {
+    return when {
+        audio.startsWith("bix") -> "bix"
+        audio.startsWith("gg") -> "gg"
+        audio.firstOrNull()?.isDigit() == true || audio.firstOrNull()?.isWhitespace() == true || audio.firstOrNull() in setOf('_', '@', '#', '$', '%', '^', '&', '*') -> "number"
+        else -> audio.firstOrNull()?.toString() ?: "default"
+    }
+}
+
 @Composable
 fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 

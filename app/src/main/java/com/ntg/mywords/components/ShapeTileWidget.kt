@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.ntg.mywords.R
 import com.ntg.mywords.ui.theme.*
 
 @Composable
@@ -27,7 +29,7 @@ fun ShapeTileWidget(
     subTitle: String,
     painter: Painter,
     aspectRatio: Float = 2.75f,
-    imageTint: Color? = null,
+    imageTint: Color,
     imageBackground: Color = Color.White,
     onClick:() -> Unit ={}
 
@@ -37,8 +39,8 @@ fun ShapeTileWidget(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.background)
-            .border(width = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(8.dp))
+            .background(imageBackground)
+            .border(width = 1.dp, color = imageTint, shape = RoundedCornerShape(8.dp))
             .aspectRatio(aspectRatio)
             .clickable(
                 onClick = onClick,
@@ -49,7 +51,8 @@ fun ShapeTileWidget(
             )
 
     ) {
-        Row(modifier = Modifier.align(Alignment.Center)
+        Row(modifier = Modifier
+            .align(Alignment.Center)
             .padding(horizontal = 8.dp)) {
 
             Box(
@@ -63,7 +66,8 @@ fun ShapeTileWidget(
             ) {
 
                 Icon(
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier
+                        .padding(8.dp)
                         .fillMaxSize(),
                     painter = painter,
                     contentDescription = "img",
@@ -78,8 +82,11 @@ fun ShapeTileWidget(
             contentAlignment = Alignment.Center) {
 
                 Column {
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = fontBold12(MaterialTheme.colorScheme.onPrimaryContainer))
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(MaterialTheme.colorScheme.onPrimaryContainer))
+                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = fontBold12(md_theme_light_onPrimaryContainer))
+                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(md_theme_light_onPrimaryContainer))
+
+//                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = fontBold12(MaterialTheme.colorScheme.onPrimaryContainer))
+//                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(MaterialTheme.colorScheme.onPrimaryContainer))
 
                 }
 

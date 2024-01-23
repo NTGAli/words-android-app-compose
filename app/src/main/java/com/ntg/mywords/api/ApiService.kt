@@ -2,6 +2,7 @@ package com.ntg.mywords.api
 
 import com.ntg.mywords.model.req.BackupUserData
 import com.ntg.mywords.model.req.VerifyUserReq
+import com.ntg.mywords.model.response.DataRes
 import com.ntg.mywords.model.response.RecentMessage
 import com.ntg.mywords.model.response.ResponseBody
 import com.ntg.mywords.model.response.VerifyUserRes
@@ -125,6 +126,12 @@ interface ApiService {
     @GET("MessageBox/recentMessages.php")
     suspend fun recentMessages()
     : Response<ResponseBody<List<RecentMessage>?>>
+
+
+    @GET("Data/data.php")
+    suspend fun germanDataList(
+        @Query("lang") lang: String,
+    ): Response<ResponseBody<List<DataRes>?>>
 
 
 }
