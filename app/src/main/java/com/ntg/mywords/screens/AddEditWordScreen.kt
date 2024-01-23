@@ -455,7 +455,7 @@ private fun Content(
                 permission = Manifest.permission.RECORD_AUDIO,
                 isGranted = isGranted
             )
-            allowRecording = true
+            allowRecording = isGranted
         }
     )
 

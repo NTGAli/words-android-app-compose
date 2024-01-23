@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import com.ntg.mywords.R
 import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.EditText
@@ -31,6 +32,7 @@ import com.ntg.mywords.model.components.ButtonType
 import com.ntg.mywords.model.db.VocabItemList
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.then
+import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.fontMedium14
 import com.ntg.mywords.util.notEmptyOrNull
 import com.ntg.mywords.util.timber
@@ -133,7 +135,15 @@ private fun Content(
                         isSelected = false
                     )
                 )
-                navController.popBackStack()
+                if (language == "German"){
+                    navController.navigate(Screens.DownloadScreen.name + "?enableBottomBar=${true}",
+                        NavOptions.Builder()
+                            .setPopUpTo(Screens.SelectLanguageScreen.name, inclusive = true)
+                            .build()
+                    )
+                }else{
+                    navController.popBackStack()
+                }
 
             }
         }else if (result is Failure){
