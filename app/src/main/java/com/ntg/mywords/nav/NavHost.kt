@@ -56,13 +56,13 @@ fun AppNavHost(
 //        exitTransition = { ExitTransition.None }
     ) {
 
-        composable(Screens.SplashScreen.name, enterTransition = {  ->
+        composable(Screens.SplashScreen.name, enterTransition = { ->
             EnterTransition.None
         }) {
             SplashScreen(navController, loginViewModel, wordViewModel)
         }
 
-        composable(Screens.HomeScreen.name,enterTransition = {  ->
+        composable(Screens.HomeScreen.name, enterTransition = { ->
             EnterTransition.None
         }) {
             HomeScreen(navController, wordViewModel, loginViewModel)
@@ -228,8 +228,20 @@ fun AppNavHost(
             SearchScreen(navController)
         }
 
-        composable(Screens.DownloadScreen.name) {
-            DownloadScreen(navController, dataViewModel, wordViewModel)
+        composable(
+            Screens.DownloadScreen.name + "?enableBottomBar={enableBottomBar}",
+            arguments = listOf(navArgument("enableBottomBar")
+            {
+                type = NavType.BoolType
+                defaultValue = false
+            })
+        ) {
+            DownloadScreen(
+                navController,
+                dataViewModel,
+                wordViewModel,
+                it.arguments?.getBoolean("enableBottomBar").orFalse()
+            )
         }
 
         composable(Screens.FinishScreen.name) {

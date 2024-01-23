@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,11 +24,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import com.google.gson.Gson
 import com.ntg.mywords.R
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.Appbar
+import com.ntg.mywords.components.CustomButton
 import com.ntg.mywords.components.DownloadItem
+import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.response.DataRes
 import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.ui.theme.*
@@ -45,6 +49,7 @@ fun DownloadScreen(
     navController: NavController,
     dataViewModel: DataViewModel,
     wordViewModel: WordViewModel,
+    enableBottomBar: Boolean
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -66,7 +71,15 @@ fun DownloadScreen(
 
         },
         bottomBar = {
-
+            if (enableBottomBar){
+                BottomBar{
+                    navController.navigate(Screens.HomeScreen.name,
+                        NavOptions.Builder()
+                            .setPopUpTo(Screens.DownloadScreen.name, inclusive = true)
+                            .build()
+                    )
+                }
+            }
         }
     )
 }
@@ -156,4 +169,25 @@ private fun Content(
         }
     })
 }
+
+@Composable
+private fun BottomBar(
+    onClick:() -> Unit
+){
+    Column(modifier = Modifier.padding(horizontal = 32.dp).background(MaterialTheme.colorScheme.background)) {
+        Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
+
+        CustomButton(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
+            text = stringResource(id = R.string.skip),
+            size = ButtonSize.XL
+        ) {
+            onClick.invoke()
+        }
+    }
+
+}
+
 
