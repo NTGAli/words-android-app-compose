@@ -54,7 +54,7 @@ fun ItemOption(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(columnHeightDp)
-                    .clip(RoundedCornerShape(4.dp))
+//                    .clip(RoundedCornerShape(4.dp))
             )
         }
 

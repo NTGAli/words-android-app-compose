@@ -93,37 +93,11 @@ private fun Content(
 ) {
 
     var downloadProgress by remember { mutableIntStateOf(0) }
+    val isGermanNounsDownloaded = wordViewModel.sizeGermanNoun().observeAsState().value
 
-    var isGermanNounsDownloaded = wordViewModel.sizeGermanNoun().observeAsState().value
+    var downloadProgressSecondData by remember { mutableIntStateOf(0) }
+    val isGermanVerbsDownloaded = wordViewModel.sizeGermanVerbs().observeAsState().value
 
-
-//    LaunchedEffect(key1 = Unit, block = {
-//
-//        dataViewModel.getDataList("German").observe(owner){
-//
-//            when(it){
-//                is NetworkResult.Error -> {
-//
-//                }
-//                is NetworkResult.Loading -> {
-//
-//                }
-//                is NetworkResult.Success -> {
-//                    list = it.data?.data.orEmpty()
-//                    list.forEach {
-//                        downloadProgress.add(
-//                            DownloadState(
-//                                title = it.name,
-//                                progress = 0
-//                            )
-//                        )
-//                    }
-//                }
-//            }
-//
-//        }
-//
-//    })
 
     val context = LocalContext.current
 
@@ -161,6 +135,43 @@ private fun Content(
 
                         override fun onDownloadFailed() {
                             downloadProgress= -1
+                            timber("download failure")
+                        }
+                    })
+                },
+            )
+        }
+
+
+
+        item{
+            DownloadItem(
+                modifier = Modifier.padding(top = 8.dp),
+                id = 1,
+                title = "German",
+                subTitle = "verbs data",
+                tertiaryText = "1MB",
+                isSelected = isGermanVerbsDownloaded.orZero() != 0,
+                isSEnable = isGermanVerbsDownloaded.orZero() == 0 || downloadProgressSecondData != 0,
+                downloadProgress = downloadProgressSecondData,
+                onClick = {
+                    downloadProgressSecondData = 1
+
+                    val downloadManagerUtil = DownloadManagerUtil(context)
+                    downloadManagerUtil.downloadFile("https://myvocabulary.ntgt.ir/Data/combined_data.zip","verb.zip")
+                    downloadManagerUtil.setDownloadListener(object : DownloadManagerUtil.DownloadListener {
+                        override fun onDownloadProgress(progress: Int) {
+//                            downloadProgress.
+                            downloadProgressSecondData = progress
+                        }
+
+                        override fun onDownloadCompleted() {
+                            downloadProgressSecondData = 100
+                            timber("Download successful")
+                        }
+
+                        override fun onDownloadFailed() {
+                            downloadProgressSecondData= -1
                             timber("download failure")
                         }
                     })

@@ -3,8 +3,10 @@ package com.ntg.mywords.screens
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.media.MediaPlayer
 import android.net.Uri
@@ -31,30 +33,26 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.PackageManagerCompat.LOG_TAG
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.ntg.mywords.R
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.components.*
 import com.ntg.mywords.model.Failure
 import com.ntg.mywords.model.Success
-import com.ntg.mywords.model.VerbData
 import com.ntg.mywords.model.components.ButtonSize
 import com.ntg.mywords.model.components.ButtonStyle
 import com.ntg.mywords.model.components.ButtonType
+import com.ntg.mywords.model.db.GermanNouns
 import com.ntg.mywords.model.db.VerbForms
 import com.ntg.mywords.model.db.Word
 import com.ntg.mywords.model.response.Definition
 import com.ntg.mywords.model.response.DefinitionX
 import com.ntg.mywords.model.response.WordDataItem
 import com.ntg.mywords.model.then
-import com.ntg.mywords.nav.Screens
 import com.ntg.mywords.playback.AndroidAudioPlayer
 import com.ntg.mywords.record.AndroidAudioRecorder
 import com.ntg.mywords.ui.theme.fontMedium14
@@ -64,13 +62,9 @@ import com.ntg.mywords.vm.WordViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.BufferedReader
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStreamReader
-import java.io.Reader
-import java.io.StringWriter
-import java.io.Writer
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -207,14 +201,20 @@ private fun Content(
 ) {
 
 
-    val ccc = LocalContext.current
+    val context = LocalContext.current
+
+    val language = wordViewModel.currentList().observeAsState().value?.language
+
+    val word = remember {
+        mutableStateOf("")
+    }
 
     val recorder by lazy {
-        AndroidAudioRecorder(ccc)
+        AndroidAudioRecorder(context)
     }
 
     val player by lazy {
-        AndroidAudioPlayer(ccc)
+        AndroidAudioPlayer(context)
     }
 
     var audioFile by remember {
@@ -222,6 +222,10 @@ private fun Content(
     }
 
     var audioFileName by remember {
+        mutableStateOf("")
+    }
+
+    var imagePath by remember {
         mutableStateOf("")
     }
 
@@ -244,24 +248,23 @@ private fun Content(
         })
 
     LaunchedEffect(key1 = imageUri) {
+        if (imageUri == null) return@LaunchedEffect
         imageUri?.let { uri ->
             bitmap = if (Build.VERSION.SDK_INT < 28) {
                 MediaStore.Images
-                    .Media.getBitmap(ccc.contentResolver,uri)
+                    .Media.getBitmap(context.contentResolver, uri)
             } else {
                 val source = ImageDecoder
-                    .createSource(ccc.contentResolver,uri)
+                    .createSource(context.contentResolver, uri)
                 ImageDecoder.decodeBitmap(source)
             }
         }
+        imagePath = saveImageInFolder(bitmap,context,word.value).path
+        timber("ffffffffffffff $imagePath")
     }
 
 
-    val language = wordViewModel.currentList().observeAsState().value?.language
 
-    val word = remember {
-        mutableStateOf("")
-    }
 
     val translation = remember {
         mutableStateOf("")
@@ -347,7 +350,6 @@ private fun Content(
         mutableStateListOf<DefinitionX>()
     }
 
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val listId = wordViewModel.currentList().observeAsState().value?.id
 
@@ -406,7 +408,12 @@ private fun Content(
             definition = definition.value,
             example = exampleList,
             dateCreated = wordEdit?.dateCreated ?: System.currentTimeMillis(),
-            lastRevisionTime = wordEdit?.lastRevisionTime ?: System.currentTimeMillis()
+            lastRevisionTime = wordEdit?.lastRevisionTime ?: System.currentTimeMillis(),
+            article = article.value,
+            plural = plural.value,
+            voice = audioFile?.path,
+            sound = soundUrl.value,
+            images = listOf(imagePath)
         )
     )
 
@@ -437,9 +444,38 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var fillGermanNoun by remember {
+        mutableStateOf(false)
+    }
+
+    var germanNoun by remember {
+        mutableStateOf<GermanNouns?>(null)
+    }
+
 
     var allowRecording by remember {
         mutableStateOf(false)
+    }
+
+    if (language == "German" && wordEdit == null && word.value.isNotEmpty() &&
+        type.value == "noun" && plural.value.isEmpty() && article.value.isEmpty() ||
+        fillGermanNoun
+    ) {
+        val pureWord = when{
+            word.value.startsWith("die", ignoreCase = true) -> word.value.removePrefix("die").trim()
+            word.value.startsWith("das", ignoreCase = true) -> word.value.removePrefix("das").trim()
+            word.value.startsWith("der", ignoreCase = true) -> word.value.removePrefix("der").trim()
+            else -> word.value
+        }
+        germanNoun = wordViewModel.germanNoun(pureWord).observeAsState().value
+        article.value = when (germanNoun?.genus) {
+            "f" -> "die"
+            "m" -> "der"
+            "n" -> "das"
+            else -> ""
+        }
+        plural.value = germanNoun?.plural.orEmpty()
+        fillGermanNoun = false
     }
 
     allowRecording =
@@ -448,7 +484,7 @@ private fun Content(
     val permissionViewModel = viewModel<PermissionViewModel>()
     val dialogQueue = permissionViewModel.visiblePermissionDialogQueue
 
-    val cameraPermissionResultLauncher = rememberLauncherForActivityResult(
+    val micPermissionResultLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             permissionViewModel.onPermissionResult(
@@ -555,6 +591,10 @@ private fun Content(
                     }
                 }
 
+                item {
+                    Spacer(modifier = Modifier.padding(16.dp))
+                }
+
             }
         }
     }
@@ -593,22 +633,23 @@ private fun Content(
     }
 
 
-    val raw = context.resources.openRawResource(R.raw.word_forms)
-    val writer: Writer = StringWriter()
-    val buffer = CharArray(1024)
-    raw.use { rawData ->
-        val reader: Reader = BufferedReader(InputStreamReader(rawData, "UTF-8"))
-        var n: Int
-        while (reader.read(buffer).also { n = it } != -1) {
-            writer.write(buffer, 0, n)
-        }
-    }
-    val jsonString = writer.toString()
-    val itemType = object : TypeToken<List<VerbData>>() {}.type
-    val verbList = Gson().fromJson<List<VerbData>>(jsonString, itemType)
+//    val file = File(context.getExternalFilesDir(""), "1706098882658.jpeg")
+    bitmap = BitmapFactory.decodeFile("/data/user/0/com.ntg.mywords/app_images/1706098882658.jpeg")
+//    bitmap = BitmapFactory.decodeFile(context.getExternalFilesDir("")+"1706098882658.jpeg")
 
-
-
+//    val raw = context.resources.openRawResource(R.raw.word_forms)
+//    val writer: Writer = StringWriter()
+//    val buffer = CharArray(1024)
+//    raw.use { rawData ->
+//        val reader: Reader = BufferedReader(InputStreamReader(rawData, "UTF-8"))
+//        var n: Int
+//        while (reader.read(buffer).also { n = it } != -1) {
+//            writer.write(buffer, 0, n)
+//        }
+//    }
+//    val jsonString = writer.toString()
+//    val itemType = object : TypeToken<List<VerbData>>() {}.type
+//    val verbList = Gson().fromJson<List<VerbData>>(jsonString, itemType)
 
 
     LaunchedEffect(key1 = fetchDataWord.value, block = {
@@ -652,8 +693,11 @@ private fun Content(
 //                                            }
 
                                         try {
-                                            soundUrl.value = it.data[0].phonetics?.first()?.audio.orEmpty()
-                                        }catch (e: Exception){e.printStackTrace()}
+                                            soundUrl.value =
+                                                it.data[0].phonetics?.first()?.audio.orEmpty()
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
 
                                         try {
                                             it.data.forEach {
@@ -670,23 +714,13 @@ private fun Content(
                                             e.printStackTrace()
                                         }
 
-//                                        try {
-//                                            it.data[0].meanings.orEmpty()
-//                                                .filter { it.partOfSpeech.orEmpty() == type.value }[0].definitions.orEmpty()
-//                                                .forEach {
-//                                                    definitionListFreeApi.add(it)
-//
-//                                                }
-//                                        } catch (e: Exception) {
-//                                            e.printStackTrace()
-//                                        }
 
-                                        if (type.value == "verb") {
-                                            pastSimple.value =
-                                                verbList.first { it.word == word.value }.past_simple.orEmpty()
-                                            pastParticiple.value =
-                                                verbList.first { it.word == word.value }.pp.orEmpty()
-                                        }
+//                                        if (type.value == "verb") {
+//                                            pastSimple.value =
+//                                                verbList.first { it.word == word.value }.past_simple.orEmpty()
+//                                            pastParticiple.value =
+//                                                verbList.first { it.word == word.value }.pp.orEmpty()
+//                                        }
 
 
                                     } else {
@@ -732,11 +766,17 @@ private fun Content(
                                         }
 
                                     try {
-                                        val audio = it.data?.first()?.headwordInformation?.pronunciations?.first()?.sound?.audio
-                                        if (audio != null){
-                                            soundUrl.value = "https://media.merriam-webster.com/audio/prons/en/us/mp3/${getSubdirectory(audio)}/$audio.mp3"
+                                        val audio =
+                                            it.data?.first()?.headwordInformation?.pronunciations?.first()?.sound?.audio
+                                        if (audio != null) {
+                                            soundUrl.value =
+                                                "https://media.merriam-webster.com/audio/prons/en/us/mp3/${
+                                                    getSubdirectory(audio)
+                                                }/$audio.mp3"
                                         }
-                                    }catch (e: Exception){ e.printStackTrace() }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
 
 //                                    it.data?.forEach {
 //                                        it.definitionSection?.forEach {
@@ -763,12 +803,12 @@ private fun Content(
 //                                        }
 //                                    }
 
-                                    if (type.value == "verb") {
-                                        pastSimple.value =
-                                            verbList.first { it.word == word.value }.past_simple.orEmpty()
-                                        pastParticiple.value =
-                                            verbList.first { it.word == word.value }.pp.orEmpty()
-                                    }
+//                                    if (type.value == "verb") {
+//                                        pastSimple.value =
+//                                            verbList.first { it.word == word.value }.past_simple.orEmpty()
+//                                        pastParticiple.value =
+//                                            verbList.first { it.word == word.value }.pp.orEmpty()
+//                                    }
 //                                    if (type.value == "verb") {
 //                                        pastSimple.value =
 //                                            it.data?.first { it.functionalLabel == type.value }?.inflections?.get(
@@ -857,7 +897,9 @@ private fun Content(
                     openVoiceToSpeech = true
                     voiceForWord = true
                 }
-            )
+            ){
+                fillGermanNoun = true
+            }
 
             EditText(
                 Modifier
@@ -905,18 +947,26 @@ private fun Content(
 
             }
 
-            if (language == "German"){
-                CustomButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.download_auto_fill),
-                    size = ButtonSize.LG,
-                    type = ButtonType.Secondary,
-                    style = ButtonStyle.Contained
-                ) {
-                    navController.navigate(Screens.DownloadScreen.name)
-                }
-            }
+//            if (language == "German") {
+//                CustomButton(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    text = stringResource(id = R.string.download_auto_fill),
+//                    size = ButtonSize.LG,
+//                    type = ButtonType.Secondary,
+//                    style = ButtonStyle.Contained
+//                ) {
+//                    navController.navigate(Screens.DownloadScreen.name)
+//                }
+//            }
+
+            EditText(
+                Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth(),
+                text = translation,
+                label = stringResource(R.string.translation)
+            )
 
 
             if (type.value == "verb") {
@@ -938,6 +988,8 @@ private fun Content(
                         enabled = !fetchDataWord.value
                     )
                 }
+
+
             } else if ((type.value == "noun" || type.value == "pronoun") && language == "German") {
                 EditText(
                     Modifier
@@ -972,13 +1024,7 @@ private fun Content(
                 )
             }
 
-            EditText(
-                Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(),
-                text = translation,
-                label = stringResource(R.string.translation)
-            )
+
             EditText(
                 Modifier
                     .padding(top = 8.dp)
@@ -1017,20 +1063,21 @@ private fun Content(
                     subText = if (micStart) "recording" else null,
                     removeBtn = audioFile != null && !micStart,
                     removeOnClick = {
+                        audioFile?.delete()
                         audioFile = null
                     }) {
                     if (!allowRecording) {
-                        cameraPermissionResultLauncher.launch(
+                        micPermissionResultLauncher.launch(
                             Manifest.permission.RECORD_AUDIO
                         )
                     } else if (micStart) {
                         recorder.stop()
                         micStart = false
-                    }else if (audioFile != null){
+                    } else if (audioFile != null) {
                         if (player.isPlaying()) return@ButtonIcon
                         player.playFile(audioFile ?: return@ButtonIcon)
                         timber("voice-file-path ${audioFile?.absoluteFile}")
-                    }else {
+                    } else {
                         File(context.cacheDir, "audio_${audioFileName}.mp3").also {
                             recorder.start(it)
                             audioFile = it
@@ -1049,9 +1096,7 @@ private fun Content(
                     val mp = MediaPlayer()
                     try {
                         scope.launch {
-                            timber("URLLLLLLLLLLLLLLLLLL ::: ${soundUrl.value}")
                             mp.setDataSource(soundUrl.value)
-//                            mp.prepare()
                             CoroutineScope(Dispatchers.IO).launch {
                                 mp.prepare()
                             }
@@ -1070,19 +1115,28 @@ private fun Content(
                 icon = R.drawable.image_rectangle,
                 bitmap = bitmap
             ) {
-                if (bitmap == null){
+                if (bitmap == null) {
                     mediaPicker
                         .launch(
                             PickVisualMediaRequest(
                                 ActivityResultContracts.PickVisualMedia.ImageOnly
-                            ))
-                }else{
+                            )
+                        )
+                } else {
+                    imagePath = ""
                     imageUri = null
                     bitmap = null
                 }
             }
 
         }
+
+//        item{
+//
+//            Text(modifier = Modifier.padding(top = 24.dp, start = 8.dp), text = stringResource(id = R.string.present))
+//            Table()
+//
+//        }
 
         item {
             EditText(
@@ -1136,8 +1190,8 @@ private fun Content(
 
             }
 
-            if (listOfDefinitions.size > 3){
-                items(listOfDefinitions.subList(2, listOfDefinitions.size-1)) {
+            if (listOfDefinitions.size > 3) {
+                items(listOfDefinitions.subList(2, listOfDefinitions.size - 1)) {
                     AnimatedVisibility(visible = visible) {
                         SampleItem(
                             title = it,
@@ -1212,6 +1266,11 @@ private fun Content(
             }
         }
 
+        item {
+            DividerLine(modifier = Modifier.padding(top = 24.dp), title = stringResource(id = R.string.advance))
+
+        }
+
     }
 }
 
@@ -1220,6 +1279,28 @@ fun Activity.openAppSettings() {
         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
         Uri.fromParts("package", packageName, null)
     ).also(::startActivity)
+}
+
+private fun saveImageInFolder(bitmap: Bitmap?, context: Context, name: String): File {
+    val cw = ContextWrapper(context)
+    val directory = cw.getDir("images", Context.MODE_PRIVATE)
+    if (!directory.exists()) {
+        directory.mkdir()
+        timber("ffffffffffffff NOT")
+    }
+    val path = File(directory, "${name}${System.currentTimeMillis()}.jpeg")
+
+    val fos: FileOutputStream?
+    try {
+        fos = FileOutputStream(path)
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+        fos.close()
+    } catch (e: java.lang.Exception) {
+        Log.e("SAVE_IMAGE", e.message, e)
+        timber("ffffffffffffff ERR")
+    }
+
+    return path
 }
 
 

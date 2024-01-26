@@ -69,6 +69,7 @@ import com.ntg.mywords.ui.theme.Primary100
 import com.ntg.mywords.ui.theme.Primary900
 import com.ntg.mywords.ui.theme.fontRegular12
 import kotlinx.coroutines.delay
+import java.io.File
 import java.time.format.TextStyle
 import java.util.Timer
 import kotlin.time.Duration.Companion.milliseconds

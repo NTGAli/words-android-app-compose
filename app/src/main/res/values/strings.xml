@@ -170,5 +170,8 @@
     <string name="dowanloads">Downloads</string>
     <string name="download_auto_fill">Download auto fill</string>
     <string name="progress_format">%s \%%</string>
+    <string name="download_data">Download Data</string>
+    <string name="present">Present</string>
+    <string name="advance">advance</string>
 
 </resources>

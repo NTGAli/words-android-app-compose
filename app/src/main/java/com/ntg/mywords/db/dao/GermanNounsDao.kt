@@ -27,4 +27,7 @@ interface GermanNounsDao {
 
     @Query("SELECT COUNT(*) FROM GermanNouns")
     fun size(): LiveData<Int>
+
+    @Query("SELECT * FROM GermanNouns WHERE LOWER(lemma)=LOWER(:word)")
+    fun findNoun(word: String): LiveData<GermanNouns>
 }
