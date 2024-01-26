@@ -81,7 +81,6 @@ private fun Content(
     calendarViewModel: CalendarViewModel
 ) {
 
-    val ctx = LocalContext.current
     val list = remember {
         mutableStateOf(listOf<VocabsListWithCount>())
     }
@@ -107,6 +106,8 @@ private fun Content(
     if (listId.value != -1 && !list.value.any { it.isSelected.orFalse() }){
         navController.navigate(Screens.VocabularyListScreen.name)
     }
+
+    val language = wordViewModel.currentList().observeAsState().value?.language
 
     if (deleteList) {
         wordViewModel.deleteListById(listId.value)
@@ -312,6 +313,12 @@ private fun Content(
 
             ItemOption(text = stringResource(id = R.string.settings)) {
                 navController.navigate(Screens.SettingScreen.name)
+            }
+
+            if (listOf("German").contains(language)){
+                ItemOption(text = stringResource(id = R.string.download_data)) {
+                    navController.navigate(Screens.DownloadScreen.name)
+                }
             }
 
             ItemOption(text = stringResource(R.string.help_and_feedback)) {

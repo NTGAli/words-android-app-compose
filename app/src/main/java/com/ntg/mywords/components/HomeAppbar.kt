@@ -32,10 +32,12 @@ import java.util.*
 @Composable
 fun HomeAppbar(
     title: String?,
+    enableDownloadData: Boolean = false,
     searchCallback: () -> Unit,
     notificationCallback: () -> Unit,
     profileCallback: () -> Unit,
-    voiceSearch: (String) -> Unit
+    voiceSearch: (String) -> Unit,
+    downloadOnClick: () -> Unit = {},
 ) {
 
 
@@ -82,8 +84,24 @@ fun HomeAppbar(
         },
         actions = {
 
+            if (enableDownloadData){
 
-            IconButton(onClick = {
+                IconButton(
+                    modifier = Modifier.padding(start = 4.dp),
+                    onClick = {
+                        downloadOnClick.invoke()
+                    }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.folder_download),
+                        contentDescription = "Download State"
+                    )
+                }
+            }
+
+
+            IconButton(
+                modifier = Modifier.padding(start = 2.dp,end = 4.dp),
+                onClick = {
                 notificationCallback.invoke()
             }) {
                 Icon(
@@ -91,6 +109,8 @@ fun HomeAppbar(
                     contentDescription = "notifications"
                 )
             }
+
+
 
 
             Box(

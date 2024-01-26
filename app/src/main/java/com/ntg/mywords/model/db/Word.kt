@@ -12,6 +12,8 @@ data class Word (
     val word: String? = null,
     val translation: String? = null,
     val type: String? = null,
+    val article: String? = null,
+    val plural: String? = null,
     val verbForms: VerbForms? = null,
     val pronunciation: String? = null,
     val definition: String? = null,
@@ -22,6 +24,9 @@ data class Word (
     val dateCreated: Long? = null,
     var revisionCount: Int = 0,
     var lastRevisionTime: Long? = null,
+    var voice: String? = null,
+    var sound: String? = null,
+    var images: List<String>? = null,
     var bookmarked: Boolean? = false,
     var synced: Boolean? = null,
         )

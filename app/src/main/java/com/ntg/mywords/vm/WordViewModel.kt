@@ -12,6 +12,7 @@ import com.ntg.mywords.api.DictionaryApiService
 import com.ntg.mywords.api.FreeDictionaryApi
 import com.ntg.mywords.api.NetworkResult
 import com.ntg.mywords.db.dao.GermanNounsDao
+import com.ntg.mywords.db.dao.GermanVerbsDao
 import com.ntg.mywords.db.dao.TimeSpentDao
 import com.ntg.mywords.db.dao.VocabListDao
 import com.ntg.mywords.db.dao.WordDao
@@ -40,6 +41,7 @@ class WordViewModel @Inject constructor(
     private val wordDao: WordDao,
     private val timeSpentDao: TimeSpentDao,
     private val germanNounsDao: GermanNounsDao,
+    private val germanVerbsDao: GermanVerbsDao,
     private val vocabListDao: VocabListDao,
     private val api: DictionaryApiService,
     private val freeApiDic: FreeDictionaryApi,
@@ -54,6 +56,8 @@ class WordViewModel @Inject constructor(
     private var word: LiveData<Word> = MutableLiveData()
     private var dataList: LiveData<VocabItemList> = MutableLiveData()
     private var germanNounSize: LiveData<Int> = MutableLiveData()
+    private var germanVerbsSize: LiveData<Int> = MutableLiveData()
+    private var germanNoun: LiveData<GermanNouns> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedWordOnBookmarked: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
@@ -154,6 +158,20 @@ class WordViewModel @Inject constructor(
             germanNounSize = germanNounsDao.size()
         }
         return germanNounSize
+    }
+
+    fun sizeGermanVerbs(): LiveData<Int> {
+        viewModelScope.launch {
+            germanVerbsSize = germanVerbsDao.size()
+        }
+        return germanVerbsSize
+    }
+
+    fun germanNoun(word: String): LiveData<GermanNouns> {
+        viewModelScope.launch {
+            germanNoun = germanNounsDao.findNoun(word)
+        }
+        return germanNoun
     }
 
     fun getWordsBaseListId(listId: Int): LiveData<List<Word>> {

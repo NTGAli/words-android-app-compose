@@ -1,6 +1,7 @@
 package com.ntg.mywords.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +56,34 @@ fun SampleItem(
                         onClick?.invoke(title, id, radioSelect.value)
                     })
             }
+
+            if (listOf("die", "das", "der").contains(title)){
+
+                Box(modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 8.dp)
+                    .background(shape = RoundedCornerShape(32.dp),
+                        color = when(title){
+
+                            "die" ->{
+                                Color.Red
+                            }
+
+                            "der" -> {
+                                Color.Blue
+                            }
+
+                            "das" -> {
+                                Color.Green
+                            }
+
+                            else -> Color.Green
+
+                        }
+                    ).size(8.dp))
+
+
+
+            }
+
             Text(
                 modifier = Modifier
                     .padding(vertical = 16.dp)
@@ -67,14 +97,19 @@ fun SampleItem(
                 Icon(
                     Icons.Rounded.Bookmark,
                     contentDescription = "bookmarked",
-                    modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp).size(16.dp),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(end = 8.dp)
+                        .size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             if (painter != null) {
                 Image(
-                    modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(end = 8.dp),
                     painter = painter,
                     contentDescription = "imageSampleItem"
                 )

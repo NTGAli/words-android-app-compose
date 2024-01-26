@@ -50,6 +50,7 @@ fun HomeScreen(
     loginViewModel: LoginViewModel
 ) {
 
+    val language = wordViewModel.currentList().observeAsState().value?.language
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -57,8 +58,10 @@ fun HomeScreen(
 
             val userData = loginViewModel.getUserData().asLiveData().observeAsState()
 
+            timber("ccccccccccccc ${listOf("German").contains(language)} --- $language")
             HomeAppbar(
                 title = userData.value?.name,
+                enableDownloadData = listOf("German").contains(language),
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },
@@ -71,6 +74,9 @@ fun HomeScreen(
                 },
                 voiceSearch = {
                     navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}" + "&query=$it")
+                },
+                downloadOnClick = {
+                    navController.navigate(Screens.DownloadScreen.name)
                 }
             )
         },
