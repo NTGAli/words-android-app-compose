@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.ntg.mywords",
+  "applicationId": "com.ntg.vocabs",
   "variantName": "release",
   "elements": [
     {
