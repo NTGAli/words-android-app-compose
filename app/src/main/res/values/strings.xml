@@ -161,8 +161,8 @@
     <string name="try_again">try again</string>
     <string name="can_not_load">can not load</string>
     <string name="select_a_definition">Select a definition from the list below.</string>
-    <string name="all_words">all words</string>
-    <string name="your_words">your words</string>
+    <string name="all_words">All words</string>
+    <string name="your_words">Your words</string>
     <string name="plural">plural</string>
     <string name="article">article</string>
     <string name="grammatical_case">Grammatical case</string>
@@ -173,5 +173,23 @@
     <string name="download_data">Download Data</string>
     <string name="present">Present</string>
     <string name="advance">advance</string>
+    <string name="indicative">indicative</string>
+    <string name="conjunctive">conjunctive</string>
+    <string name="conditional">conditional</string>
+    <string name="imperaticve">imperative</string>
+    <string name="simple_present">Simple Present</string>
+    <string name="present_perfect">present Perfect</string>
+    <string name="simple_past">Simple Past</string>
+    <string name="past_perfect">Past Perfect</string>
+    <string name="future_one">Future I</string>
+    <string name="future_two">Future II</string>
+    <string name="no_word">No word was found</string>
+    <string name="add_to_words">Add this word</string>
+    <string name="select_at_least_definition">Please select a definition.</string>
+    <string name="select_a_dictionary_to_load_data">Select a dictionary to load data</string>
+    <string name="verbs">Verbs</string>
+    <string name="synonyms">synonyms</string>
+    <string name="antonyms">antonyms</string>
+    <string name="seperate_with_comma">Separate synonyms with comma(,)</string>
 
 </resources>

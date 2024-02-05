@@ -1,0 +1,38 @@
+package com.ntg.vocabs.nav
+
+enum class Screens {
+
+    SplashScreen,
+    HomeScreen,
+    AddEditScreen,
+    WordDetailScreen,
+    AllWordsScreen,
+    RevisionScreen,
+    RecentWordScreen,
+    TimeScreen,
+    SettingScreen,
+    BackupAndRestoreScreen,
+    InsertEmailScreen,
+    CodeScreen,
+    NameScreen,
+    VocabularyListScreen,
+    SelectLanguageScreen,
+    LoginWithPasswordScreen,
+    ProfileScreen,
+    BookmarkScreen,
+    UpdateEmailScreen,
+    DeleteAccountScreen,
+    FinishScreen,
+    ThemeScreen,
+    PrivacyPolicyScreen,
+    HelpAndFeedbackScreen,
+    MessagesBoxScreen,
+    NoInternetConnection,
+    SearchScreen,
+    DownloadScreen,
+    VerbsFormScreen,
+    AllWordScreen,
+    OnlineWordDetailsScreen
+
+
+}
