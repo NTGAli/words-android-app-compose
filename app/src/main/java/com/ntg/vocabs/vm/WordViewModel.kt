@@ -450,8 +450,9 @@ class WordViewModel @Inject constructor(
                 Gson().fromJson(content, BackupUserData::class.java)
             clearWordsTable()
             clearTimesTable()
-            addAllWords(backupUserData.words ?: listOf())
-            addAllTimeSpent(backupUserData.totalTimeSpent ?: listOf())
+            addAllWords(backupUserData.words.orEmpty())
+            addAllTimeSpent(backupUserData.totalTimeSpent.orEmpty())
+            addAllVocabLists(backupUserData.vocabList.orEmpty())
             callBack.invoke(true)
 
         } catch (e: Exception) {

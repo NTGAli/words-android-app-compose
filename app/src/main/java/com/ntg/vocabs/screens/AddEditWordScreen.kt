@@ -2,9 +2,7 @@ package com.ntg.vocabs.screens
 
 import android.Manifest
 import android.content.Context
-import android.content.ContextWrapper
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.media.MediaPlayer
 import android.net.Uri
@@ -30,6 +28,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -189,8 +188,9 @@ private fun submitWord(
 }
 
 
+private var recorder: AndroidAudioRecorder? = null
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalStdlibApi::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalPermissionsApi::class
 )
 @Composable
@@ -212,8 +212,12 @@ private fun Content(
         mutableStateOf("")
     }
 
-    val recorder by lazy {
-        AndroidAudioRecorder(context)
+//    val recorder by lazy {
+//        AndroidAudioRecorder(context)
+//    }
+
+    if (recorder == null){
+        recorder = AndroidAudioRecorder(context)
     }
 
     val player by lazy {
@@ -229,14 +233,14 @@ private fun Content(
     }
 
     var imagePath by rememberSaveable {
-        mutableStateOf("")
+        mutableStateOf<String?>(null)
     }
 
     var imageUri by rememberSaveable {
         mutableStateOf<Uri?>(null)
     }
 
-    var bitmap by rememberSaveable {
+    var bitmap by remember {
         mutableStateOf<Bitmap?>(null)
     }
 
@@ -247,23 +251,26 @@ private fun Content(
     val mediaPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
-            imageUri = uri
+            timber("BIIIIIIIIIIIIIIII 1111")
+            val compressImage = CompressImage(context)
+            bitmap = compressImage.compressImage(uri.toString())
+            imagePath = saveImageInFolder(bitmap, context, word.value).path
         })
 
-    LaunchedEffect(key1 = imageUri) {
-        if (imageUri == null) return@LaunchedEffect
-        imageUri?.let { uri ->
-            bitmap = if (Build.VERSION.SDK_INT < 28) {
-                MediaStore.Images
-                    .Media.getBitmap(context.contentResolver, uri)
-            } else {
-                val source = ImageDecoder
-                    .createSource(context.contentResolver, uri)
-                ImageDecoder.decodeBitmap(source)
-            }
-        }
-        imagePath = saveImageInFolder(bitmap, context, word.value).path
-    }
+//    LaunchedEffect(key1 = imageUri) {
+//        if (imageUri == null) return@LaunchedEffect
+//        imageUri?.let { uri ->
+//            bitmap = if (Build.VERSION.SDK_INT < 28) {
+//                MediaStore.Images
+//                    .Media.getBitmap(context.contentResolver, uri)
+//            } else {
+//                val source = ImageDecoder
+//                    .createSource(context.contentResolver, uri)
+//                ImageDecoder.decodeBitmap(source)
+//            }
+//        }
+//        imagePath = saveImageInFolder(bitmap, context, word.value).path
+//    }
 
 
     val translation = rememberSaveable {
@@ -446,7 +453,7 @@ private fun Content(
             plural = plural.value,
             voice = audioFile?.path,
             sound = soundUrl.value,
-            images = listOf(imagePath),
+            images = listOf(imagePath.orEmpty()),
             synonyms = synonym.value.split(","),
             antonyms = antonyms.value.split(",")
         )
@@ -665,26 +672,6 @@ private fun Content(
             }
         }
     }
-
-
-//    val file = File(context.getExternalFilesDir(""), "1706098882658.jpeg")
-    bitmap = BitmapFactory.decodeFile("/data/user/0/com.ntg.mywords/app_images/1706098882658.jpeg")
-//    bitmap = BitmapFactory.decodeFile(context.getExternalFilesDir("")+"1706098882658.jpeg")
-
-//    val raw = context.resources.openRawResource(R.raw.word_forms)
-//    val writer: Writer = StringWriter()
-//    val buffer = CharArray(1024)
-//    raw.use { rawData ->
-//        val reader: Reader = BufferedReader(InputStreamReader(rawData, "UTF-8"))
-//        var n: Int
-//        while (reader.read(buffer).also { n = it } != -1) {
-//            writer.write(buffer, 0, n)
-//        }
-//    }
-//    val jsonString = writer.toString()
-//    val itemType = object : TypeToken<List<VerbData>>() {}.type
-//    val verbList = Gson().fromJson<List<VerbData>>(jsonString, itemType)
-
 
     LaunchedEffect(key1 = fetchDataWord.value, block = {
 
@@ -1105,15 +1092,15 @@ private fun Content(
                             Manifest.permission.RECORD_AUDIO
                         )
                     } else if (micStart) {
-                        recorder.stop()
+                        recorder!!.stop()
                         micStart = false
                     } else if (audioFile != null) {
                         if (player.isPlaying()) return@ButtonIcon
                         player.playFile(audioFile ?: return@ButtonIcon)
                         timber("voice-file-path ${audioFile?.absoluteFile}")
                     } else {
-                        File(context.cacheDir, "audio_${audioFileName}.mp3").also {
-                            recorder.start(it)
+                        File(context.getExternalFilesDir("backups/sounds"), "${audioFileName}.WAV").also {
+                            recorder!!.start(it)
                             audioFile = it
                         }
                         micStart = true
@@ -1147,7 +1134,7 @@ private fun Content(
             ButtonIcon(
                 modifier = Modifier.padding(top = 16.dp),
                 icon = R.drawable.image_rectangle,
-                bitmap = bitmap
+                imagePath = imagePath
             ) {
                 if (bitmap == null) {
                     mediaPicker
@@ -1157,7 +1144,7 @@ private fun Content(
                             )
                         )
                 } else {
-                    imagePath = ""
+                    imagePath = null
                     imageUri = null
                     bitmap = null
                 }
@@ -1165,12 +1152,6 @@ private fun Content(
 
         }
 
-//        item{
-//
-//            Text(modifier = Modifier.padding(top = 24.dp, start = 8.dp), text = stringResource(id = R.string.present))
-//            Table()
-//
-//        }
 
         item {
             EditText(
@@ -1323,7 +1304,7 @@ private fun Content(
         }
 
         item {
-            if (type.value == "verb") {
+            if (type.value == "verb" && language == "German") {
 
                 ItemOption(text = stringResource(id = R.string.indicative)) {
                     navController.navigate(Screens.VerbsFormScreen.name + "?verb=${word.value}&form=indicative")
@@ -1343,28 +1324,29 @@ private fun Content(
             }
         }
 
+        item {
+            Spacer(modifier = Modifier.padding(24.dp))
+        }
+
     }
 }
 
 
 private fun saveImageInFolder(bitmap: Bitmap?, context: Context, name: String): File {
-    val cw = ContextWrapper(context)
-    val directory = cw.getDir("images", Context.MODE_PRIVATE)
-    if (!directory.exists()) {
-        directory.mkdir()
-    }
-    val path = File(directory, "${name}${System.currentTimeMillis()}.jpeg")
+    val directory = File(context.getExternalFilesDir("backups/images"), "${name}${System.currentTimeMillis()}.jpeg")
+    directory.parentFile?.mkdir()
 
     val fos: FileOutputStream?
     try {
-        fos = FileOutputStream(path)
+        fos = FileOutputStream(directory)
         bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+//        bitmap?.compressBitmap(fos)
         fos.close()
     } catch (e: java.lang.Exception) {
         timber("SAVE IMAGE ERR :: ${e.message}")
     }
 
-    return path
+    return directory
 }
 
 

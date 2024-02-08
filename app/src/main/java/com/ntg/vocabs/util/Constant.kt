@@ -12,6 +12,9 @@ object Constant {
     const val WEB_CLIENT_ID = "860993666942-48r4nsi3nncd06jbepk20ql181bhmjs8.apps.googleusercontent.com"
     const val PREFERENCE_DATA_STORE_NAME = "UserDataSettings"
     const val DATA_STORE_FILE_NAME = "UserData"
+    const val VOCAB_FOLDER_NAME_DRIVE = "Vocabs Backups"
+    const val BACKUPS = "backup"
+    const val MAX_SIZE_IMAGE = 200
 
 
 //    object PreferenceKeys {

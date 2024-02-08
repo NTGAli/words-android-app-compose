@@ -12,13 +12,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.google.gson.Gson
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.db.TimeSpent
+import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.AppNavHost
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.screens.setting.UserBackup
 import com.ntg.vocabs.ui.theme.AppTheme
 import com.ntg.vocabs.util.*
+import com.ntg.vocabs.util.Constant.BACKUPS
+import com.ntg.vocabs.util.backup.BackupWorker
+import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.DataViewModel
 import com.ntg.vocabs.vm.LoginViewModel
@@ -27,7 +37,11 @@ import com.ntg.vocabs.vm.SignInViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import java.time.LocalDate
+import java.util.concurrent.TimeUnit
 
 
 @AndroidEntryPoint
@@ -39,6 +53,7 @@ class MainActivity : ComponentActivity() {
     private val signInViewModel: SignInViewModel by viewModels()
     private val messageBoxViewModel: MessageBoxViewModel by viewModels()
     private val dataViewModel: DataViewModel by viewModels()
+    private val backupViewModel: BackupViewModel by viewModels()
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +115,7 @@ class MainActivity : ComponentActivity() {
                         signInViewModel = signInViewModel,
                         messageBoxViewModel = messageBoxViewModel,
                         dataViewModel = dataViewModel,
+                        backupViewModel = backupViewModel,
                         startDestination = startDes.value
                     ) { _, navDestination, _ ->
 
@@ -172,13 +188,82 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+
             }
+
+            var backupUserData by remember {
+                mutableStateOf<BackupUserData?>(null)
+            }
+
+            loginViewModel.getUserData().asLiveData().observeAsState().value.let { dataSettings ->
+                if (dataSettings?.backupOption.orEmpty().isNotEmpty()) {
+
+                    UserBackup(wordViewModel) {
+                        if (it != backupUserData) {
+                            backupUserData = it
+                        }
+                    }
+
+                    if (dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty() != "Only when i tap ‘backup’") {
+                        LaunchedEffect(key1 = Unit, block = {
+
+                            val repeatTime = when (dataSettings?.backupOption) {
+                                "Daily" -> 1L
+                                "Weekly" -> 7L
+                                "Monthly" -> 30L
+                                else -> -1L
+                            }
+
+                            if (repeatTime != -1L) {
+                                val backupWorkRequest = PeriodicWorkRequestBuilder<BackupWorker>(
+                                    repeatInterval = repeatTime,
+                                    repeatIntervalTimeUnit = TimeUnit.MINUTES
+                                ).build()
+
+                                WorkManager.getInstance(this@MainActivity)
+                                    .enqueueUniquePeriodicWork(
+                                        "BackupOnDrive",
+                                        ExistingPeriodicWorkPolicy.KEEP, backupWorkRequest
+                                    )
+                            }
+
+
+                        })
+                    }
+
+
+                }
+            }
+
+            LaunchedEffect(key1 = backupUserData?.words, block = {
+                timber("UserBackupUserBackupUserBackupUserBackup ::::")
+                saveBackupFile(backupUserData)
+
+            })
+
+
         }
     }
 
 
+    private fun saveBackupFile(backupUserData: BackupUserData?) {
 
+        if (backupUserData == null) return
+        val json = Gson().toJson(backupUserData)
+        val dataFolder = File(getExternalFilesDir(""), "backups")
 
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs()
+        }
+        val file = File(dataFolder, BACKUPS)
+        try {
+            val fileWriter = FileWriter(file)
+            fileWriter.write(json)
+            fileWriter.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
 
 }
 

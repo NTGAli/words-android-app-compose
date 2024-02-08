@@ -3,6 +3,7 @@ package com.ntg.vocabs.record
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import com.ntg.vocabs.util.timber
 import java.io.File
 import java.io.FileOutputStream
 
@@ -21,9 +22,12 @@ class AndroidAudioRecorder(
     override fun start(outputFile: File) {
         createRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB)
             setOutputFile(FileOutputStream(outputFile).fd)
+            setAudioSamplingRate(44100)
+            setAudioEncodingBitRate(320000)
+
 
             prepare()
             start()

@@ -7,4 +7,5 @@ message UserDataAndSetting {
     string email = 1;
     string name = 2;
     bool isSkipped = 3;
+    string backupOption = 4;
 }

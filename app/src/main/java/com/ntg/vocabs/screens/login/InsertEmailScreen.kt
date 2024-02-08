@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -26,6 +27,7 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
@@ -107,7 +109,7 @@ private fun Content(
         mutableStateOf(false)
     }
 
-    val email = remember {
+    val email = rememberSaveable {
         mutableStateOf("")
     }
 
@@ -153,7 +155,6 @@ private fun Content(
         }
 
     val googleSignInState = loginViewModel.googleState.value
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = googleSignInState, block = {
         if (googleSignInState.success != null) {
@@ -162,7 +163,7 @@ private fun Content(
 
             loginViewModel.setUsername(userData?.username.orEmpty())
             loginViewModel.setUserEmail(userData?.email.orEmpty())
-            navController.navigate(Screens.VocabularyListScreen.name) {
+            navController.navigate(Screens.AskBackupScreen.name) {
                 popUpTo(0)
             }
 
@@ -210,6 +211,8 @@ private fun Content(
 //                }
 //
 //            }
+        }else if (googleSignInState.error != null){
+            loadingToSignGoogle = false
         }
     })
 
@@ -297,37 +300,50 @@ private fun Content(
                 type = ButtonType.Primary,
                 size = ButtonSize.LG
             ) {
+                email.value = email.value.trim()
                 if (email.value.validEmail()) {
+                    loading.value = true
+                    loginViewModel.checkIfUserExists(email.value,
+                        onSuccess = {exists ->
+                                    timber("checkIfUserExists  $exists")
+                            navController.navigate(Screens.LoginWithPasswordScreen.name + "?email=${email.value}&isNew=${!exists}")
+                            loading.value = false
+                        },
+                        onFailure = {
+                            timber("checkIfUserExists ERR ***** ${it.message}")
+                            context.toast(context.getString(R.string.sth_wrong))
+                            loading.value = false
+                        })
 
-                    loginViewModel.loginWithEmail(email.value).observe(owner) {
-
-                        when (it) {
-                            is NetworkResult.Error -> {
-                                timber("VerifyUser::: ERR ::: ${it.message}")
-                            }
-
-                            is NetworkResult.Loading -> {
-                                timber("VerifyUser:::")
-                                loading.value = true
-                            }
-
-                            is NetworkResult.Success -> {
-                                timber("VerifyUser::: S :: ${it.data}")
-                                if (it.data?.isSuccess.orFalse()) {
-                                    timber("VerifyUser:::")
-                                    timber("VerifyUser 1111111111")
-                                    navController.navigate(Screens.LoginWithPasswordScreen.name + "?email=${email.value}&isNew=${it.data?.message.orEmpty() == "NEW_USER"}")
-                                } else if (it.data?.message == "INVALID_TOKEN") {
-                                    timber("VerifyUser 222222222")
-                                    context.toast(context.getString(R.string.download_from_google_play))
-                                } else {
-                                    timber("VerifyUser 3333333")
-                                    context.toast(context.getString(R.string.sth_wrong))
-                                }
-                                timber("VerifyUser 444444444444")
-                            }
-                        }
-                    }
+//                    loginViewModel.loginWithEmail(email.value).observe(owner) {
+//
+//                        when (it) {
+//                            is NetworkResult.Error -> {
+//                                timber("VerifyUser::: ERR ::: ${it.message}")
+//                            }
+//
+//                            is NetworkResult.Loading -> {
+//                                timber("VerifyUser:::")
+//                                loading.value = true
+//                            }
+//
+//                            is NetworkResult.Success -> {
+//                                timber("VerifyUser::: S :: ${it.data}")
+//                                if (it.data?.isSuccess.orFalse()) {
+//                                    timber("VerifyUser:::")
+//                                    timber("VerifyUser 1111111111")
+//                                    navController.navigate(Screens.LoginWithPasswordScreen.name + "?email=${email.value}&isNew=${it.data?.message.orEmpty() == "NEW_USER"}")
+//                                } else if (it.data?.message == "INVALID_TOKEN") {
+//                                    timber("VerifyUser 222222222")
+//                                    context.toast(context.getString(R.string.download_from_google_play))
+//                                } else {
+//                                    timber("VerifyUser 3333333")
+//                                    context.toast(context.getString(R.string.sth_wrong))
+//                                }
+//                                timber("VerifyUser 444444444444")
+//                            }
+//                        }
+//                    }
                 } else {
                     errorMessage.value = context.getString(R.string.invalid_email)
                     setError.value = true
@@ -337,14 +353,15 @@ private fun Content(
             if (skipBtn) {
                 CustomButton(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     style = ButtonStyle.TextOnly,
                     text = stringResource(id = R.string.skip),
                     type = ButtonType.Primary,
                     size = ButtonSize.LG
                 ) {
                     loginViewModel.setSkipLogin(true)
-                    navController.navigate(Screens.VocabularyListScreen.name)
+                    navController.navigate(Screens.AskBackupScreen.name)
                 }
             }
 

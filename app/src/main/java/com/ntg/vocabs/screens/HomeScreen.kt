@@ -2,15 +2,38 @@ package com.ntg.vocabs.screens
 
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +49,12 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.Scope
+import com.google.api.services.drive.DriveScopes
+import com.google.gson.Gson
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.HomeAppbar
@@ -35,11 +64,30 @@ import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.nav.Screens
-import com.ntg.vocabs.ui.theme.*
-import com.ntg.vocabs.util.*
+import com.ntg.vocabs.screens.setting.UserBackup
+import com.ntg.vocabs.ui.theme.Primary100
+import com.ntg.vocabs.ui.theme.Primary200
+import com.ntg.vocabs.ui.theme.Primary500
+import com.ntg.vocabs.ui.theme.Secondary100
+import com.ntg.vocabs.ui.theme.Secondary500
+import com.ntg.vocabs.ui.theme.Success100
+import com.ntg.vocabs.ui.theme.Success500
+import com.ntg.vocabs.ui.theme.Warning100
+import com.ntg.vocabs.ui.theme.Warning500
+import com.ntg.vocabs.ui.theme.fontBold14
+import com.ntg.vocabs.util.formatTime
+import com.ntg.vocabs.util.getIconStateRevision
+import com.ntg.vocabs.util.getSecBetweenTimestamps
+import com.ntg.vocabs.util.getStateRevision
+import com.ntg.vocabs.util.orDefault
+import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.orZero
+import com.ntg.vocabs.util.toast
+import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,10 +95,14 @@ import java.io.InputStreamReader
 fun HomeScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    backupViewModel: BackupViewModel
 ) {
 
-    val language = wordViewModel.currentList().observeAsState().value?.language
+//    val ctx = LocalContext.current
+//    val language = wordViewModel.currentList().observeAsState().value?.language
+    val backupOption =
+        loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupOption.orEmpty()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -60,12 +112,10 @@ fun HomeScreen(
 
             HomeAppbar(
                 title = userData.value?.name,
-                enableDownloadData = listOf("German").contains(language),
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },
                 searchCallback = {
-//                    navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}")
                     navController.navigate(Screens.SearchScreen.name)
                 },
                 notificationCallback = {
@@ -74,8 +124,14 @@ fun HomeScreen(
                 voiceSearch = {
                     navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}" + "&query=$it")
                 },
-                downloadOnClick = {
-                    navController.navigate(Screens.DownloadScreen.name)
+                backupOnClick = {
+
+                    if (backupOption.isEmpty() || backupOption == "Never" || backupOption == "Only when i tap ‘backup’") {
+                        navController.navigate(Screens.AskBackupScreen.name)
+                    } else {
+                        navController.navigate(Screens.BackupScreen.name)
+                    }
+
                 }
             )
         },
@@ -261,7 +317,7 @@ private fun Content(
         }
 
         item {
-            if (wordsList.value.orEmpty().isNotEmpty()){
+            if (wordsList.value.orEmpty().isNotEmpty()) {
                 Spacer(modifier = Modifier.padding(vertical = 64.dp))
             }
         }
@@ -377,3 +433,14 @@ fun LottieExample() {
         )
     }
 }
+
+fun getGoogleSignInClient(context: Context): GoogleSignInClient {
+    val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestEmail()
+        .requestScopes(Scope(DriveScopes.DRIVE_FILE), Scope(DriveScopes.DRIVE))
+        .build()
+
+    return GoogleSignIn.getClient(context, signInOptions)
+}
+
+

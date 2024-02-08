@@ -191,5 +191,24 @@
     <string name="synonyms">synonyms</string>
     <string name="antonyms">antonyms</string>
     <string name="seperate_with_comma">Separate synonyms with comma(,)</string>
+    <string name="back_up_drive_msg">You can back up your data on Google Drive.</string>
+    <string name="import_backup">import backup</string>
+    <string name="select_backup">Please select a backup option.</string>
+    <string name="access">Access</string>
+    <string name="have_backup">I already have a backup.</string>
+    <string name="are_sure">Are you sure?</string>
+    <string name="no_accsess_backup_msg">This option is not recommended. Please choose an alternative for backing up your words. Your words will be saved in your Google Drive, and no one will have access to your data. While manual backup is possible, it is not recommended.</string>
+    <string name="countinue_anyway">Continue anyway</string>
+    <string name="back">back</string>
+    <string name="skip_backup">skip this backup</string>
+    <string name="alreadY_backup">You Already have a backup.</string>
+    <string name="backup_details">backup Data:\ntime = %s</string>
+    <string name="want_to_restore">Would you like to restore it?</string>
+    <string name="restore_from_drive">restore from Google Drive</string>
+    <string name="google_drive_backup">Google Drive Backup</string>
+    <string name="download_backup_drive_msg">You can download your backup from Google Drive or in Settings > Backup.</string>
+    <string name="success">Success</string>
+    <string name="failed">Failed</string>
+    <string name="backup_now">Backup now</string>
 
 </resources>

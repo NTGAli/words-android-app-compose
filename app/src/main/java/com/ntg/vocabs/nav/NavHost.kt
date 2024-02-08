@@ -9,12 +9,14 @@ import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ntg.vocabs.components.FullScreenImageScreen
 import com.ntg.vocabs.screens.*
 import com.ntg.vocabs.screens.login.*
 import com.ntg.vocabs.screens.setting.SettingScreen
 import com.ntg.vocabs.screens.setting.ThemeScreen
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orTrue
+import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.DataViewModel
 import com.ntg.vocabs.vm.LoginViewModel
@@ -33,6 +35,7 @@ fun AppNavHost(
     signInViewModel: SignInViewModel,
     messageBoxViewModel: MessageBoxViewModel,
     dataViewModel: DataViewModel,
+    backupViewModel: BackupViewModel,
     onDestinationChangedListener: (NavController, NavDestination, Bundle?) -> Unit
 ) {
 
@@ -62,7 +65,7 @@ fun AppNavHost(
         composable(Screens.HomeScreen.name, enterTransition = { ->
             EnterTransition.None
         }) {
-            HomeScreen(navController, wordViewModel, loginViewModel)
+            HomeScreen(navController, wordViewModel, loginViewModel, backupViewModel)
         }
 
         composable(Screens.AllWordsScreen.name + "?openSearch={openSearch}" + "&query={query}",
@@ -253,6 +256,14 @@ fun AppNavHost(
             MessagesBoxScreen(navController, messageBoxViewModel)
         }
 
+        composable(Screens.AskBackupScreen.name) {
+            AskBackupScreen(navController, backupViewModel,loginViewModel)
+        }
+
+        composable(Screens.BackupScreen.name) {
+            BackupScreen(navController,backupViewModel)
+        }
+
         composable(
             Screens.AddEditScreen.name + "?wordId={wordId}",
             arguments = listOf(navArgument("wordId")
@@ -304,6 +315,20 @@ fun AppNavHost(
                 navController = navController,
                 wordViewModel = wordViewModel,
                 backStackEntry.arguments?.getInt("wordId")
+            )
+        }
+
+        composable(
+            Screens.FullScreenImageScreen.name + "?path={path}",
+            arguments = listOf(navArgument("path")
+            {
+                type = NavType.StringType
+                defaultValue = ""
+            })
+        ) { backStackEntry ->
+            FullScreenImageScreen(
+                navController = navController,
+                backStackEntry.arguments?.getString("path")
             )
         }
 
