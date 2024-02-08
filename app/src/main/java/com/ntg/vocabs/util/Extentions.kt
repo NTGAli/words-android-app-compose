@@ -53,6 +53,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -215,6 +217,12 @@ fun getSubdirectory(audio: String): String {
     }
 }
 
+fun getCurrentDate(): String {
+    val currentDate = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+    return currentDate.format(formatter)
+}
+
 fun unzip(zipFilePath: String, destinationDir: String): Boolean {
     val buffer = ByteArray(1024)
 
@@ -262,6 +270,7 @@ fun unzip(zipFilePath: String, destinationDir: String): Boolean {
 }
 
 fun String.toPronunciation(): String {
+    if (this.isEmpty()) return ""
     var finalPronouns = this
     if (!this.startsWith('/')) {
         finalPronouns = "/$finalPronouns"

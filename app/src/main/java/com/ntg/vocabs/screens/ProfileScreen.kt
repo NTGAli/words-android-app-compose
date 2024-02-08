@@ -313,11 +313,11 @@ private fun Content(
                 navController.navigate(Screens.SettingScreen.name)
             }
 
-            if (listOf("German").contains(language)){
-                ItemOption(text = stringResource(id = R.string.download_data)) {
-                    navController.navigate(Screens.DownloadScreen.name)
-                }
-            }
+//            if (listOf("German").contains(language)){
+//                ItemOption(text = stringResource(id = R.string.download_data)) {
+//                    navController.navigate(Screens.DownloadScreen.name)
+//                }
+//            }
 
             ItemOption(text = stringResource(R.string.help_and_feedback)) {
                 navController.navigate(Screens.HelpAndFeedbackScreen.name)

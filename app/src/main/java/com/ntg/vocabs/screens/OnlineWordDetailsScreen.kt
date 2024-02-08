@@ -128,7 +128,6 @@ fun OnlineWordDetailsScreen(
             }
         },
         bottomBar = {
-
             val isExist = wordViewModel.findWord(word, type)
                 ?.observeAsState()?.value?.any { it.definition.orEmpty() == onlineWord?.definition.orEmpty() }
 

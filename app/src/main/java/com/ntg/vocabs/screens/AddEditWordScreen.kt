@@ -73,7 +73,9 @@ fun AddEditWordScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val context = LocalContext.current
-    var wordData = Word()
+    var wordData by remember {
+        mutableStateOf(Word())
+    }
     var example = ""
 
 
@@ -103,8 +105,9 @@ fun AddEditWordScreen(
             )
 
         }, bottomBar = {
-            val isExist = wordViewModel.findWord(wordData.word.orEmpty(), wordData.type.orEmpty())
-                ?.observeAsState()?.value?.any { it.definition.orEmpty() == wordData.definition.orEmpty() }
+            timber("AAAAAAAAAAAAAAAAAAA ${wordData.word} --- ${wordData.type} -- ${wordData.definition}")
+            val isExist = wordViewModel.findWordWithDef(wordData.word.orEmpty(), wordData.type.orEmpty(), wordData.definition.orEmpty())
+                ?.observeAsState()?.value
 
             BottomBarContent(wordId != -1) {
                 if (example !in wordData.example.orEmpty() && example.isNotEmpty()) {
@@ -112,7 +115,7 @@ fun AddEditWordScreen(
                     ex.add(example)
                     wordData.example = ex.toList()
                 }
-                if (isExist.orTrue()) {
+                if (isExist?.isEmpty().orTrue()) {
                     submitWord(wordData, wordViewModel, context, wordId != -1, navController)
                 } else {
                     context.toast(context.getString(R.string.err_word_already_exist))
@@ -163,7 +166,8 @@ private fun submitWord(
             notFalse(
                 !wordViewModel.checkIfExist(
                     wordData.word.orEmpty(),
-                    wordData.type.orEmpty()
+                    wordData.type.orEmpty(),
+                    wordData.definition.orEmpty()
                 ) || isEdit, context.getString(R.string.err_word_already_exist)
             )
         }
@@ -224,6 +228,7 @@ private fun Content(
         AndroidAudioPlayer(context)
     }
 
+
     var audioFile by rememberSaveable {
         mutableStateOf<File?>(null)
     }
@@ -251,27 +256,11 @@ private fun Content(
     val mediaPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
-            timber("BIIIIIIIIIIIIIIII 1111")
+            if (uri == null || uri.toString().isEmpty()) return@rememberLauncherForActivityResult
             val compressImage = CompressImage(context)
             bitmap = compressImage.compressImage(uri.toString())
             imagePath = saveImageInFolder(bitmap, context, word.value).path
         })
-
-//    LaunchedEffect(key1 = imageUri) {
-//        if (imageUri == null) return@LaunchedEffect
-//        imageUri?.let { uri ->
-//            bitmap = if (Build.VERSION.SDK_INT < 28) {
-//                MediaStore.Images
-//                    .Media.getBitmap(context.contentResolver, uri)
-//            } else {
-//                val source = ImageDecoder
-//                    .createSource(context.contentResolver, uri)
-//                ImageDecoder.decodeBitmap(source)
-//            }
-//        }
-//        imagePath = saveImageInFolder(bitmap, context, word.value).path
-//    }
-
 
     val translation = rememberSaveable {
         mutableStateOf("")
@@ -430,6 +419,19 @@ private fun Content(
         if (wordEdit.antonyms.orEmpty().isNotEmpty()){
             antonyms.value = wordEdit.antonyms.toString().drop(1).dropLast(1)
         }
+
+        if (wordEdit.images.orEmpty().isNotEmpty()){
+            imagePath = wordEdit.images.orEmpty().first()
+        }
+
+        if (wordEdit.voice.orEmpty().isNotEmpty()){
+            audioFile = File(wordEdit.voice!!)
+        }
+
+        if (wordEdit.sound.orEmpty().isNotEmpty()){
+            soundUrl.value = wordEdit.sound.orEmpty()
+        }
+
         applyEdit.value = true
     }
 
@@ -453,9 +455,9 @@ private fun Content(
             plural = plural.value,
             voice = audioFile?.path,
             sound = soundUrl.value,
-            images = listOf(imagePath.orEmpty()),
-            synonyms = synonym.value.split(","),
-            antonyms = antonyms.value.split(",")
+            images = if (imagePath.orEmpty().isEmpty()) null else listOf(imagePath.orEmpty()),
+            synonyms = if (synonym.value.isNotEmpty()) synonym.value.split(",") else null,
+            antonyms = if (antonyms.value.isNotEmpty()) antonyms.value.split(",") else null
         )
     )
 
@@ -1088,17 +1090,21 @@ private fun Content(
                         audioFile = null
                     }) {
                     if (!allowRecording) {
+                        //ask permission
                         micPermissionResultLauncher.launch(
                             Manifest.permission.RECORD_AUDIO
                         )
                     } else if (micStart) {
+                        //stop recording
                         recorder!!.stop()
                         micStart = false
                     } else if (audioFile != null) {
+                        // play voice
                         if (player.isPlaying()) return@ButtonIcon
                         player.playFile(audioFile ?: return@ButtonIcon)
                         timber("voice-file-path ${audioFile?.absoluteFile}")
                     } else {
+                        //recording
                         File(context.getExternalFilesDir("backups/sounds"), "${audioFileName}.WAV").also {
                             recorder!!.start(it)
                             audioFile = it
@@ -1136,7 +1142,7 @@ private fun Content(
                 icon = R.drawable.image_rectangle,
                 imagePath = imagePath
             ) {
-                if (bitmap == null) {
+                if (imagePath == null) {
                     mediaPicker
                         .launch(
                             PickVisualMediaRequest(
@@ -1144,6 +1150,7 @@ private fun Content(
                             )
                         )
                 } else {
+                    File(imagePath!!).delete()
                     imagePath = null
                     imageUri = null
                     bitmap = null

@@ -210,5 +210,10 @@
     <string name="success">Success</string>
     <string name="failed">Failed</string>
     <string name="backup_now">Backup now</string>
+    <string name="synonyms_format">synonym(s): %s</string>
+    <string name="antonyms_format">"antonym(s): %s"</string>
+    <string name="backupped_success_on_document"><![CDATA[Your backup is saved in the \'Documents > %s\' directory.]]></string>
+    <string name="backup_on_google_drive">Backup on Google Drive</string>
+    <string name="didnt_add_word">You haven\'t added any words.</string>
 
 </resources>

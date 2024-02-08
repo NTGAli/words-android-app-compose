@@ -1,7 +1,9 @@
 package com.ntg.vocabs.screens.setting
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -21,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
-import com.google.gson.Gson
 import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
@@ -32,13 +33,19 @@ import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.screens.login.logoutBottomSheet
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.*
+import com.ntg.vocabs.util.Constant.Backup.BACKUP_FILE_NAME_IN_DIRECTORY
+import com.ntg.vocabs.util.Constant.Backup.BACKUP_FOLDER_NAME
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.io.InputStreamReader
-import java.text.SimpleDateFormat
+import java.nio.channels.FileChannel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,7 +89,7 @@ private fun Content(
     val store = UserStore(LocalContext.current)
     val openBackupDialog = remember { mutableStateOf(false) }
     val openRestoreDialog = remember { mutableStateOf(false) }
-    val setBackupOnServer = remember {
+    val backupOnDirecotry = remember {
         mutableStateOf(false)
     }
     val restoreFromServer = remember {
@@ -116,9 +123,11 @@ private fun Content(
     userEmail.value =
         loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
 
-    val theme = store.getAccessToken.collectAsState(initial = stringResource(id = R.string.system_default))
-
-
+    val theme =
+        store.getAccessToken.collectAsState(initial = stringResource(id = R.string.system_default))
+    val backupOption =
+        loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupOption.orEmpty()
+    val userWords = wordViewModel.getSizeOfWords().observeAsState(initial = -1).value
 
 
     if (openBottomSheet.value) {
@@ -135,17 +144,6 @@ private fun Content(
 
     }
 
-    BackupOnServer(setBackupOnServer, userEmail.value, wordViewModel) {
-
-        setBackupOnServer.value = false
-        if (it) {
-            ctx.toast(ctx.getString(R.string.backup_done))
-            visibleSuccess.value = true
-
-        } else {
-            ctx.toast(ctx.getString(R.string.backup_failed))
-        }
-    }
 
     if (restoreFromServer.value) {
         RestoreUserDataFromServer(wordViewModel = wordViewModel, email = userEmail.value) {
@@ -201,7 +199,11 @@ private fun Content(
         item {
             SettingTitle(title = stringResource(id = R.string.backup_and_restore))
             ItemOption(text = stringResource(id = R.string.backup)) {
-                openBackupDialog.value = true
+                if (userWords > 0){
+                    openBackupDialog.value = true
+                }else{
+                    ctx.toast(R.string.didnt_add_word)
+                }
             }
 
             ItemOption(text = stringResource(id = R.string.restore), divider = false) {
@@ -232,7 +234,10 @@ private fun Content(
 
 
             SettingTitle(title = stringResource(id = R.string.theme))
-            ItemOption(text = theme.value.ifEmpty { stringResource(id = R.string.system_default) }, divider = false) {
+            ItemOption(
+                text = theme.value.ifEmpty { stringResource(id = R.string.system_default) },
+                divider = false
+            ) {
                 navController.navigate(Screens.ThemeScreen.name)
             }
 
@@ -268,22 +273,34 @@ private fun Content(
             text = {
                 Column {
                     ItemOption(
-                        text = stringResource(id = R.string.backup_on_server),
-                        loading = setBackupOnServer,
+                        text = stringResource(id = R.string.backup_on_storage),
                         endIcon = painterResource(id = R.drawable.ok),
-                        visibleWithAnimation = visibleSuccess,
-                        subText = if (isUserLogged.value) null else stringResource(id = R.string.loggin_required)
+                        visibleWithAnimation = backupOnDirecotry,
                     ) {
-                        if (isUserLogged.value) {
-                            setBackupOnServer.value = true
-                        } else {
-                            openBackupDialog.value = false
-                            navController.navigate(Screens.InsertEmailScreen.name + "?skip=${false}")
+                        if (!backupOnDirecotry.value) {
+                            val backupFile =
+                                File(ctx.getExternalFilesDir("")?.path.toString() + "/${Constant.Backup.BACKUP_ZIP_NAME}")
+                            saveFileToCustomDirectory(backupFile)
+                            backupOnDirecotry.value = true
+                            ctx.toast(
+                                ctx.getString(
+                                    R.string.backupped_success_on_document,
+                                    BACKUP_FOLDER_NAME
+                                )
+                            )
                         }
 
                     }
-                    ItemOption(text = stringResource(id = R.string.share), divider = false) {
+                    ItemOption(text = stringResource(id = R.string.share)) {
                         share.value = true
+                    }
+
+                    ItemOption(text = stringResource(id = R.string.backup_on_google_drive), divider = false) {
+                        if (backupOption.isEmpty() || backupOption == "Never" || backupOption == "Only when i tap ‘backup’") {
+                            navController.navigate(Screens.AskBackupScreen.name)
+                        } else {
+                            navController.navigate(Screens.BackupScreen.name)
+                        }
                     }
                 }
             },
@@ -317,14 +334,13 @@ private fun Content(
 
                     ItemOption(
                         modifier = Modifier.padding(top = 16.dp),
-                        text = stringResource(id = R.string.restore_from_server),
-                        loading = restoreFromServer,
-                        endIcon = painterResource(id = R.drawable.ok),
-                        visibleWithAnimation = visibleSuccess,
-                        subText = if (isUserLogged.value) null else stringResource(id = R.string.loggin_required)
-
+                        text = stringResource(id = R.string.restore_from_drive),
                     ) {
-                        restoreFromServer.value = true
+                        if (backupOption.isEmpty() || backupOption == "Never" || backupOption == "Only when i tap ‘backup’") {
+                            navController.navigate(Screens.AskBackupScreen.name)
+                        } else {
+                            navController.navigate(Screens.BackupScreen.name)
+                        }
                     }
                     ItemOption(text = stringResource(id = R.string.str_import), divider = false) {
                         import.value = true
@@ -374,9 +390,11 @@ private fun BackupOnServer(
                         timber("BackupUserData :::: ERR ${it.message}")
                         resultCallback.invoke(false)
                     }
+
                     is NetworkResult.Loading -> {
                         timber("BackupUserData :::: LD")
                     }
+
                     is NetworkResult.Success -> {
                         timber("BackupUserData :::: ${it.data}")
                         resultCallback.invoke(true)
@@ -404,9 +422,11 @@ fun RestoreUserDataFromServer(
                     false
                 )
             }
+
             is NetworkResult.Loading -> {
                 timber("restoreUserBackup Loading")
             }
+
             is NetworkResult.Success -> {
                 timber("restoreUserBackup ${it.data}")
 
@@ -452,28 +472,19 @@ private fun ShareUserBackup(
     UserBackup(wordViewModel = wordViewModel) { data ->
 
         if (share.value) {
-            val json = Gson().toJson(data)
-
-            val dateOfToday = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-            val backupFile = File(ctx.getExternalFilesDir(null), "Vocabs backup-$dateOfToday.txt")
-
-            backupFile.printWriter().use { out ->
-                json.toString().forEach {
-                    out.print(it)
-                }
-            }
-
+            val backupFile =
+                File(ctx.getExternalFilesDir("")?.path.toString() + "/${Constant.Backup.BACKUP_ZIP_NAME}")
             val uri =
                 FileProvider.getUriForFile(
                     ctx,
                     BuildConfig.APPLICATION_ID + ".provider",
                     backupFile
                 )
+
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_STREAM, uri)
-                type = "text/plain" // MIME type for text files
+                type = "application/zip" // MIME type for text files
             }
             val shareIntent = Intent.createChooser(sendIntent, null)
             resultCode.invoke(null)
@@ -505,28 +516,88 @@ fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) -> Unit)
 
 
 @Composable
-fun ReadBackupFromStorage(launch: Boolean,isLaunched:() -> Unit = {}, data: (String?) -> Unit) {
-    val contentResolver = LocalContext.current.contentResolver
+fun ReadBackupFromStorage(launch: Boolean, isLaunched: () -> Unit = {}, data: (String?) -> Unit) {
+    val context = LocalContext.current
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { selectedUri ->
-                val inputStream = contentResolver.openInputStream(selectedUri)
-                val reader = BufferedReader(InputStreamReader(inputStream))
-                val content = StringBuilder()
+                val des =
+                    File(context.getExternalFilesDir(null)?.absolutePath, "zipFile").absolutePath
+                saveUriToFile(selectedUri, des, context)
+                val json: String?
+                val finalFile = File(context.getExternalFilesDir(""), "zipFile") // zip file
+                unzip(finalFile.path, context.getExternalFilesDir("")?.path.orEmpty())
 
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    content.append(line)
-                    content.append("\n")
+                val unZippedFile = File(context.getExternalFilesDir("backups"), "backup")
+                unZippedFile.inputStream()
+                json = try {
+                    val inputStream: InputStream = unZippedFile.inputStream()
+                    val size = inputStream.available()
+                    val buffer = ByteArray(size)
+                    inputStream.read(buffer)
+                    inputStream.close()
+                    String(buffer, charset("UTF-8"))
+                } catch (ex: IOException) {
+                    ex.printStackTrace()
+                    null
                 }
-                reader.close()
-                data.invoke(
-                    content.toString()
-                )
+                data.invoke(json)
             }
         }
     if (launch) {
-        launcher.launch("*/*")
+        launcher.launch("application/zip")
         isLaunched.invoke()
+    }
+}
+
+fun saveUriToFile(uri: Uri, destinationPath: String, context: Context) {
+    try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val outputStream = FileOutputStream(destinationPath)
+
+        inputStream?.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+    } catch (e: Exception) {
+        // Handle exceptions accordingly
+    }
+}
+
+@Throws(IOException::class)
+fun copyFile(sourceFile: File, destFile: File) {
+    val sourceChannel: FileChannel? = FileInputStream(sourceFile).channel
+    val destChannel: FileChannel? = FileOutputStream(destFile).channel
+
+    try {
+        sourceChannel?.transferTo(0, sourceChannel.size(), destChannel)
+    } finally {
+        sourceChannel?.close()
+        destChannel?.close()
+    }
+}
+
+fun saveFileToCustomDirectory(sourceFile: File) {
+    val subdirectoryName = BACKUP_FOLDER_NAME
+    val newFileName = "${BACKUP_FILE_NAME_IN_DIRECTORY}${getCurrentDate()}.zip"
+    val downloadDirectory =
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+    val customDirectory = File(downloadDirectory, subdirectoryName)
+
+    // Create the custom directory if it doesn't exist
+    if (!customDirectory.exists()) {
+        customDirectory.mkdirs()
+    }
+
+    val destFile = File(customDirectory, newFileName)
+
+    try {
+        copyFile(sourceFile, destFile)
+        // Optional: If you want to delete the original file after copying
+        // sourceFile.delete()
+    } catch (e: IOException) {
+        e.printStackTrace()
+        // Handle the exception as needed
     }
 }

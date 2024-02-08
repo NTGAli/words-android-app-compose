@@ -1,8 +1,6 @@
 package com.ntg.vocabs.vm
 
 import android.content.Context
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,11 +12,11 @@ import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.util.DateTime
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.gson.Gson
 import com.ntg.vocabs.R
-import com.ntg.vocabs.api.ApiService
 import com.ntg.vocabs.db.dao.DriveBackupDao
 import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.db.dao.VocabListDao
@@ -29,17 +27,23 @@ import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
+import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
+import com.ntg.vocabs.util.getCurrentDate
+import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
+import com.ntg.vocabs.util.unzip
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,7 +58,7 @@ class BackupViewModel @Inject constructor(
     private var drive: Drive? = null
     private var allBackups: LiveData<List<DriveBackup>> = MutableLiveData()
     var googleDriveState = MutableStateFlow<GoogleDriveSate?>(null)
-    private var filLists: MutableLiveData<List<String>> = MutableLiveData()
+    private var lastFileName: MutableLiveData<com.google.api.services.drive.model.File?> = MutableLiveData()
 
     fun googleInstance(context: Context) {
         GoogleSignIn.getLastSignedInAccount(context)?.let { googleAccount ->
@@ -118,24 +122,31 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun getFilesInFolder(): MutableLiveData<List<String>> {
+    fun getLastFile(): MutableLiveData<com.google.api.services.drive.model.File?> {
         viewModelScope.launch(Dispatchers.IO) {
             val folderId = getFolderId()
             if (folderId.isNullOrEmpty()) {
                 println("Folder not found.")
-                filLists.postValue(emptyList())
+                lastFileName.postValue(com.google.api.services.drive.model.File())
             }
 
             val query = "'$folderId' in parents"
             val result = drive!!.files().list().setQ(query).execute()
 
-            filLists.postValue(result.files?.map { it.name } ?: emptyList())
+
+            if (result.files.isNotEmpty()) {
+                lastFileName.postValue(result.files.first { it.name.startsWith("VocabsBackup_") && !it.trashed.orFalse() })
+            }else{
+                lastFileName.postValue(com.google.api.services.drive.model.File())
+            }
+
+
         }
-        return filLists
+        return lastFileName
 
     }
 
-    private fun getFolderId(): String? {
+    private suspend fun getFolderId(): String? {
         val query =
             "mimeType='application/vnd.google-apps.folder' and name='$VOCAB_FOLDER_NAME_DRIVE'"
         val result = drive!!.files().list().setQ(query).execute()
@@ -143,57 +154,62 @@ class BackupViewModel @Inject constructor(
         return result.files?.firstOrNull()?.id
     }
 
-    fun restoreBackup(context: Context, fileName: String, listener: (String?) -> Unit) {
+    fun restoreBackup(context: Context, file: com.google.api.services.drive.model.File, listener: (String?) -> Unit) {
+        val fileName = "LsatBackup"
         viewModelScope.launch(Dispatchers.IO) {
 
             val destinationPath =
                 File(context.getExternalFilesDir(null)?.absolutePath, fileName).absolutePath
-            val folderId = getFolderId()
-            if (folderId.isNullOrEmpty()) {
-                println("Folder not found.")
-                listener.invoke(null)
-                return@launch
+//            val folderId = getFolderId()
+//            if (folderId.isNullOrEmpty()) {
+//                println("Folder not found.")
+//                listener.invoke(null)
+//                return@launch
+//            }
+//
+//            val query = "'$folderId' in parents and name='$fileName'"
+//            val result = drive!!.files().list().setQ(query).execute()
+
+//            val file = result.files?.firstOrNull()
+            val outputStream = FileOutputStream(destinationPath)
+            drive!!.files().get(file.id).executeMediaAndDownloadTo(outputStream)
+            outputStream.close()
+            println("File '$fileName' downloaded successfully to '$destinationPath'")
+
+
+            val json: String?
+            val finalFile = File(context.getExternalFilesDir(""), fileName) // zip file
+            unzip(finalFile.path,context.getExternalFilesDir("")?.path.orEmpty())
+
+            val unZippedFile = File(context.getExternalFilesDir("backups"),"backup")
+            unZippedFile.inputStream()
+            json = try {
+                val inputStream: InputStream = unZippedFile.inputStream()
+                val size = inputStream.available()
+                val buffer = ByteArray(size)
+                inputStream.read(buffer)
+                inputStream.close()
+                String(buffer, charset("UTF-8"))
+            } catch (ex: IOException) {
+                ex.printStackTrace()
+                null
             }
-
-            val query = "'$folderId' in parents and name='$fileName'"
-            val result = drive!!.files().list().setQ(query).execute()
-
-            val file = result.files?.firstOrNull()
-            if (file != null) {
-                val outputStream = java.io.FileOutputStream(destinationPath)
-                drive!!.files().get(file.id).executeMediaAndDownloadTo(outputStream)
-                outputStream.close()
-                println("File '$fileName' downloaded successfully to '$destinationPath'")
-
-
-                val json: String?
-                val finalFile = File(context.getExternalFilesDir(""), fileName)
-
-                finalFile.inputStream()
-                json = try {
-                    val inputStream: InputStream = finalFile.inputStream()
-                    val size = inputStream.available()
-                    val buffer = ByteArray(size)
-                    inputStream.read(buffer)
-                    inputStream.close()
-                    String(buffer, charset("UTF-8"))
-                } catch (ex: IOException) {
-                    ex.printStackTrace()
-                    null
-                }
-                listener.invoke(json)
+            listener.invoke(json)
 
 //                val jsonObject = json?.let { JSONObject(it) }
 
 
-            } else {
-                listener.invoke(null)
-                println("File '$fileName' not found in the folder.")
-            }
         }
     }
 
-    fun backupDB(file: File, listener:(Boolean) -> Unit ={}){
+
+    fun backupOnDrive(context: Context, listener:(Boolean) -> Unit ={}) {
+        zipFolder(context.getExternalFilesDir("backups")?.path.toString(),context.getExternalFilesDir("")?.path.toString()+"/${Constant.Backup.BACKUP_ZIP_NAME}").also {
+            backupDB(File(context.getExternalFilesDir("")?.path.toString()+"/${Constant.Backup.BACKUP_ZIP_NAME}"), listener)
+        }
+    }
+
+    private fun backupDB(file: File, listener:(Boolean) -> Unit ={}){
         viewModelScope.launch(Dispatchers.IO) {
 
             val folderId = getFolderId()
@@ -204,7 +220,8 @@ class BackupViewModel @Inject constructor(
             val gfile = com.google.api.services.drive.model.File()
 
             val fileContent = FileContent("application/octet-stream", file)
-            gfile.name = "VocabsBackup_${System.currentTimeMillis()}"
+            val backupName = "VocabsBackup_${getCurrentDate()}"
+            gfile.name = backupName
 
             val parents: MutableList<String> = ArrayList(1)
             parents.add(folderId) // Here you need to get the parent folder id
@@ -214,6 +231,7 @@ class BackupViewModel @Inject constructor(
             try {
                 drive!!.Files().create(gfile, fileContent).setFields("id").execute()
                 driveBackupDao.insert(DriveBackup(0,true,System.currentTimeMillis().toString(),""))
+                removeOldBackups(backupName, folderId)
                 listener.invoke(true)
             }catch (e: Exception){
                 driveBackupDao.insert(DriveBackup(0,false,System.currentTimeMillis().toString(),""))
@@ -221,6 +239,68 @@ class BackupViewModel @Inject constructor(
             }
         }
     }
+
+    private fun removeOldBackups(lastBackupName: String, folderId: String?){
+        viewModelScope.launch(Dispatchers.IO) {
+//            val folderId = getFolderId()
+
+            if (folderId != null) {
+                // List files in the folder
+                val result = drive!!.files().list()
+                    .setQ("'$folderId' in parents")
+                    .execute()
+
+                val files = result.files
+
+                for (file in files) {
+                    val fileName = file.name
+
+                    if (fileName != lastBackupName && fileName.startsWith("VocabsBackup_")) {
+                        // Delete the file
+                        drive!!.files().delete(file.id).execute()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun zipFolder(sourceFolder: String, zipFilePath: String) {
+        val sourceFile = File(sourceFolder)
+        val zipFile = File(zipFilePath)
+
+        ZipOutputStream(FileOutputStream(zipFile)).use { zipOutputStream ->
+            zip(sourceFile, sourceFile.name, zipOutputStream)
+        }
+
+        println("Folder $sourceFolder zipped successfully to $zipFilePath")
+    }
+
+    private fun zip(fileToZip: File, fileName: String, zipOutputStream: ZipOutputStream) {
+        if (fileToZip.isHidden) {
+            return
+        }
+
+        if (fileToZip.isDirectory) {
+            val children = fileToZip.listFiles() ?: return
+            for (childFile in children) {
+                zip(childFile, "$fileName/${childFile.name}", zipOutputStream)
+            }
+        } else {
+            FileInputStream(fileToZip).use { fileInputStream ->
+                val entry = ZipEntry(fileName)
+                zipOutputStream.putNextEntry(entry)
+
+                val buffer = ByteArray(1024)
+                var len: Int
+                while (fileInputStream.read(buffer).also { len = it } > 0) {
+                    zipOutputStream.write(buffer, 0, len)
+                }
+
+                zipOutputStream.closeEntry()
+            }
+        }
+    }
+
 
     fun importToDB(content: String, callBack: (Boolean) -> Unit) {
         try {

@@ -33,10 +33,8 @@ import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.isInternetAvailable
-import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
-import com.ntg.vocabs.vm.MessageBoxViewModel
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,13 +79,12 @@ fun BackupScreen(
                 ) {
                     try {
                         if (isInternetAvailable(context)) {
+
                             backupViewModel.googleInstance(context)
-                            loading = true
-                            val dataFolder = File(context.getExternalFilesDir(""), "backups")
-                            val file = File(dataFolder, Constant.BACKUPS)
-                            backupViewModel.backupDB(file) {
+                            backupViewModel.backupOnDrive(context){
                                 loading = false
                             }
+                            loading = true
                         }
                         else{
                             context.toast(R.string.no_internet)

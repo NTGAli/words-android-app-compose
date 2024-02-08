@@ -1,5 +1,6 @@
 package com.ntg.vocabs.screens
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,10 +30,17 @@ import com.ntg.vocabs.components.SelectableImage
 import com.ntg.vocabs.model.components.*
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toPronunciation
 import com.ntg.vocabs.vm.WordViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +80,6 @@ private fun SetupAppbar(
     wordViewModel: WordViewModel,
     word: Word?
 ) {
-
     var openBottomSheet by remember {
         mutableStateOf(false)
     }
@@ -166,6 +174,12 @@ private fun SetupAppbar(
 
 @Composable
 private fun Content(paddingValues: PaddingValues, word: Word?,navController: NavController) {
+
+    val ctx = LocalContext.current
+    val player by lazy {
+        AndroidAudioPlayer(ctx)
+    }
+    val scope = rememberCoroutineScope()
 
     var visible by remember {
         mutableStateOf(false)
@@ -263,7 +277,10 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
                 ) {
                     if (word.voice.orEmpty().isNotEmpty()){
                         IconButton(onClick = {
-                            
+                            val audioFile = File(word.voice!!)
+                            if (player.isPlaying()) return@IconButton
+                            player.playFile(audioFile ?: return@IconButton)
+//                            timber("voice-file-path ${audioFile?.absoluteFile}")
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.icons8_speaker_1),
@@ -276,6 +293,20 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
 
                     if (word.sound.orEmpty().isNotEmpty()){
                         IconButton(onClick = {
+                            val mp = MediaPlayer()
+                            try {
+                                scope.launch {
+                                    mp.setDataSource(word.sound)
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        mp.prepare()
+                                    }
+                                    mp.setOnPreparedListener {
+                                        mp.start()
+                                    }
+                                }
+                            } catch (e: IOException) {
+                                timber("ERR ::: ${e.printStackTrace()}")
+                            }
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.icons8_speaker_1),
@@ -307,15 +338,29 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
             }
         }
 
-        item {
-            Text(
-                modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
-                text = word?.definition.orEmpty(),
-                style = fontRegular14(
-                    MaterialTheme.colorScheme.onBackground
+        if (word?.definition.orEmpty().isNotEmpty()){
+            item {
+                Text(
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                    text = word?.definition.orEmpty(),
+                    style = fontRegular14(
+                        MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            )
 
+            }
+        }
+
+        if (word?.synonyms.orEmpty().isNotEmpty()){
+            item {
+                Text(modifier = Modifier.padding(top = 8.dp), text = stringResource(id = R.string.synonyms_format, word?.synonyms.toString().drop(1).dropLast(1)), style = fontRegular14(MaterialTheme.colorScheme.onBackground))
+            }
+        }
+
+        if (word?.antonyms.orEmpty().isNotEmpty()){
+            item {
+                Text(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),text = stringResource(id = R.string.antonyms_format, word?.antonyms.toString().drop(1).dropLast(1)),style = fontRegular14(MaterialTheme.colorScheme.onBackground))
+            }
         }
 
         items(word?.example.orEmpty()) {

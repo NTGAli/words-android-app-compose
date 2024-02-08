@@ -217,7 +217,7 @@ class MainActivity : ComponentActivity() {
                             if (repeatTime != -1L) {
                                 val backupWorkRequest = PeriodicWorkRequestBuilder<BackupWorker>(
                                     repeatInterval = repeatTime,
-                                    repeatIntervalTimeUnit = TimeUnit.MINUTES
+                                    repeatIntervalTimeUnit = TimeUnit.DAYS
                                 ).build()
 
                                 WorkManager.getInstance(this@MainActivity)
@@ -237,7 +237,9 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(key1 = backupUserData?.words, block = {
                 timber("UserBackupUserBackupUserBackupUserBackup ::::")
-                saveBackupFile(backupUserData)
+                if (backupUserData?.words.orEmpty().isNotEmpty()){
+                    saveBackupFile(backupUserData)
+                }
 
             })
 
