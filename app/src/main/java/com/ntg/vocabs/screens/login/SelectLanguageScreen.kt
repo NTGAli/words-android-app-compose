@@ -132,15 +132,15 @@ private fun Content(
                         isSelected = false
                     )
                 )
-                if (language == "German"){
-                    navController.navigate(Screens.DownloadScreen.name + "?enableBottomBar=${true}",
-                        NavOptions.Builder()
-                            .setPopUpTo(Screens.SelectLanguageScreen.name, inclusive = true)
-                            .build()
-                    )
-                }else{
-                    navController.popBackStack()
-                }
+//                if (language == "German"){
+//                    navController.navigate(Screens.DownloadScreen.name + "?enableBottomBar=${true}",
+//                        NavOptions.Builder()
+//                            .setPopUpTo(Screens.SelectLanguageScreen.name, inclusive = true)
+//                            .build()
+//                    )
+//                }else{
+//                }
+                navController.popBackStack()
 
             }
         }else if (result is Failure){

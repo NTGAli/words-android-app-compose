@@ -16,6 +16,12 @@ object Constant {
     const val BACKUPS = "backup"
     const val MAX_SIZE_IMAGE = 200
 
+    object Backup{
+        const val BACKUP_ZIP_NAME = "vocabsBackup.zip"
+        const val BACKUP_FOLDER_NAME = "Vocabs Backup"
+        const val BACKUP_FILE_NAME_IN_DIRECTORY = "vocabsBackup_"
+    }
+
 
 //    object PreferenceKeys {
 //        val USER_NAME = preferencesKey<String>("user_name")

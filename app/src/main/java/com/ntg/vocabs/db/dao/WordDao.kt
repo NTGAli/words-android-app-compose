@@ -38,11 +38,17 @@ interface WordDao {
     @Query("SELECT * FROM Word WHERE word =:word AND type = :type")
     fun findWord(word: String, type: String): LiveData<List<Word>>
 
-    @Query("SELECT EXISTS(SELECT * FROM Word WHERE word =:word AND type =:type)")
-    suspend fun isExist(word: String, type: String): Boolean
+    @Query("SELECT * FROM Word WHERE word =:word AND type = :type AND definition = :def")
+    fun findWordWithDef(word: String, type: String, def: String): LiveData<List<Word>?>
+
+    @Query("SELECT EXISTS(SELECT * FROM Word WHERE word =:word AND type =:type AND definition =:def)")
+    suspend fun isExist(word: String, type: String, def: String): Boolean
 
     @Query("SELECT COUNT(*) FROM Word WHERE (dateCreated BETWEEN :start AND :end) AND listId=:listId")
     fun recentWordsCount(start: Long, end: Long, listId: Int): LiveData<Int>
+
+    @Query("SELECT COUNT(*) FROM Word")
+    fun size(): LiveData<Int>
 
     @Query("SELECT * FROM Word WHERE (word LIKE '%' || :query || '%') AND listId=:listId")
     suspend fun search(query: String,listId: Int): List<Word>

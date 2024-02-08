@@ -106,90 +106,103 @@ private fun ShowVerbsFormTable(verbForm: VerbGermanForm?, paddingValues: Padding
         .padding(horizontal = 24.dp),
         content = {
 
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .padding(top = 16.dp),
-                    text = stringResource(id = R.string.simple_present),
-                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                Table(
-                    modifier = Modifier.padding(top = 16.dp),
-                    pronouns = verbForm?.simplePresent
-                )
-            }
-
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .padding(horizontal = 8.dp),
-                    text = stringResource(id = R.string.present_perfect),
-                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                Table(
-                    modifier = Modifier.padding(top = 16.dp),
-                    pronouns = verbForm?.presentPerfect
-                )
+            if (verbForm?.simplePresent.orEmpty().isNotEmpty()){
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .padding(top = 16.dp),
+                        text = stringResource(id = R.string.simple_present),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Table(
+                        modifier = Modifier.padding(top = 16.dp),
+                        pronouns = verbForm?.simplePresent
+                    )
+                }
             }
 
 
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .padding(horizontal = 8.dp),
-                    text = stringResource(id = R.string.simple_past),
-                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                Table(
-                    modifier = Modifier.padding(top = 16.dp),
-                    pronouns = verbForm?.simplePast
-                )
-            }
-
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .padding(horizontal = 8.dp),
-                    text = stringResource(id = R.string.past_perfect),
-                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                Table(
-                    modifier = Modifier.padding(top = 16.dp),
-                    pronouns = verbForm?.pastPerfect
-                )
+            if (verbForm?.presentPerfect.orEmpty().isNotEmpty()){
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .padding(horizontal = 8.dp),
+                        text = stringResource(id = R.string.present_perfect),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Table(
+                        modifier = Modifier.padding(top = 16.dp),
+                        pronouns = verbForm?.presentPerfect
+                    )
+                }
             }
 
 
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .padding(horizontal = 8.dp),
-                    text = stringResource(id = R.string.future_one),
-                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                Table(
-                    modifier = Modifier.padding(top = 16.dp),
-                    pronouns = verbForm?.future_one
-                )
+            if (verbForm?.simplePast.orEmpty().isNotEmpty()){
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .padding(horizontal = 8.dp),
+                        text = stringResource(id = R.string.simple_past),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Table(
+                        modifier = Modifier.padding(top = 16.dp),
+                        pronouns = verbForm?.simplePast
+                    )
+                }
             }
 
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .padding(horizontal = 8.dp),
-                    text = stringResource(id = R.string.future_two),
-                    style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                Table(
-                    modifier = Modifier.padding(top = 16.dp),
-                    pronouns = verbForm?.future_two
-                )
+            if (verbForm?.pastPerfect.orEmpty().isNotEmpty()){
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .padding(horizontal = 8.dp),
+                        text = stringResource(id = R.string.past_perfect),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Table(
+                        modifier = Modifier.padding(top = 16.dp),
+                        pronouns = verbForm?.pastPerfect
+                    )
+                }
+            }
+
+
+            if (verbForm?.future_one.orEmpty().isNotEmpty()){
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .padding(horizontal = 8.dp),
+                        text = stringResource(id = R.string.future_one),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Table(
+                        modifier = Modifier.padding(top = 16.dp),
+                        pronouns = verbForm?.future_one
+                    )
+                }
+            }
+
+            if (verbForm?.future_two.orEmpty().isNotEmpty()){
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .padding(horizontal = 8.dp),
+                        text = stringResource(id = R.string.future_two),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Table(
+                        modifier = Modifier.padding(top = 16.dp),
+                        pronouns = verbForm?.future_two
+                    )
+                }
             }
 
             item {

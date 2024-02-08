@@ -138,7 +138,7 @@ private fun Content(
     }
 
     var lastBackup by remember {
-        mutableStateOf("")
+        mutableStateOf<com.google.api.services.drive.model.File?>(null)
     }
 
     var loading by remember {
@@ -166,15 +166,24 @@ private fun Content(
             loading = false
             navController.navigate(Screens.VocabularyListScreen.name)
         } else if (it == GoogleDriveSate.AlreadyExist) {
-            backupViewModel.getFilesInFolder().observeAsState().value.let {
+            backupViewModel.getLastFile().observeAsState(initial = null).value.let {
+                timber("NNNNNNNNNNNN 0")
                 if (it != null) {
-                    if (it.isNotEmpty() && it.any { it.startsWith("VocabsBackup_") }) {
+                    timber("NNNNNNNNNNNN 1")
+                    if (it.isNotEmpty()){
+                        timber("NNNNNNNNNNNN 2")
                         loading = false
-                        lastBackup = getMaxBackup(it)
-                    } else {
-                        loading = false
+                        lastBackup = it
+                    }else{
                         navController.navigate(Screens.VocabularyListScreen.name)
                     }
+//                    if (it.isNotEmpty() && it.any { it.startsWith("VocabsBackup_") }) {
+//                        loading = false
+//                        lastBackup = getMaxBackup(it)
+//                    } else {
+//                        loading = false
+//                        navController.navigate(Screens.VocabularyListScreen.name)
+//                    }
 
                 }
             }
@@ -236,14 +245,14 @@ private fun Content(
             TypewriterText(
                 modifier = Modifier.padding(bottom = 8.dp),
                 singleText = true,
-                texts = if (lastBackup.isEmpty()) listOf(stringResource(id = R.string.back_up_drive_msg)) else listOf(
+                texts = if (lastBackup.orEmpty().isEmpty()) listOf(stringResource(id = R.string.back_up_drive_msg)) else listOf(
                     stringResource(id = R.string.alreadY_backup)
                 ),
                 speedType = 5
             )
         }
 
-        if (lastBackup.isEmpty()) {
+        if (lastBackup.orEmpty().isEmpty()) {
             items(backupOptions) {
                 SampleItem(
                     title = it,
@@ -256,8 +265,9 @@ private fun Content(
             }
         } else {
             item {
+                timber("Tiiiiiimmmmmmeeeeeeee ${lastBackup?.createdTime?.toStringRfc3339()} -- ${lastBackup?.createdTime?.value?.unixTimeToReadable()}")
                 Text(
-                    text = getText(context, lastBackup),
+                    text = "lastBackup?.createdTime.toStringRfc3339()",
                     style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
@@ -269,7 +279,7 @@ private fun Content(
                 modifier = Modifier
                     .padding(top = 32.dp)
                     .fillMaxWidth(),
-                text = if (lastBackup.isEmpty()) {
+                text = if (lastBackup.orEmpty().isEmpty()) {
                     if (backupSelected == "Never") stringResource(id = R.string.skip) else stringResource(
                         id = R.string.access
                     )
@@ -278,7 +288,7 @@ private fun Content(
                 size = ButtonSize.LG,
                 loading = loading
             ) {
-                if (lastBackup.isEmpty()) {
+                if (lastBackup.orEmpty().isEmpty() && lastBackup == null) {
                     when (backupSelected) {
 
                         "" -> {
@@ -299,7 +309,8 @@ private fun Content(
                     }
                 } else {
                     loading = true
-                    backupViewModel.restoreBackup(context, lastBackup) {
+//                    lastBackup
+                    backupViewModel.restoreBackup(context, lastBackup!!) {
                         if (it != null) {
                             backupViewModel.importToDB(it) {
                                 loading = false
@@ -319,14 +330,14 @@ private fun Content(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
-                text = if (lastBackup.isEmpty()) stringResource(id = R.string.have_backup) else stringResource(
+                text = if (lastBackup.orEmpty().isEmpty()) stringResource(id = R.string.have_backup) else stringResource(
                     id = R.string.skip_backup
                 ),
                 type = ButtonType.Primary,
                 style = ButtonStyle.TextOnly,
                 size = ButtonSize.LG,
             ) {
-                if (lastBackup.isEmpty()){
+                if (lastBackup.orEmpty().isEmpty()){
                     openBottomSheet = true
                 }else{
                     navController.navigate(Screens.VocabularyListScreen.name)

@@ -67,9 +67,11 @@ class WordViewModel @Inject constructor(
     private var isExist = false
     private var myWords: LiveData<List<Word>> = MutableLiveData()
     private var allWords: LiveData<List<Word>> = MutableLiveData()
+    private var sizeOfAllWords: LiveData<Int> = MutableLiveData()
     private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
     private var words: LiveData<List<Word>> = MutableLiveData()
+    private var wordsWirhDef: LiveData<List<Word>?> = MutableLiveData()
     private var dataList: LiveData<VocabItemList> = MutableLiveData()
     private var germanNounSize: LiveData<Int> = MutableLiveData()
     private var germanVerbsSize: LiveData<Int> = MutableLiveData()
@@ -238,6 +240,13 @@ class WordViewModel @Inject constructor(
         return allWords
     }
 
+    fun getSizeOfWords(): LiveData<Int> {
+        viewModelScope.launch {
+            sizeOfAllWords = wordDao.size()
+        }
+        return sizeOfAllWords
+    }
+
     fun recentWords(daysAgo: Int, listId: Int) =
         wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis(), listId)
 
@@ -250,6 +259,7 @@ class WordViewModel @Inject constructor(
     }
 
     fun findWord(w: String, type: String): LiveData<List<Word>>? {
+        if (w.isEmpty() || type.isEmpty()) return null
         if (w.isEmpty()) return null
         viewModelScope.launch {
             words = wordDao.findWord(w, type)
@@ -257,9 +267,18 @@ class WordViewModel @Inject constructor(
         return words
     }
 
-    fun checkIfExist(word: String, type: String): Boolean {
+    fun findWordWithDef(w: String, type: String, def: String): LiveData<List<Word>?>? {
+        if (w.isEmpty() || type.isEmpty()) return null
+        if (w.isEmpty()) return null
         viewModelScope.launch {
-            isExist = wordDao.isExist(word, type)
+            wordsWirhDef = wordDao.findWordWithDef(w, type, def)
+        }
+        return wordsWirhDef
+    }
+
+    fun checkIfExist(word: String, type: String, def: String): Boolean {
+        viewModelScope.launch {
+            isExist = wordDao.isExist(word, type, def)
         }
         timber("checkIfExist", isExist.toString())
         return isExist
