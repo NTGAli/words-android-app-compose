@@ -8,6 +8,8 @@ import androidx.datastore.dataStore
 import androidx.datastore.preferences.protobuf.InvalidProtocolBufferException
 import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ntg.vocabs.UserDataAndSetting
@@ -19,6 +21,7 @@ import com.ntg.vocabs.api.LoggingInterceptor
 import com.ntg.vocabs.api.auth.AuthRepository
 import com.ntg.vocabs.api.auth.AuthRepositoryImpl
 import com.ntg.vocabs.db.AppDB
+import com.ntg.vocabs.db.dao.DriveBackupDao
 import com.ntg.vocabs.db.dao.EnglishVerbDao
 import com.ntg.vocabs.db.dao.EnglishWordDao
 import com.ntg.vocabs.db.dao.GermanNounsDao
@@ -67,7 +70,6 @@ class AppModule {
             DATABASE_NAME
         )
             .fallbackToDestructiveMigration()
-//            .addTypeConverter(ExamplesConverters::class.java)
             .build()
 
     }
@@ -75,6 +77,11 @@ class AppModule {
     @Provides
     @Singleton
     fun providesFirebaseAuth()  = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun providesFireStore()  = Firebase.firestore
+
 
     @Provides
     @Singleton
@@ -87,6 +94,12 @@ class AppModule {
     @Singleton
     fun provideWordDao(appDB: AppDB): WordDao {
         return appDB.wordDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDriveDao(appDB: AppDB): DriveBackupDao {
+        return appDB.getDriveBackup()
     }
 
     @Provides

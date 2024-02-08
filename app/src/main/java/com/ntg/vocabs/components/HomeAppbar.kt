@@ -27,12 +27,11 @@ import java.util.*
 @Composable
 fun HomeAppbar(
     title: String?,
-    enableDownloadData: Boolean = false,
     searchCallback: () -> Unit,
     notificationCallback: () -> Unit,
     profileCallback: () -> Unit,
     voiceSearch: (String) -> Unit,
-    downloadOnClick: () -> Unit = {},
+    backupOnClick: () -> Unit = {},
 ) {
 
 
@@ -41,7 +40,7 @@ fun HomeAppbar(
     }
 
     OpenVoiceSearch(openVoiceSearch) {
-        if (it != null){
+        if (it != null) {
             voiceSearch.invoke(it)
         }
         openVoiceSearch = false
@@ -79,26 +78,24 @@ fun HomeAppbar(
         },
         actions = {
 
-            if (enableDownloadData){
 
-                IconButton(
-                    modifier = Modifier.padding(start = 4.dp),
-                    onClick = {
-                        downloadOnClick.invoke()
-                    }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.folder_download),
-                        contentDescription = "Download State"
-                    )
-                }
+            IconButton(
+                modifier = Modifier.padding(start = 4.dp),
+                onClick = {
+                    backupOnClick.invoke()
+                }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.drive),
+                    contentDescription = "Download State"
+                )
             }
 
 
             IconButton(
-                modifier = Modifier.padding(start = 2.dp,end = 4.dp),
+                modifier = Modifier.padding(start = 2.dp, end = 4.dp),
                 onClick = {
-                notificationCallback.invoke()
-            }) {
+                    notificationCallback.invoke()
+                }) {
                 Icon(
                     painter = painterResource(id = R.drawable.bell_02),
                     contentDescription = "notifications"
@@ -137,7 +134,7 @@ fun HomeAppbar(
 }
 
 @Composable
-fun OpenVoiceSearch(launch:Boolean,voiceSearch: (String?) -> Unit) {
+fun OpenVoiceSearch(launch: Boolean, voiceSearch: (String?) -> Unit) {
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK && it.data != null) {
@@ -158,7 +155,7 @@ fun OpenVoiceSearch(launch:Boolean,voiceSearch: (String?) -> Unit) {
     )
     intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to text")
 
-    if (launch){
+    if (launch) {
         try {
             launcher.launch(intent)
         } catch (e: Exception) {

@@ -31,7 +31,7 @@ import com.ntg.vocabs.util.orZero
 fun Appbar(
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    title: String = "Appbar",
+    title: String = "",
     buttonText: String? = null,
     titleColor: Color = Secondary900,
     color: Color = Color.White,

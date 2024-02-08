@@ -490,7 +490,7 @@ private fun ShareUserBackup(
 }
 
 @Composable
-private fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) -> Unit) {
+fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) -> Unit) {
     val owner = LocalLifecycleOwner.current
     wordViewModel.getAllWords().observe(owner) { words ->
         wordViewModel.getAllValidTimeSpent().observe(owner) { times ->
@@ -505,12 +505,11 @@ private fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) 
 
 
 @Composable
-fun ReadBackupFromStorage(launch: Boolean, data: (String?) -> Unit) {
+fun ReadBackupFromStorage(launch: Boolean,isLaunched:() -> Unit = {}, data: (String?) -> Unit) {
     val contentResolver = LocalContext.current.contentResolver
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { selectedUri ->
-                timber("USER_BACKUP_STORAGE ::: 55555")
                 val inputStream = contentResolver.openInputStream(selectedUri)
                 val reader = BufferedReader(InputStreamReader(inputStream))
                 val content = StringBuilder()
@@ -527,6 +526,7 @@ fun ReadBackupFromStorage(launch: Boolean, data: (String?) -> Unit) {
             }
         }
     if (launch) {
-        launcher.launch("text/plain")
+        launcher.launch("*/*")
+        isLaunched.invoke()
     }
 }

@@ -32,7 +32,10 @@ enum class Screens {
     DownloadScreen,
     VerbsFormScreen,
     AllWordScreen,
-    OnlineWordDetailsScreen
+    OnlineWordDetailsScreen,
+    AskBackupScreen,
+    BackupScreen,
+    FullScreenImageScreen,
 
 
 }

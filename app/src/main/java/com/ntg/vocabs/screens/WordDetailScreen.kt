@@ -24,11 +24,13 @@ import androidx.navigation.NavController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.CustomButton
+import com.ntg.vocabs.components.SelectableImage
 import com.ntg.vocabs.model.components.*
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.toPronunciation
 import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +56,7 @@ fun WordDetailScreen(navController: NavController, wordViewModel: WordViewModel,
             )
         },
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, word?.value)
+            Content(paddingValues = innerPadding, word?.value,navController)
         }
     )
 }
@@ -131,7 +133,7 @@ private fun SetupAppbar(
                     )
                 )
 
-                Row(modifier = Modifier.padding(top = 16.dp)) {
+                Row(modifier = Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                     CustomButton(
                         modifier = Modifier
                             .weight(1f)
@@ -163,7 +165,7 @@ private fun SetupAppbar(
 }
 
 @Composable
-private fun Content(paddingValues: PaddingValues, word: Word?) {
+private fun Content(paddingValues: PaddingValues, word: Word?,navController: NavController) {
 
     var visible by remember {
         mutableStateOf(false)
@@ -259,21 +261,48 @@ private fun Content(paddingValues: PaddingValues, word: Word?) {
                     modifier = Modifier.padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = {
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icons8_speaker_1),
-                            contentDescription = "SPEAKER",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    if (word.voice.orEmpty().isNotEmpty()){
+                        IconButton(onClick = {
+                            
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icons8_speaker_1),
+                                contentDescription = "SPEAKER",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+
+                    if (word.sound.orEmpty().isNotEmpty()){
+                        IconButton(onClick = {
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icons8_speaker_1),
+                                contentDescription = "SPEAKER",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     Text(
                         modifier = Modifier.padding(start = 16.dp),
-                        text = word.pronunciation,
+                        text = word.pronunciation.toPronunciation(),
                         style = fontMedium14(
                             MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
+                }
+            }
+        }
+
+        item{
+            if (word?.images.orEmpty().isNotEmpty()){
+                Row {
+                    SelectableImage(modifier = Modifier.weight(1f),path = word?.images!!.first(), onClick = {
+                        navController.navigate(Screens.FullScreenImageScreen.name+"?path=$it")
+                    })
+
+                    Spacer(modifier = Modifier.weight(4f))
                 }
             }
         }

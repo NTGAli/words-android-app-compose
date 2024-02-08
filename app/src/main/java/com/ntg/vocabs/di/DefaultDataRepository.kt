@@ -22,6 +22,12 @@ class DefaultDataRepository @Inject constructor(
         }
     }
 
+    override suspend fun setBackupOption(option: String) {
+        recentLocationsDataStore.updateData { data ->
+            data.toBuilder().setBackupOption(option).build()
+        }
+    }
+
     override suspend fun setUsername(name: String) {
         recentLocationsDataStore.updateData { data ->
             data.toBuilder().setName(name).build()

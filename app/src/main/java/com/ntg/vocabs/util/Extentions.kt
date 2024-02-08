@@ -3,8 +3,11 @@ package com.ntg.vocabs.util
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Typeface
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -28,25 +31,35 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
 import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.model.Failure
 import com.ntg.vocabs.model.Result
 import com.ntg.vocabs.model.Success
+import com.ntg.vocabs.util.Constant.MAX_SIZE_IMAGE
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import retrofit2.Response
 import timber.log.Timber
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import kotlin.time.Duration.Companion.seconds
+
 
 fun Float?.orZero() = this ?: 0f
 fun Long?.orDefault() = this ?: 0L
@@ -67,7 +80,11 @@ fun Context.toast(msg: String) {
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
 
-fun Context.openInBrowser(url: String){
+fun Context.toast(resId: Int) {
+    Toast.makeText(this, this.getString(resId), Toast.LENGTH_SHORT).show()
+}
+
+fun Context.openInBrowser(url: String) {
     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     this.startActivity(browserIntent)
 }
@@ -115,7 +132,8 @@ fun validEmail(email: String): Result<String> =
         Success(email)
     else Failure("invalid email!")
 
-fun String.validEmail() = this.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"))
+fun String.validEmail() =
+    this.trim().matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"))
 
 fun notFalse(
     value: Boolean?,
@@ -181,7 +199,18 @@ fun getSubdirectory(audio: String): String {
     return when {
         audio.startsWith("bix") -> "bix"
         audio.startsWith("gg") -> "gg"
-        audio.firstOrNull()?.isDigit() == true || audio.firstOrNull()?.isWhitespace() == true || audio.firstOrNull() in setOf('_', '@', '#', '$', '%', '^', '&', '*') -> "number"
+        audio.firstOrNull()?.isDigit() == true || audio.firstOrNull()
+            ?.isWhitespace() == true || audio.firstOrNull() in setOf(
+            '_',
+            '@',
+            '#',
+            '$',
+            '%',
+            '^',
+            '&',
+            '*'
+        ) -> "number"
+
         else -> audio.firstOrNull()?.toString() ?: "default"
     }
 }
@@ -234,10 +263,10 @@ fun unzip(zipFilePath: String, destinationDir: String): Boolean {
 
 fun String.toPronunciation(): String {
     var finalPronouns = this
-    if (!this.startsWith('/')){
+    if (!this.startsWith('/')) {
         finalPronouns = "/$finalPronouns"
     }
-    if (!this.endsWith('/')){
+    if (!this.endsWith('/')) {
         finalPronouns = "$finalPronouns/"
     }
 
@@ -326,6 +355,12 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
 
         }
     }
+}
+
+fun generateCode(): Int {
+    val random = kotlin.random.Random
+    val fiveDigitNumber = random.nextInt(10000, 100000)
+    return fiveDigitNumber
 }
 
 fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Int {
@@ -456,8 +491,8 @@ fun Long.formatTime(): String {
 }
 
 fun Long.unixTimeToReadable(): String {
-    val date = Date(this * 1000L)
-    val dateFormat = SimpleDateFormat("dd MMM yyyy")
+    val dateFormat = SimpleDateFormat("EEE MMM dd yyyy")
+    val date = Date(this)
     return dateFormat.format(date)
 }
 
@@ -465,7 +500,6 @@ fun Long.unixTimeToReadable(): String {
 fun Long.unixTimeToClock(): String {
     val date = Date(this)
     val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-//    format.timeZone = TimeZone.getTimeZone("UTC")
     return format.format(date)
 }
 
@@ -475,6 +509,35 @@ fun Long.secondsToClock(): String {
     val remainingSeconds = this % 60
 
     return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
+}
+
+
+fun isInternetAvailable(context: Context): Boolean {
+    val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    val networkCapabilities = connectivityManager.activeNetwork ?: return false
+    val activeNetwork =
+        connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+
+    return when {
+        activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+        activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+        activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+        else -> false
+    }
+}
+
+
+fun Bitmap.compressBitmap(fos: FileOutputStream): Bitmap? {
+    var quality = 100
+    timber("SIIIIIIIIIIIIIIIIII ${this.rowBytes * this.height}")
+    while (this.rowBytes * this.height > MAX_SIZE_IMAGE * 1024 && quality > 0){
+        this.compress(Bitmap.CompressFormat.JPEG, quality, fos)
+        quality -= 5
+    }
+
+    return this
 }
 
 
@@ -488,10 +551,25 @@ fun Spanned.toAnnotatedString(): AnnotatedString = buildAnnotatedString {
             is StyleSpan -> when (span.style) {
                 Typeface.BOLD -> addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, end)
                 Typeface.ITALIC -> addStyle(SpanStyle(fontStyle = FontStyle.Italic), start, end)
-                Typeface.BOLD_ITALIC -> addStyle(SpanStyle(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic), start, end)
+                Typeface.BOLD_ITALIC -> addStyle(
+                    SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Italic
+                    ), start, end
+                )
             }
-            is UnderlineSpan -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline), start, end)
-            is ForegroundColorSpan -> addStyle(SpanStyle(color = Color(span.foregroundColor)), start, end)
+
+            is UnderlineSpan -> addStyle(
+                SpanStyle(textDecoration = TextDecoration.Underline),
+                start,
+                end
+            )
+
+            is ForegroundColorSpan -> addStyle(
+                SpanStyle(color = Color(span.foregroundColor)),
+                start,
+                end
+            )
         }
     }
 }

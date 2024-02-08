@@ -16,10 +16,9 @@ import androidx.navigation.NavOptions
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.CustomButton
-import com.ntg.vocabs.components.DownloadItem
+import com.ntg.vocabs.components.BackupReportItem
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.nav.Screens
-import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.*
 import com.ntg.vocabs.vm.DataViewModel
 import com.ntg.vocabs.vm.WordViewModel
@@ -88,77 +87,77 @@ private fun Content(
         .padding(paddingValues)
         .padding(horizontal = 16.dp), content = {
         
-        item{
-            DownloadItem(
-                modifier = Modifier.padding(top = 8.dp),
-                id = 1,
-                title = "German",
-                subTitle = "articles & plurals",
-                tertiaryText = "6MB",
-                isSelected = isGermanNounsDownloaded.orZero() != 0,
-                isSEnable = isGermanNounsDownloaded.orZero() == 0 || downloadProgress != 0,
-                downloadProgress = downloadProgress,
-                onClick = {
-                    downloadProgress = 1
-
-                    val downloadManagerUtil = DownloadManagerUtil(context)
-                    downloadManagerUtil.downloadFile("https://myvocabulary.ntgt.ir/Data/output.json","GAP.json")
-                    downloadManagerUtil.setDownloadListener(object : DownloadManagerUtil.DownloadListener {
-                        override fun onDownloadProgress(progress: Int) {
-//                            downloadProgress.
-                            downloadProgress = progress
-                        }
-
-                        override fun onDownloadCompleted() {
-                            downloadProgress = 100
-                            timber("Download successful")
-                        }
-
-                        override fun onDownloadFailed() {
-                            downloadProgress= -1
-                            timber("download failure")
-                        }
-                    })
-                },
-            )
-        }
-
-
-
-        item{
-            DownloadItem(
-                modifier = Modifier.padding(top = 8.dp),
-                id = 1,
-                title = "German",
-                subTitle = "verbs data",
-                tertiaryText = "1MB",
-                isSelected = isGermanVerbsDownloaded.orZero() != 0,
-                isSEnable = isGermanVerbsDownloaded.orZero() == 0 || downloadProgressSecondData != 0,
-                downloadProgress = downloadProgressSecondData,
-                onClick = {
-                    downloadProgressSecondData = 1
-
-                    val downloadManagerUtil = DownloadManagerUtil(context)
-                    downloadManagerUtil.downloadFile("https://myvocabulary.ntgt.ir/Data/combined_data.zip","verb.zip")
-                    downloadManagerUtil.setDownloadListener(object : DownloadManagerUtil.DownloadListener {
-                        override fun onDownloadProgress(progress: Int) {
-//                            downloadProgress.
-                            downloadProgressSecondData = progress
-                        }
-
-                        override fun onDownloadCompleted() {
-                            downloadProgressSecondData = 100
-                            timber("Download successful")
-                        }
-
-                        override fun onDownloadFailed() {
-                            downloadProgressSecondData= -1
-                            timber("download failure")
-                        }
-                    })
-                },
-            )
-        }
+//        item{
+//            BackupReportItem(
+//                modifier = Modifier.padding(top = 8.dp),
+//                id = 1,
+//                title = "German",
+//                subTitle = "articles & plurals",
+//                tertiaryText = "6MB",
+//                isSelected = isGermanNounsDownloaded.orZero() != 0,
+//                isSEnable = isGermanNounsDownloaded.orZero() == 0 || downloadProgress != 0,
+//                downloadProgress = downloadProgress,
+//                onClick = {
+//                    downloadProgress = 1
+//
+//                    val downloadManagerUtil = DownloadManagerUtil(context)
+//                    downloadManagerUtil.downloadFile("https://myvocabulary.ntgt.ir/Data/output.json","GAP.json")
+//                    downloadManagerUtil.setDownloadListener(object : DownloadManagerUtil.DownloadListener {
+//                        override fun onDownloadProgress(progress: Int) {
+////                            downloadProgress.
+//                            downloadProgress = progress
+//                        }
+//
+//                        override fun onDownloadCompleted() {
+//                            downloadProgress = 100
+//                            timber("Download successful")
+//                        }
+//
+//                        override fun onDownloadFailed() {
+//                            downloadProgress= -1
+//                            timber("download failure")
+//                        }
+//                    })
+//                },
+//            )
+//        }
+//
+//
+//
+//        item{
+//            BackupReportItem(
+//                modifier = Modifier.padding(top = 8.dp),
+//                id = 1,
+//                title = "German",
+//                subTitle = "verbs data",
+//                tertiaryText = "1MB",
+//                isSelected = isGermanVerbsDownloaded.orZero() != 0,
+//                isSEnable = isGermanVerbsDownloaded.orZero() == 0 || downloadProgressSecondData != 0,
+//                downloadProgress = downloadProgressSecondData,
+//                onClick = {
+//                    downloadProgressSecondData = 1
+//
+//                    val downloadManagerUtil = DownloadManagerUtil(context)
+//                    downloadManagerUtil.downloadFile("https://myvocabulary.ntgt.ir/Data/combined_data.zip","verb.zip")
+//                    downloadManagerUtil.setDownloadListener(object : DownloadManagerUtil.DownloadListener {
+//                        override fun onDownloadProgress(progress: Int) {
+////                            downloadProgress.
+//                            downloadProgressSecondData = progress
+//                        }
+//
+//                        override fun onDownloadCompleted() {
+//                            downloadProgressSecondData = 100
+//                            timber("Download successful")
+//                        }
+//
+//                        override fun onDownloadFailed() {
+//                            downloadProgressSecondData= -1
+//                            timber("download failure")
+//                        }
+//                    })
+//                },
+//            )
+//        }
     })
 }
 

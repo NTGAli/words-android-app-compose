@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.auth.actionCodeSettings
 import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.EditText
@@ -39,21 +40,31 @@ fun LoginWithPasswordScreen(
     isNew: Boolean,
     loginViewModel: LoginViewModel
 ) {
-    timber("jahdjkawhdjkhwakjhdwjkhd $isNew -- $email")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, navController = navController, email, loginViewModel, isNew)
-//            Content(paddingValues = innerPadding, navController = navController)
+            Content(
+                paddingValues = innerPadding,
+                navController = navController,
+                email,
+                loginViewModel,
+                isNew
+            )
         }
     )
 }
 
 
 @Composable
-private fun Content(paddingValues: PaddingValues, navController: NavController, email: String, loginViewModel: LoginViewModel, isNew: Boolean) {
-    val owner = LocalLifecycleOwner.current
+private fun Content(
+    paddingValues: PaddingValues,
+    navController: NavController,
+    email: String,
+    loginViewModel: LoginViewModel,
+    isNew: Boolean
+) {
+
     val ctx = LocalContext.current
 
     val password = remember {
@@ -64,65 +75,102 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         mutableStateOf(false)
     }
 
+    var codeLoading by remember {
+        mutableStateOf(false)
+    }
+
     val setError = remember {
         mutableStateOf(false)
     }
 
 
-
-    if (loading.value){
-        loginViewModel.verifyUserByPassword(
-            email = email,
-            password = password.value
-        ).observe(owner){
-
-            when(it){
-                is NetworkResult.Error -> {
-                    timber("VERIFY_BY_PASS ::: ERR ${it.message}")
-                }
-                is NetworkResult.Loading -> {
-                    timber("VERIFY_BY_PASS ::: LOADING")
-                }
-                is NetworkResult.Success -> {
-                    timber("VERIFY_BY_PASS ::: ${it.data}")
-                    loading.value = false
-                    when(it.data?.message){
-
-                        TypeOfMessagePass.INVALID_TOKEN.name -> {
-                            ctx.toast(ctx.getString(R.string.download_from_google_play))
-                        }
-
-                        TypeOfMessagePass.INCORRECT_PASSWORD.name -> {
-                            ctx.toast(ctx.getString(R.string.incorrect_pass))
-                            setError.value = true
-                        }
-
-                        TypeOfMessagePass.NEW_USER_NO_NAME.name,
-                        TypeOfMessagePass.USER_VERIFIED_NO_NAME.name-> {
-                            loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.NameScreen.name+"?email=${email}"){
-                                popUpTo(0)
-                            }
-                        }
-
-                        TypeOfMessagePass.USER_NOT_EXIST.name -> {
-                            navController.navigate(Screens.InsertEmailScreen.name)
-                        }
-
-                        TypeOfMessagePass.USER_SET_NAME.name -> {
-                            loginViewModel.setUsername(it.data.data?.name.orEmpty())
-                            loginViewModel.setUserEmail(email)
-                            navController.navigate(Screens.VocabularyListScreen.name) {
-                                popUpTo(0)
-                            }
-                        }
-
+    LaunchedEffect(key1 = loading.value, block = {
+        if (!loading.value) return@LaunchedEffect
+        if (isNew) {
+            loginViewModel.signUpEmailPassword(
+                email,
+                password.value,
+                onSuccess = {
+                    navController.navigate(Screens.AskBackupScreen.name) {
+                        popUpTo(0)
                     }
-                }
-            }
 
+                },
+                onFailure = {
+                    ctx.toast(R.string.sth_wrong)
+                })
+        } else {
+            loginViewModel.signIn(email, password.value,
+                onSuccess = {
+                    loading.value = false
+                    navController.navigate(Screens.AskBackupScreen.name) {
+                        popUpTo(0)
+                    }
+                },
+                onFailure = {
+                    loading.value = false
+                    if (it.message.orEmpty().contains("password is invalid"))
+                        ctx.toast(R.string.password_not_match)
+                    else
+                        ctx.toast(R.string.sth_wrong)
+                })
         }
-    }
+
+    })
+
+//    LaunchedEffect(key1 = loading.value, block = {
+//        loginViewModel.verifyUserByPassword(
+//            email = email,
+//            password = password.value
+//        ).observe(owner){
+//
+//            when(it){
+//                is NetworkResult.Error -> {
+//                    timber("VERIFY_BY_PASS ::: ERR ${it.message}")
+//                }
+//                is NetworkResult.Loading -> {
+//                    timber("VERIFY_BY_PASS ::: LOADING")
+//                }
+//                is NetworkResult.Success -> {
+//                    timber("VERIFY_BY_PASS ::: ${it.data}")
+//                    loading.value = false
+//                    when(it.data?.message){
+//
+//                        TypeOfMessagePass.INVALID_TOKEN.name -> {
+//                            ctx.toast(ctx.getString(R.string.download_from_google_play))
+//                        }
+//
+//                        TypeOfMessagePass.INCORRECT_PASSWORD.name -> {
+//                            ctx.toast(ctx.getString(R.string.incorrect_pass))
+//                            setError.value = true
+//                        }
+//
+//                        TypeOfMessagePass.NEW_USER_NO_NAME.name,
+//                        TypeOfMessagePass.USER_VERIFIED_NO_NAME.name-> {
+//                            loginViewModel.setUserEmail(email)
+//                            navController.navigate(Screens.NameScreen.name+"?email=${email}"){
+//                                popUpTo(0)
+//                            }
+//                        }
+//
+//                        TypeOfMessagePass.USER_NOT_EXIST.name -> {
+//                            navController.navigate(Screens.InsertEmailScreen.name)
+//                        }
+//
+//                        TypeOfMessagePass.USER_SET_NAME.name -> {
+//                            loginViewModel.setUsername(it.data.data?.name.orEmpty())
+//                            loginViewModel.setUserEmail(email)
+//                            navController.navigate(Screens.VocabularyListScreen.name) {
+//                                popUpTo(0)
+//                            }
+//                        }
+//
+//                    }
+//                }
+//            }
+//
+//        }
+//    })
 
 
     Column(
@@ -154,11 +202,14 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
                 .padding(top = 64.dp)
                 .fillMaxWidth(), label = stringResource(id = R.string.password), text = password,
             setError = setError,
-            supportText = if (isNew) stringResource(id = R.string.enter_your_password, email) else stringResource(
+            supportText = if (isNew) stringResource(
+                id = R.string.enter_your_password,
+                email
+            ) else stringResource(
                 id = R.string.enter_password_choice, email
             ),
             isPassword = true
-        ){
+        ) {
             setError.value = false
         }
 
@@ -174,26 +225,66 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
         ) {
 
             val result = notEmptyOrNull(password.value, ctx.getString(R.string.pass_requiered))
-                .then { enoughDigitsForPass(password.value, ctx.getString(R.string.a_digit_requier)) }
-                .then { longEnoughForPass(password.value, ctx.getString(R.string.not_enough_pass_lenght)) }
+                .then {
+                    enoughDigitsForPass(
+                        password.value,
+                        ctx.getString(R.string.a_digit_requier)
+                    )
+                }
+                .then {
+                    longEnoughForPass(
+                        password.value,
+                        ctx.getString(R.string.not_enough_pass_lenght)
+                    )
+                }
 
 
-            if (result is Failure){
+            if (result is Failure) {
                 ctx.toast(result.errorMessage)
                 setError.value = true
-            }else {
+            } else {
                 setError.value = false
                 loading.value = true
             }
 
         }
-        
-        
-        CustomButton(modifier = Modifier
-            .padding(top = 8.dp)
-            .fillMaxWidth(), text = stringResource(id = R.string.use_verification_code), type = ButtonType.Primary, style = ButtonStyle.TextOnly, size = ButtonSize.LG){
-//            navController.navigate(Screens.CodeScreen.name)
-            navController.popBackStack()
+
+
+        CustomButton(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
+            text = stringResource(id = R.string.use_verification_code),
+            type = ButtonType.Primary,
+            style = ButtonStyle.TextOnly,
+            size = ButtonSize.LG,
+            loading = codeLoading
+        ) {
+//            navController.popBackStack()
+            codeLoading = true
+
+            loginViewModel.loginWithCode(email,
+                onSuccess = {
+
+                    loginViewModel.sendLoginCode(email,
+                        onSuccess = {
+                            ctx.toast(R.string.add_new_word)
+                        },
+                        onFailure = {
+                            codeLoading = false
+                            ctx.toast(R.string.sth_wrong)
+                        })
+
+
+                }, onFailure = {
+                    codeLoading = false
+                    ctx.toast(R.string.sth_wrong)
+
+                })
+
+
+
+
         }
 
 
