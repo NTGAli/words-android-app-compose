@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import com.ntg.vocabs.ui.theme.*
+import com.ntg.vocabs.util.WindowInfo
+import com.ntg.vocabs.util.rememberWindowInfo
 
 @Composable
 fun ShapeTileWidget(
@@ -32,6 +34,7 @@ fun ShapeTileWidget(
 
     ) {
 
+    val windowInfo = rememberWindowInfo()
 
     Box(
         modifier = modifier
@@ -79,12 +82,8 @@ fun ShapeTileWidget(
             contentAlignment = Alignment.Center) {
 
                 Column {
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = fontBold12(md_theme_light_onPrimaryContainer))
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(md_theme_light_onPrimaryContainer))
-
-//                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = fontBold12(MaterialTheme.colorScheme.onPrimaryContainer))
-//                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = fontRegular12(MaterialTheme.colorScheme.onPrimaryContainer))
-
+                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) fontBold12(md_theme_light_onPrimaryContainer) else fontBold14(md_theme_light_onPrimaryContainer))
+                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) fontRegular12(md_theme_light_onPrimaryContainer) else fontRegular14(md_theme_light_onPrimaryContainer))
                 }
 
 

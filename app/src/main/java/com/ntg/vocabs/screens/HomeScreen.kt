@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -54,7 +55,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
-import com.google.gson.Gson
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.HomeAppbar
@@ -64,7 +64,6 @@ import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.nav.Screens
-import com.ntg.vocabs.screens.setting.UserBackup
 import com.ntg.vocabs.ui.theme.Primary100
 import com.ntg.vocabs.ui.theme.Primary200
 import com.ntg.vocabs.ui.theme.Primary500
@@ -75,6 +74,7 @@ import com.ntg.vocabs.ui.theme.Success500
 import com.ntg.vocabs.ui.theme.Warning100
 import com.ntg.vocabs.ui.theme.Warning500
 import com.ntg.vocabs.ui.theme.fontBold14
+import com.ntg.vocabs.util.WindowInfo
 import com.ntg.vocabs.util.formatTime
 import com.ntg.vocabs.util.getIconStateRevision
 import com.ntg.vocabs.util.getSecBetweenTimestamps
@@ -82,12 +82,12 @@ import com.ntg.vocabs.util.getStateRevision
 import com.ntg.vocabs.util.orDefault
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
+import com.ntg.vocabs.util.rememberWindowInfo
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,8 +99,6 @@ fun HomeScreen(
     backupViewModel: BackupViewModel
 ) {
 
-//    val ctx = LocalContext.current
-//    val language = wordViewModel.currentList().observeAsState().value?.language
     val backupOption =
         loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupOption.orEmpty()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -160,24 +158,29 @@ private fun Content(
     navController: NavController
 ) {
 
-    val ctx = LocalContext.current
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val wordsList: State<List<Word>?> =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState()
 
+
     val recentWordCount = remember {
-        mutableIntStateOf(0)
-    }
-    val needToReviewCount = remember {
         mutableIntStateOf(0)
     }
     val numberOfAllWords = remember {
         mutableIntStateOf(0)
     }
-    var totalTime = 0L
-
     recentWordCount.value =
         wordViewModel.recentWords(7, listId.orZero()).observeAsState().value.orZero()
+    numberOfAllWords.value =
+        wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
+    val needToReviewCount = remember {
+        mutableIntStateOf(0)
+    }
+    val windowInfo = rememberWindowInfo()
+
+    var totalTime = 0L
+
+
     needToReviewCount.value =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value?.filter {
             getStateRevision(
@@ -185,8 +188,7 @@ private fun Content(
                 it.lastRevisionTime
             ) == 2 || getStateRevision(it.revisionCount, it.lastRevisionTime) == 3
         }.orEmpty().size
-    numberOfAllWords.value =
-        wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
+
     val timeSpent = wordViewModel.getAllValidTimeSpentBaseListId(listId.orZero())
         .observeAsState().value.orEmpty()
         .toMutableStateList()
@@ -200,7 +202,6 @@ private fun Content(
 
         }
     }
-
 
 
     LazyColumn(
@@ -218,80 +219,24 @@ private fun Content(
                 )
             )
 
-            Row {
-                ShapeTileWidget(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 4.dp)
-                        .padding(end = 4.dp),
-                    title = "${recentWordCount.value} words",
-                    subTitle = "last 7d ago",
-                    painter = painterResource(
-                        id = R.drawable.ic_new
-                    ),
-                    imageTint = Success500,
-                    imageBackground = Success100
-                ) {
-                    navController.navigate(Screens.RecentWordScreen.name)
-
-                }
-
-                ShapeTileWidget(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 4.dp)
-                        .padding(start = 4.dp),
-                    title = "${numberOfAllWords.value} words",
-                    subTitle = "total",
-                    painter = painterResource(
-                        id = R.drawable.icons8_w_1
-                    ),
-                    imageTint = Primary500,
-                    imageBackground = Primary100
-                ) {
-                    navController.navigate(Screens.AllWordsScreen.name)
-                }
+            if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) {
+                PhoneScreenMode(
+                    needToReviewCount,
+                    totalTime,
+                    recentWordCount,
+                    numberOfAllWords,
+                    navController
+                )
+            }else{
+                TabletMode(
+                    needToReviewCount,
+                    totalTime,
+                    recentWordCount,
+                    numberOfAllWords,
+                    navController
+                )
             }
 
-            Row {
-                ShapeTileWidget(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 4.dp)
-                        .padding(end = 4.dp),
-                    title = "${needToReviewCount.value} words",
-                    subTitle = "need to review",
-                    painter = painterResource(
-                        id = R.drawable.icons8_eye_1
-                    ),
-                    imageTint = Warning500,
-                    imageBackground = Warning100
-                ) {
-                    if (needToReviewCount.value != 0) {
-                        navController.navigate(Screens.RevisionScreen.name)
-                    } else if (numberOfAllWords.value != 0) {
-                        ctx.toast(ctx.getString(R.string.no_word_for_review))
-                    } else {
-                        ctx.toast(ctx.getString(R.string.need_to_word_review))
-                    }
-                }
-
-                ShapeTileWidget(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 4.dp)
-                        .padding(start = 4.dp),
-                    title = totalTime.formatTime(),
-                    subTitle = stringResource(R.string.time_spent),
-                    painter = painterResource(
-                        id = R.drawable.icons8_clock_1_1
-                    ),
-                    imageTint = Secondary500,
-                    imageBackground = Secondary100
-                ) {
-                    navController.navigate(Screens.TimeScreen.name)
-                }
-            }
 
             Text(
                 modifier = Modifier.padding(top = 28.dp),
@@ -443,4 +388,173 @@ fun getGoogleSignInClient(context: Context): GoogleSignInClient {
     return GoogleSignIn.getClient(context, signInOptions)
 }
 
+@Composable
+fun PhoneScreenMode(
+    needToReviewCount: MutableIntState,
+    totalTime: Long,
+    recentWordCount: MutableIntState,
+    numberOfAllWords: MutableIntState,
+    navController: NavController
+) {
+    val ctx = LocalContext.current
+    Column {
+        Row {
+            ShapeTileWidget(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp)
+                    .padding(end = 4.dp),
+                title = "${recentWordCount.value} words",
+                subTitle = "last 7d ago",
+                painter = painterResource(
+                    id = R.drawable.ic_new
+                ),
+                imageTint = Success500,
+                imageBackground = Success100
+            ) {
+                navController.navigate(Screens.RecentWordScreen.name)
 
+            }
+
+            ShapeTileWidget(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp)
+                    .padding(start = 4.dp),
+                title = "${numberOfAllWords.value} words",
+                subTitle = "total",
+                painter = painterResource(
+                    id = R.drawable.icons8_w_1
+                ),
+                imageTint = Primary500,
+                imageBackground = Primary100
+            ) {
+                navController.navigate(Screens.AllWordsScreen.name)
+            }
+        }
+
+        Row {
+            ShapeTileWidget(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp)
+                    .padding(end = 4.dp),
+                title = "${needToReviewCount.value} words",
+                subTitle = "need to review",
+                painter = painterResource(
+                    id = R.drawable.icons8_eye_1
+                ),
+                imageTint = Warning500,
+                imageBackground = Warning100
+            ) {
+                if (needToReviewCount.value != 0) {
+                    navController.navigate(Screens.RevisionScreen.name)
+                } else if (numberOfAllWords.value != 0) {
+                    ctx.toast(ctx.getString(R.string.no_word_for_review))
+                } else {
+                    ctx.toast(ctx.getString(R.string.need_to_word_review))
+                }
+            }
+
+            ShapeTileWidget(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp)
+                    .padding(start = 4.dp),
+                title = totalTime.formatTime(),
+                subTitle = stringResource(R.string.time_spent),
+                painter = painterResource(
+                    id = R.drawable.icons8_clock_1_1
+                ),
+                imageTint = Secondary500,
+                imageBackground = Secondary100
+            ) {
+                navController.navigate(Screens.TimeScreen.name)
+            }
+        }
+    }
+}
+
+
+@Composable
+fun TabletMode(
+    needToReviewCount: MutableIntState,
+    totalTime: Long,
+    recentWordCount: MutableIntState,
+    numberOfAllWords: MutableIntState,
+    navController: NavController
+) {
+    val ctx = LocalContext.current
+    Row {
+        ShapeTileWidget(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 4.dp)
+                .padding(end = 4.dp),
+            title = "${recentWordCount.value} words",
+            subTitle = "last 7d ago",
+            painter = painterResource(
+                id = R.drawable.ic_new
+            ),
+            imageTint = Success500,
+            imageBackground = Success100
+        ) {
+            navController.navigate(Screens.RecentWordScreen.name)
+
+        }
+
+        ShapeTileWidget(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 4.dp)
+                .padding(horizontal = 4.dp),
+            title = "${numberOfAllWords.value} words",
+            subTitle = "total",
+            painter = painterResource(
+                id = R.drawable.icons8_w_1
+            ),
+            imageTint = Primary500,
+            imageBackground = Primary100
+        ) {
+            navController.navigate(Screens.AllWordsScreen.name)
+        }
+
+        ShapeTileWidget(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 4.dp)
+                .padding(horizontal = 4.dp),
+            title = "${needToReviewCount.value} words",
+            subTitle = "need to review",
+            painter = painterResource(
+                id = R.drawable.icons8_eye_1
+            ),
+            imageTint = Warning500,
+            imageBackground = Warning100
+        ) {
+            if (needToReviewCount.value != 0) {
+                navController.navigate(Screens.RevisionScreen.name)
+            } else if (numberOfAllWords.value != 0) {
+                ctx.toast(ctx.getString(R.string.no_word_for_review))
+            } else {
+                ctx.toast(ctx.getString(R.string.need_to_word_review))
+            }
+        }
+
+        ShapeTileWidget(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 4.dp)
+                .padding(start = 4.dp),
+            title = totalTime.formatTime(),
+            subTitle = stringResource(R.string.time_spent),
+            painter = painterResource(
+                id = R.drawable.icons8_clock_1_1
+            ),
+            imageTint = Secondary500,
+            imageBackground = Secondary100
+        ) {
+            navController.navigate(Screens.TimeScreen.name)
+        }
+    }
+}
