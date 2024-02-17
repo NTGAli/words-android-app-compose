@@ -69,13 +69,7 @@ private fun Content(
 ) {
     val list = listOf(
         "English",
-        "French",
-        "Spanish",
-        "German",
-        "Italian",
-        "Japanese",
-        "Chinese",
-        "Arabic"
+        "German"
     )
 
     val ctx = LocalContext.current
