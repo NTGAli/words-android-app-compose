@@ -1,9 +1,16 @@
 package com.ntg.vocabs.vm
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.cachedIn
 import com.google.gson.Gson
 import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.UserDataAndSetting
@@ -102,6 +109,7 @@ class WordViewModel @Inject constructor(
     private var processingEnVerbs = false
     private var processingNouns = false
     private var processingArticles = false
+    var scrollPos: Int = 0
 
 
     fun searchOnWords(query: String, listId: Int) {
@@ -312,11 +320,14 @@ class WordViewModel @Inject constructor(
         return englishVerbsSize
     }
 
-    fun englishWords(query: String): LiveData<List<EnglishWords>> {
-        viewModelScope.launch {
-            englishWords = englishWordDao.search(query)
-        }
-        return englishWords
+    fun englishWords(query: String): Flow<PagingData<EnglishWords>> {
+        return Pager(
+            config = PagingConfig(pageSize = 100),
+            pagingSourceFactory = {
+                englishWordDao.search(query)
+            }
+        ).flow
+            .cachedIn(viewModelScope)
     }
 
     fun getDataWord(word: String): MutableLiveData<NetworkResult<List<WordDataItem>>> {
@@ -608,7 +619,6 @@ class WordViewModel @Inject constructor(
             bufferedReader.close()
 
             val jsonArray = JSONArray(jsonStringBuilder.toString())
-//            viewModelScope.launch(Dispatchers.IO) {
             insertEnglishVerbs(jsonArray)
 //            }
         } catch (e: Exception) {

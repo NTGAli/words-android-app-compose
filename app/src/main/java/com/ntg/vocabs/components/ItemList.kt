@@ -49,12 +49,12 @@ fun ItemList(
             title = stringResource(id = R.string.open_list)
         ),
         PopupItem(
-            id = 0,
+            id = 1,
             icon = painterResource(id = R.drawable.edit_16_1_5),
             title = stringResource(id = R.string.edit)
         ),
         PopupItem(
-            id = 1,
+            id = 2,
             icon = painterResource(id = R.drawable.trash_16_1_5),
             title = stringResource(id = R.string.delete)
         )
@@ -117,7 +117,7 @@ fun ItemList(
                 1 -> {
                     editCallback.invoke(id)
                 }
-                else -> {
+                2 -> {
                     deleteCallback.invoke(id)
                 }
             }

@@ -2,6 +2,7 @@ package com.ntg.vocabs.screens
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.BottomSheetScaffold
@@ -26,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -33,7 +38,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,11 +89,16 @@ import com.ntg.vocabs.util.getStateRevision
 import com.ntg.vocabs.util.orDefault
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
+import com.ntg.vocabs.util.rememberForeverLazyListState
 import com.ntg.vocabs.util.rememberWindowInfo
+import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -151,6 +163,7 @@ fun HomeScreen(
 }
 
 
+@OptIn(FlowPreview::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -160,7 +173,7 @@ private fun Content(
 
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val wordsList: State<List<Word>?> =
-        wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState()
+        wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState(initial = null)
 
 
     val recentWordCount = remember {
@@ -203,74 +216,91 @@ private fun Content(
         }
     }
 
+    val lazyListState = rememberLazyListState(
+        initialFirstVisibleItemIndex = wordViewModel.scrollPos
+    )
 
-    LazyColumn(
-        modifier = Modifier
-            .padding(paddingValues)
-            .padding(horizontal = 16.dp)
-    ) {
+    LaunchedEffect(lazyListState) {
+        snapshotFlow {
+            lazyListState.firstVisibleItemIndex
+        }
+            .debounce(500L)
+            .collectLatest { index ->
+                if (index != 0){
+                    wordViewModel.scrollPos = index
+                }
+            }
+    }
 
-        item {
-            Text(
-                modifier = Modifier.padding(top = 24.dp, bottom = 12.dp),
-                text = stringResource(R.string.workout_report),
-                style = fontBold14(
-                    MaterialTheme.colorScheme.onBackground
-                )
-            )
+    if (wordsList.value != null){
+        LazyColumn(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+            state = lazyListState
+        ) {
 
-            if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) {
-                PhoneScreenMode(
-                    needToReviewCount,
-                    totalTime,
-                    recentWordCount,
-                    numberOfAllWords,
-                    navController
+            item {
+                Text(
+                    modifier = Modifier.padding(top = 24.dp, bottom = 12.dp),
+                    text = stringResource(R.string.workout_report),
+                    style = fontBold14(
+                        MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            }else{
-                TabletMode(
-                    needToReviewCount,
-                    totalTime,
-                    recentWordCount,
-                    numberOfAllWords,
-                    navController
+
+                if (windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) {
+                    PhoneScreenMode(
+                        needToReviewCount,
+                        totalTime,
+                        recentWordCount,
+                        numberOfAllWords,
+                        navController
+                    )
+                } else {
+                    TabletMode(
+                        needToReviewCount,
+                        totalTime,
+                        recentWordCount,
+                        numberOfAllWords,
+                        navController
+                    )
+                }
+
+
+                Text(
+                    modifier = Modifier.padding(top = 28.dp),
+                    text = stringResource(R.string.words),
+                    style = fontBold14(MaterialTheme.colorScheme.onBackground)
                 )
+
             }
 
 
-            Text(
-                modifier = Modifier.padding(top = 28.dp),
-                text = stringResource(R.string.words),
-                style = fontBold14(MaterialTheme.colorScheme.onBackground)
-            )
+            items(wordsList.value.orEmpty()) { word ->
 
-        }
+                val painter = getIconStateRevision(word.revisionCount, word.lastRevisionTime)
 
-
-        items(wordsList.value.orEmpty()) { word ->
-
-            val painter = getIconStateRevision(word.revisionCount, word.lastRevisionTime)
-
-            SampleItem(
-                title = word.word.toString(),
-                id = word.id,
-                painter = painter,
-                isBookmarked = word.bookmarked.orFalse()
-            ) { _, id, _ ->
-                navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
+                SampleItem(
+                    title = word.word.toString(),
+                    id = word.id,
+                    painter = painter,
+                    isBookmarked = word.bookmarked.orFalse()
+                ) { _, id, _ ->
+                    navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
+                }
             }
-        }
 
-        item {
-            if (wordsList.value.orEmpty().isNotEmpty()) {
-                Spacer(modifier = Modifier.padding(vertical = 64.dp))
+            item {
+                if (wordsList.value.orEmpty().isNotEmpty()) {
+                    Spacer(modifier = Modifier.padding(vertical = 64.dp))
+                }
             }
-        }
 
-        item {
-            if (wordsList.value != null && wordsList.value?.size == 0) {
+            item {
+                if (wordsList.value != null && wordsList.value?.size == 0) {
 
-                LottieExample()
+                    LottieExample()
 
 //                TypewriterText(
 //                    modifier = Modifier
@@ -280,19 +310,21 @@ private fun Content(
 //                    enableVibrate = false,
 //                    style = fontMedium24(MaterialTheme.colorScheme.outline)
 //                )
-                CustomButton(
-                    modifier = Modifier
+                    CustomButton(
+                        modifier = Modifier
 //                        .offset(y = -(24).dp)
-                        .fillMaxWidth(),
-                    text = "add first word for this list",
-                    style = ButtonStyle.TextOnly,
-                    type = ButtonType.Primary
-                ) {
-                    navController.navigate(Screens.AddEditScreen.name)
+                            .fillMaxWidth(),
+                        text = "add first word for this list",
+                        style = ButtonStyle.TextOnly,
+                        type = ButtonType.Primary
+                    ) {
+                        navController.navigate(Screens.AddEditScreen.name)
+                    }
                 }
-            }
 
+            }
         }
+
     }
 
 }

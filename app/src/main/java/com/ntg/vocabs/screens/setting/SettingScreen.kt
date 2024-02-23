@@ -505,6 +505,7 @@ fun UserBackup(wordViewModel: WordViewModel, callBack: (BackupUserData) -> Unit)
     val owner = LocalLifecycleOwner.current
     wordViewModel.getAllWords().observe(owner) { words ->
         wordViewModel.getAllValidTimeSpent().observe(owner) { times ->
+            timber("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ***********:::: ${times.size}")
             wordViewModel.getAllVocabList().observe(owner) { vocabList ->
                 callBack.invoke(
                     BackupUserData(words = words, totalTimeSpent = times, vocabList = vocabList)

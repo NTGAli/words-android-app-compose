@@ -24,7 +24,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:name=".MyApp"
-        android:hardwareAccelerated="false"
+        android:hardwareAccelerated="true"
         android:largeHeap="true"
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
@@ -89,6 +89,12 @@
             android:foregroundServiceType="dataSync"
             android:enabled="true"
             android:stopWithTask="false" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove">
+        </provider>
     </application>
 
 </manifest>

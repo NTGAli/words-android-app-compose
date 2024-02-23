@@ -528,8 +528,12 @@ private fun Content(
                         try {
                             scope.launch {
                                 mp.setDataSource(soundUrl)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    mp.prepare()
+                                try {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        mp.prepare()
+                                    }
+                                }catch (e: Exception){
+                                    e.printStackTrace()
                                 }
                                 mp.setOnPreparedListener {
                                     mp.start()

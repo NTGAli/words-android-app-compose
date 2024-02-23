@@ -6,11 +6,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.ntg.vocabs.model.db.GermanNouns
 
 @Dao
 interface GermanNounsDao {
-    @Insert
+    @Upsert
     suspend fun insert(germanNoun: GermanNouns)
 
     @Update
@@ -19,7 +20,7 @@ interface GermanNounsDao {
     @Query("DELETE FROM GermanNouns")
     suspend fun clear()
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertAll(lists: List<GermanNouns>)
 
     @Query("SELECT * FROM GermanNouns")
