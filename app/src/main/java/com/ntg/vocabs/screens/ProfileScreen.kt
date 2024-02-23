@@ -191,17 +191,17 @@ private fun Content(
                     wordViewModel.selectList(id)
                     wordViewModel.selectList(id)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        calendarViewModel.stopLastTime()
-                        calendarViewModel.insertSpendTime(
-                            TimeSpent(
-                                id = 0,
-                                listId = id,
-                                date = LocalDate.now().toString(),
-                                startUnix = System.currentTimeMillis(),
-                                endUnix = null,
-                                type = SpendTimeType.Learning.ordinal
-                            )
-                        )
+//                        calendarViewModel.stopLastTime()
+//                        calendarViewModel.insertSpendTime(
+//                            TimeSpent(
+//                                id = 0,
+//                                listId = id,
+//                                date = LocalDate.now().toString(),
+//                                startUnix = System.currentTimeMillis(),
+//                                endUnix = null,
+//                                type = SpendTimeType.Learning.ordinal
+//                            )
+//                        )
                     }
 
                     navController.navigate(Screens.HomeScreen.name) {
@@ -245,17 +245,17 @@ private fun Content(
                         onClick = { id ->
                             wordViewModel.selectList(id)
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                calendarViewModel.stopLastTime()
-                                calendarViewModel.insertSpendTime(
-                                    TimeSpent(
-                                        id = 0,
-                                        listId = id,
-                                        date = LocalDate.now().toString(),
-                                        startUnix = System.currentTimeMillis(),
-                                        endUnix = null,
-                                        type = SpendTimeType.Learning.ordinal
-                                    )
-                                )
+//                                calendarViewModel.stopLastTime()
+//                                calendarViewModel.insertSpendTime(
+//                                    TimeSpent(
+//                                        id = 0,
+//                                        listId = id,
+//                                        date = LocalDate.now().toString(),
+//                                        startUnix = System.currentTimeMillis(),
+//                                        endUnix = null,
+//                                        type = SpendTimeType.Learning.ordinal
+//                                    )
+//                                )
                             }
 
                             navController.navigate(Screens.HomeScreen.name) {

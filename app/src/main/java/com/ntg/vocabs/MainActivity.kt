@@ -63,7 +63,9 @@ class MainActivity : ComponentActivity() {
     private val dataViewModel: DataViewModel by viewModels()
     private val backupViewModel: BackupViewModel by viewModels()
 
+    private var currentScreen = Screens.HomeScreen.name
     var listId: VocabItemList? = null
+
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -130,6 +132,7 @@ class MainActivity : ComponentActivity() {
 
                         timber("onDestinationChangeListener ${navDestination.route}")
                         currentDes.value = navDestination.route.orEmpty()
+                        currentScreen = navDestination.route.orEmpty()
 
                         when (navDestination.route) {
                             Screens.MessagesBoxScreen.name -> {
@@ -139,6 +142,33 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
+                        }
+
+                        if (listId != null){
+                            when(navDestination.route.orEmpty()){
+                                Screens.LoginWithPasswordScreen.name,
+                                Screens.InsertEmailScreen.name,
+                                Screens.CodeScreen.name,
+                                Screens.FinishScreen.name,
+                                Screens.SplashScreen.name,
+                                Screens.SplashScreen.name,
+                                -> {
+                                    timber("LoginPages")
+                                }
+
+                                Screens.RevisionScreen.name -> {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        calendarViewModel.insertSpendTime(SpendTimeType.Revision,listId!!.id)
+                                    }
+                                }
+
+                                else ->{
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        calendarViewModel.insertSpendTime(SpendTimeType.Learning,listId!!.id)
+                                    }
+                                }
+
+                            }
                         }
 
                     }
@@ -167,7 +197,7 @@ class MainActivity : ComponentActivity() {
                         .build()
                     WorkManager.getInstance(this).enqueueUniqueWork(
                         "INSERTING_TO_DB",
-                        ExistingWorkPolicy.KEEP, // ExistingWorkPolicy.KEEP ensures that if there is existing work with the same unique name, it won't be re-enqueued
+                        ExistingWorkPolicy.KEEP,
                         secondWorkerRequest
                     )
                 }
@@ -297,6 +327,7 @@ class MainActivity : ComponentActivity() {
             e.printStackTrace()
         }
     }
+
 
 //    override fun onPause() {
 //        super.onPause()

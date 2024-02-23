@@ -27,12 +27,14 @@ import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.components.CalendarUiModel
+import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.*
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,15 +62,6 @@ fun TimeScreen(
                 wordViewModel
             )
 
-        }, floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screens.AddEditScreen.name)
-                },
-                containerColor = Primary200
-            ) {
-                Icon(imageVector = Icons.Rounded.Add, tint = Color.Black, contentDescription = "FL")
-            }
         }
     )
 }
@@ -113,14 +106,17 @@ private fun TimeContentItem(
     spendTimeType: Int,
     wordViewModel: WordViewModel
 ) {
-    val list = calendarViewModel.finalData.observeAsState().value.orEmpty().toMutableList()
-    val listId = wordViewModel.currentList().observeAsState().value?.id
+    var list :Map<String?, List<TimeSpent>> = mapOf()
+    val listId = wordViewModel.currentList().observeAsState(initial = null).value?.id
+    if (listId != null){
+        list = calendarViewModel.getValidTimesSpentBaseType(spendTimeType, listId).observeAsState().value.orEmpty().groupBy { it.date }
+    }
 
     val dateTime = remember {
         mutableStateOf(LocalDate.now())
     }
 
-    list.forEach { it.isSelected = it.date == dateTime.value }
+//    list.forEach { it.isSelected = it.date == dateTime.value }
 
     var totalTime = 0L
     var totalTimeOfDate = 0L
@@ -152,25 +148,12 @@ private fun TimeContentItem(
     learningDays = timeSpent.distinctBy { it.date }.size
 
 
-    var visible by remember {
-        mutableStateOf(false)
-    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
             .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .border(
-                width = 2.dp,
-                color = if (visible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(16.dp)
-            )
-
-            .clickable {
-                visible = !visible
-            }
     ) {
         Text(
             modifier = Modifier.padding(top = 16.dp, start = 16.dp),
@@ -190,53 +173,54 @@ private fun TimeContentItem(
             style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
         )
 
+        Column {
+            LazyRow(modifier = Modifier.padding(bottom = 24.dp)) {
 
-        AnimatedVisibility(visible = visible) {
-
-            Column {
-                LazyRow(modifier = Modifier.padding(bottom = 24.dp)) {
-
-                    items(list) { date ->
-                        ContentItem(date) {
+                items(list.keys.toList()) { index ->
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val localDate = LocalDate.parse(index, formatter)
+                    ContentItem(CalendarUiModel.Date(
+                        date = localDate,
+                        isSelected = dateTime.value == localDate,
+                        isToday = false
+                    )) {
 //                            calendarViewModel.selectDate(it)
-                            dateTime.value = it.date
-                        }
+                        dateTime.value = it.date
                     }
-
                 }
-
-                timeOfDate.orEmpty().forEach {
-                    if (it.startUnix != null && it.endUnix != null) {
-                        Text(
-                            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
-                            text = stringResource(
-                                id = R.string.format_hyphen,
-                                it.startUnix.orDefault().unixTimeToClock(),
-                                it.endUnix.orDefault().unixTimeToClock()
-                            ),
-                            style = fontMedium12(MaterialTheme.colorScheme.onBackground)
-                        )
-                    }
-
-                }
-
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                )
-
-                Text(
-                    modifier = Modifier.padding(start = 16.dp, bottom = 24.dp),
-                    text = stringResource(
-                        id = R.string.total_format,
-                        totalTimeOfDate.secondsToClock()
-                    ),
-                    style = fontBold12(MaterialTheme.colorScheme.onBackground)
-                )
 
             }
+
+//            timeOfDate.orEmpty().forEach {
+//                if (it.startUnix != null && it.endUnix != null) {
+//                    Text(
+//                        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
+//                        text = stringResource(
+//                            id = R.string.format_hyphen,
+//                            it.startUnix.orDefault().unixTimeToClock(),
+//                            it.endUnix.orDefault().unixTimeToClock()
+//                        ),
+//                        style = fontMedium12(MaterialTheme.colorScheme.onBackground)
+//                    )
+//                }
+//
+//            }
+
+            Text(
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
+                text = stringResource(
+                    id = R.string.total_format,
+                    totalTimeOfDate.secondsToClock()
+                ),
+                style = fontBold12(MaterialTheme.colorScheme.onBackground)
+            )
+
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
 
         }
 
@@ -254,8 +238,6 @@ fun ContentItem(date: CalendarUiModel.Date, onClick: (CalendarUiModel.Date) -> U
         modifier = Modifier
             .padding(vertical = 4.dp, horizontal = 4.dp),
         colors = CardDefaults.cardColors(
-            // background colors of the selected date
-            // and the non-selected date are different
             containerColor = if (date.isSelected) {
                 MaterialTheme.colorScheme.primary
             } else {

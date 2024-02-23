@@ -8,9 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.model.CalendarDataSource
+import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.components.CalendarUiModel
 import com.ntg.vocabs.model.db.TimeSpent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -20,7 +22,6 @@ import javax.inject.Inject
 class CalendarViewModel @Inject constructor(
     private val timeSpentDao: TimeSpentDao
 ) : ViewModel() {
-
 
 
     // get CalendarUiModel from CalendarDataSource, and the lastSelectedDate is Today.
@@ -34,10 +35,18 @@ class CalendarViewModel @Inject constructor(
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
 
 
-
-
-    fun insertSpendTime(spendTime: TimeSpent) {
+    fun insertSpendTime(type: SpendTimeType, listId: Int) {
+        stopLastTime()
+        removeNullTime()
         viewModelScope.launch {
+            val spendTime = TimeSpent(
+                id = 0,
+                listId = listId,
+                date = LocalDate.now().toString(),
+                startUnix = System.currentTimeMillis(),
+                endUnix = null,
+                type = type.ordinal
+            )
             timeSpentDao.insert(spendTime)
         }
     }
@@ -92,7 +101,6 @@ class CalendarViewModel @Inject constructor(
         }
         return allValidLearningTimeSpent
     }
-
 
 
 

@@ -60,9 +60,9 @@ fun RevisionScreen(
         }
     )
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        HandleLifecycle(calendarViewModel, wordViewModel)
-    }
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        HandleLifecycle(calendarViewModel, wordViewModel)
+//    }
 }
 
 @Composable
@@ -193,54 +193,4 @@ private fun Content(
     } else {
         rejectedList.clear()
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-private fun HandleLifecycle(calendarViewModel: CalendarViewModel, wordViewModel: WordViewModel) {
-    val listId = wordViewModel.currentList().observeAsState().value
-    val events = remember {
-        mutableStateOf(Lifecycle.Event.ON_START)
-    }
-
-    OnLifecycleEvent { owner, event ->
-        events.value = event
-    }
-
-    when (events.value) {
-        Lifecycle.Event.ON_START,
-        Lifecycle.Event.ON_RESUME -> {
-            LaunchedEffect(key1 = listId) {
-                delay(100)
-                calendarViewModel.stopLastTime()
-                calendarViewModel.insertSpendTime(
-                    TimeSpent(
-                        id = 0,
-                        listId = listId?.id.orZero(),
-                        date = LocalDate.now().toString(),
-                        startUnix = System.currentTimeMillis(),
-                        endUnix = null,
-                        type = SpendTimeType.Revision.ordinal
-                    )
-                )
-            }
-        }
-        Lifecycle.Event.ON_STOP,
-        Lifecycle.Event.ON_PAUSE -> {
-            calendarViewModel.stopLastTime()
-            calendarViewModel.insertSpendTime(
-                TimeSpent(
-                    id = 0,
-                    listId = listId?.id.orZero(),
-                    date = LocalDate.now().toString(),
-                    startUnix = System.currentTimeMillis(),
-                    endUnix = null,
-                    type = SpendTimeType.Learning.ordinal
-                )
-            )
-        }
-        else -> {}
-    }
-
-
 }
