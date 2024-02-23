@@ -105,7 +105,6 @@ fun AddEditWordScreen(
             )
 
         }, bottomBar = {
-            timber("AAAAAAAAAAAAAAAAAAA ${wordData.word} --- ${wordData.type} -- ${wordData.definition}")
             val isExist = wordViewModel.findWordWithDef(wordData.word.orEmpty(), wordData.type.orEmpty(), wordData.definition.orEmpty())
                 ?.observeAsState()?.value
 
@@ -115,7 +114,7 @@ fun AddEditWordScreen(
                     ex.add(example)
                     wordData.example = ex.toList()
                 }
-                if (isExist?.isEmpty().orTrue()) {
+                if (isExist?.isEmpty().orTrue() || wordId != null) {
                     submitWord(wordData, wordViewModel, context, wordId != -1, navController)
                 } else {
                     context.toast(context.getString(R.string.err_word_already_exist))
@@ -215,10 +214,6 @@ private fun Content(
     val word = rememberSaveable {
         mutableStateOf("")
     }
-
-//    val recorder by lazy {
-//        AndroidAudioRecorder(context)
-//    }
 
     if (recorder == null){
         recorder = AndroidAudioRecorder(context)
@@ -379,6 +374,7 @@ private fun Content(
 
 
     OpenVoiceSearch(launch = openVoiceToSpeech, voiceSearch = {
+        timber("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX $it")
         if (it != null) {
             when {
                 voiceForWord -> {
@@ -675,6 +671,9 @@ private fun Content(
         }
     }
 
+
+
+
     LaunchedEffect(key1 = fetchDataWord.value, block = {
 
         if (fetchDataWord.value) {
@@ -898,6 +897,16 @@ private fun Content(
         }
 
     })
+
+    if (type.value == "verb" && pastSimple.value.isEmpty() && pastParticiple.value.isEmpty()) {
+        wordViewModel.englishVerb(word.value).observeAsState(initial = null).value.let {
+            pastSimple.value =
+                it?.pastSimple.orEmpty()
+            pastParticiple.value =
+                it?.pp.orEmpty()
+        }
+
+    }
 
 
 

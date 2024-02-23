@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.ntg.vocabs.model.db.GermanVerbs
 
 @Dao
@@ -19,7 +20,7 @@ interface GermanVerbsDao {
     @Query("DELETE FROM GermanVerbs")
     suspend fun clear()
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertAll(lists: List<GermanVerbs>)
 
     @Query("SELECT * FROM GermanVerbs WHERE word LIKE :query || '%' ORDER BY word LIMIT 300")

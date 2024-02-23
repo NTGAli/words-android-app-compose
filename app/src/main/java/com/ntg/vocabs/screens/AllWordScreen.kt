@@ -14,10 +14,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.EmptyWidget
 import com.ntg.vocabs.components.SampleItem
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,23 +51,24 @@ private fun Content(
     query: String
 ) {
 
-    val words = wordViewModel.englishWords(query).observeAsState(initial = null)
+    val words = wordViewModel.englishWords(query).collectAsLazyPagingItems()
+
 
     LazyColumn(modifier = Modifier
         .padding(paddingValues)
-        .padding(horizontal = 16.dp), content = {
+        .padding(horizontal = 16.dp),content = {
 
-        items(words.value.orEmpty().filter { it.type != "null" }) { word ->
+        items(words.itemCount){
             SampleItem(
-                title = word.word,
-                secondaryText = word.type,
-                id = word.id,
+                title = words[it]?.word.orEmpty(),
+                secondaryText = words[it]?.type,
+                id = words[it]?.id,
             ) { _, id, _ ->
-                navController.navigate(Screens.OnlineWordDetailsScreen.name + "?word=${word.word}&type=${word.type}")
+                navController.navigate(Screens.OnlineWordDetailsScreen.name + "?word=${words[it]?.word}&type=${words[it]?.type}")
             }
         }
 
-        if (words.value != null && words.value.orEmpty().isEmpty()) {
+        if (words.itemCount == 0) {
             item {
                 EmptyWidget(
                     modifier = Modifier.padding(top = 24.dp),
@@ -75,5 +78,30 @@ private fun Content(
         }
 
     })
+
+//    LazyColumn(modifier = Modifier
+//        .padding(paddingValues)
+//        .padding(horizontal = 16.dp), content = {
+//
+//        items(words.value.orEmpty().filter { it.type != "null" }) { word ->
+//            SampleItem(
+//                title = word.word,
+//                secondaryText = word.type,
+//                id = word.id,
+//            ) { _, id, _ ->
+//                navController.navigate(Screens.OnlineWordDetailsScreen.name + "?word=${word.word}&type=${word.type}")
+//            }
+//        }
+//
+//        if (words.value != null && words.value.orEmpty().isEmpty()) {
+//            item {
+//                EmptyWidget(
+//                    modifier = Modifier.padding(top = 24.dp),
+//                    title = stringResource(id = R.string.no_word)
+//                )
+//            }
+//        }
+//
+//    })
 
 }

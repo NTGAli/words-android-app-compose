@@ -155,13 +155,16 @@ fun OpenVoiceSearch(launch: Boolean, voiceSearch: (String?) -> Unit) {
     )
     intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to text")
 
-    if (launch) {
-        try {
-            launcher.launch(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
+
+    LaunchedEffect(key1 = launch,block = {
+        if (launch) {
+            try {
+                launcher.launch(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-    }
+    })
 
     voiceSearch.invoke(null)
 

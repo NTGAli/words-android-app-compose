@@ -1,11 +1,15 @@
 package com.ntg.vocabs
 
+import androidx.work.DelegatingWorkerFactory
 import android.app.Application
 import android.text.TextUtils
+import androidx.work.Configuration
 import com.google.android.gms.tasks.Task
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.ktx.messaging
+import com.ntg.vocabs.db.AppDB
+import com.ntg.vocabs.db.AutoInsertWorkerFactory
 import com.ntg.vocabs.db.dao.EnglishWordDao
 import com.ntg.vocabs.util.timber
 import dagger.hilt.android.HiltAndroidApp
@@ -15,16 +19,18 @@ import javax.inject.Inject
 
 
 @HiltAndroidApp
-class MyApp: Application() {
+class MyApp : Application(), Configuration.Provider {
 
     @Inject
     lateinit var englishWordDao: EnglishWordDao
+
+    @Inject
+    lateinit var appDB: AppDB
 
     override fun onCreate() {
         setTheme(R.style.Theme_Vocabs)
         super.onCreate()
         initTimber()
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
 
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token: String ->
             if (!TextUtils.isEmpty(token)) {
@@ -75,5 +81,18 @@ class MyApp: Application() {
     private fun initTimber() {
         Timber.plant(Timber.DebugTree())
     }
+
+    override val workManagerConfiguration: Configuration
+        get() {
+            val myWorkerFactory = DelegatingWorkerFactory()
+            myWorkerFactory.addFactory(AutoInsertWorkerFactory(appDB))
+//
+//            return Configuration.Builder()
+//                .setWorkerFactory(myWorkerFactory)
+//                .build()
+
+            return Configuration.Builder().setWorkerFactory(myWorkerFactory).build()
+        }
+
 
 }

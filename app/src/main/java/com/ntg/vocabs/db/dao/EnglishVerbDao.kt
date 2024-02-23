@@ -5,12 +5,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.ntg.vocabs.model.db.EnglishVerbs
 
 @Dao
 interface EnglishVerbDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertAll(verbs: List<EnglishVerbs>)
 
     @Query("SELECT * FROM EnglishVerbs WHERE word = :word LIMIT 1")

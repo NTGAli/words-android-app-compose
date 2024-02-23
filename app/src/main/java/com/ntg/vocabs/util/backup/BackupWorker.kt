@@ -1,7 +1,6 @@
 package com.ntg.vocabs.util.backup
 
 import android.content.Context
-import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -20,10 +19,7 @@ import com.ntg.vocabs.model.DriveBackup
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.getCurrentDate
 import com.ntg.vocabs.util.isInternetAvailable
-import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -36,6 +32,7 @@ class BackupWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
+
         val appDB = Room.databaseBuilder(
             context = appContext,
             AppDB::class.java,
