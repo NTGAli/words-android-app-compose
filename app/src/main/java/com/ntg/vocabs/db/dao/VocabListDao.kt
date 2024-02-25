@@ -9,7 +9,7 @@ import com.ntg.vocabs.model.db.VocabItemList
 interface VocabListDao {
 
     @Insert
-    suspend fun insert(vocabList: VocabItemList)
+    suspend fun insert(vocabList: VocabItemList): Long
 
     @Update
     suspend fun update(vocabList: VocabItemList)

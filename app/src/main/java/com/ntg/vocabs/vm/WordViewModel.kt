@@ -424,8 +424,10 @@ class WordViewModel @Inject constructor(
     fun checkIfNoListSelected() =
         viewModelScope.launch { vocabListDao.updateFirstItemIfAllNotSelected() }
 
-    fun addNewVocabList(vocabItemList: VocabItemList) = viewModelScope.launch {
-        vocabListDao.insert(vocabItemList)
+    fun addNewVocabList(vocabItemList: VocabItemList, id:(Long) -> Unit) = viewModelScope.launch {
+        vocabListDao.insert(vocabItemList).let {
+            id.invoke(it)
+        }
     }
 
     fun updateVocabList(vocabItemList: VocabItemList) = viewModelScope.launch {

@@ -105,7 +105,11 @@ fun AddEditWordScreen(
             )
 
         }, bottomBar = {
-            val isExist = wordViewModel.findWordWithDef(wordData.word.orEmpty(), wordData.type.orEmpty(), wordData.definition.orEmpty())
+            val isExist = wordViewModel.findWordWithDef(
+                wordData.word.orEmpty(),
+                wordData.type.orEmpty(),
+                wordData.definition.orEmpty()
+            )
                 ?.observeAsState()?.value
 
             BottomBarContent(wordId != -1) {
@@ -192,6 +196,7 @@ private fun submitWord(
 
 
 private var recorder: AndroidAudioRecorder? = null
+
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalPermissionsApi::class
@@ -215,7 +220,7 @@ private fun Content(
         mutableStateOf("")
     }
 
-    if (recorder == null){
+    if (recorder == null) {
         recorder = AndroidAudioRecorder(context)
     }
 
@@ -337,17 +342,6 @@ private fun Content(
         mutableStateListOf<String>()
     }
 
-    val exampleListData = rememberSaveable {
-        mutableStateOf<ArrayList<String>>(arrayListOf())
-    }
-
-    if (exampleListData.value.size > exampleList.size && exampleList.isEmpty()) {
-        exampleList.addAll(exampleListData.value)
-    } else {
-        exampleListData.value.clear()
-        exampleListData.value.addAll(exampleList)
-    }
-
     val definitionList = remember {
         mutableStateListOf<Definition>()
     }
@@ -374,7 +368,6 @@ private fun Content(
 
 
     OpenVoiceSearch(launch = openVoiceToSpeech, voiceSearch = {
-        timber("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX $it")
         if (it != null) {
             when {
                 voiceForWord -> {
@@ -408,23 +401,23 @@ private fun Content(
         wordEdit.example?.forEach {
             exampleList.add(it)
         }
-        if (wordEdit.synonyms.orEmpty().isNotEmpty()){
+        if (wordEdit.synonyms.orEmpty().isNotEmpty()) {
             synonym.value = wordEdit.synonyms.toString().drop(1).dropLast(1)
         }
 
-        if (wordEdit.antonyms.orEmpty().isNotEmpty()){
+        if (wordEdit.antonyms.orEmpty().isNotEmpty()) {
             antonyms.value = wordEdit.antonyms.toString().drop(1).dropLast(1)
         }
 
-        if (wordEdit.images.orEmpty().isNotEmpty()){
+        if (wordEdit.images.orEmpty().isNotEmpty()) {
             imagePath = wordEdit.images.orEmpty().first()
         }
 
-        if (wordEdit.voice.orEmpty().isNotEmpty()){
+        if (wordEdit.voice.orEmpty().isNotEmpty()) {
             audioFile = File(wordEdit.voice!!)
         }
 
-        if (wordEdit.sound.orEmpty().isNotEmpty()){
+        if (wordEdit.sound.orEmpty().isNotEmpty()) {
             soundUrl.value = wordEdit.sound.orEmpty()
         }
 
@@ -570,8 +563,6 @@ private fun Content(
         "preposition",
         "conjunction"
     )
-
-    var wordDataItems = listOf<WordDataItem>()
 
     val listOfDefinitions = remember {
         mutableStateListOf<String>()
@@ -775,7 +766,6 @@ private fun Content(
                                 definition.value = ""
                                 if (it.data.orEmpty().isNotEmpty()) {
                                     listOfDefinitions.clear()
-                                    wordDataItems = it.data.orEmpty()
                                     pronunciation.value =
                                         it.data?.get(0)?.headwordInformation?.pronunciations?.get(
                                             0
@@ -1114,7 +1104,10 @@ private fun Content(
                         timber("voice-file-path ${audioFile?.absoluteFile}")
                     } else {
                         //recording
-                        File(context.getExternalFilesDir("backups/sounds"), "${audioFileName}.WAV").also {
+                        File(
+                            context.getExternalFilesDir("backups/sounds"),
+                            "${audioFileName}.WAV"
+                        ).also {
                             recorder!!.start(it)
                             audioFile = it
                         }
@@ -1279,6 +1272,7 @@ private fun Content(
                 enabledLeadingIcon = true,
                 leadingIconOnClick = {
                     if (it.isNotEmpty()) {
+                        timber("LIST_DATA ::: add :: $it")
                         exampleList.add(it)
                         example.value = ""
 
@@ -1290,8 +1284,7 @@ private fun Content(
             )
         }
 
-        items(exampleList.reversed()) {
-            timber("LIST_DATA", "$exampleList")
+        items(exampleList) {
             SampleItem(title = it) { title, _, _ ->
                 exampleList.remove(title)
             }
@@ -1349,7 +1342,10 @@ private fun Content(
 
 
 private fun saveImageInFolder(bitmap: Bitmap?, context: Context, name: String): File {
-    val directory = File(context.getExternalFilesDir("backups/images"), "${name}${System.currentTimeMillis()}.jpeg")
+    val directory = File(
+        context.getExternalFilesDir("backups/images"),
+        "${name}${System.currentTimeMillis()}.jpeg"
+    )
     directory.parentFile?.mkdir()
 
     val fos: FileOutputStream?

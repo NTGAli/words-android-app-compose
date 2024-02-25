@@ -316,7 +316,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
                         }
                     }
                     Text(
-                        modifier = Modifier.padding(start = 16.dp),
+                        modifier = Modifier.padding(start = 16.dp).padding(bottom = 8.dp),
                         text = word.pronunciation.toPronunciation(),
                         style = fontMedium14(
                             MaterialTheme.colorScheme.onSurfaceVariant

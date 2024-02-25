@@ -125,7 +125,10 @@ private fun Content(
                         language = language,
                         isSelected = false
                     )
-                )
+                ){
+                    wordViewModel.selectList(it.toInt())
+                    navController.popBackStack()
+                }
 //                if (language == "German"){
 //                    navController.navigate(Screens.DownloadScreen.name + "?enableBottomBar=${true}",
 //                        NavOptions.Builder()
@@ -134,15 +137,12 @@ private fun Content(
 //                    )
 //                }else{
 //                }
-                navController.popBackStack()
+//                navController.popBackStack()
 
             }
         }else if (result is Failure){
             ctx.toast(result.errorMessage)
         }
-
-
-
         submitList.value = false
 
 
