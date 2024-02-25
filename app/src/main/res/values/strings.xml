@@ -215,5 +215,6 @@
     <string name="backupped_success_on_document"><![CDATA[Your backup is saved in the \'Documents > %s\' directory.]]></string>
     <string name="backup_on_google_drive">Backup on Google Drive</string>
     <string name="didnt_add_word">You haven\'t added any words.</string>
+    <string name="correct_was">Correct answer : %s</string>
 
 </resources>
