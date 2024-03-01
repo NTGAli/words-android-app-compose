@@ -27,6 +27,7 @@ import java.util.*
 @Composable
 fun HomeAppbar(
     title: String?,
+    isBackupEnabled: Boolean,
     searchCallback: () -> Unit,
     notificationCallback: () -> Unit,
     profileCallback: () -> Unit,
@@ -80,19 +81,20 @@ fun HomeAppbar(
 
 
             IconButton(
-                modifier = Modifier.padding(start = 4.dp),
+                modifier = Modifier.padding(start = 8.dp),
                 onClick = {
                     backupOnClick.invoke()
                 }) {
                 Icon(
                     painter = painterResource(id = R.drawable.drive),
-                    contentDescription = "Download State"
+                    contentDescription = "Download State",
+                    tint = if (!isBackupEnabled) MaterialTheme.colorScheme.error else LocalContentColor.current
                 )
             }
 
 
             IconButton(
-                modifier = Modifier.padding(start = 2.dp, end = 4.dp),
+                modifier = Modifier.padding(end = 4.dp),
                 onClick = {
                     notificationCallback.invoke()
                 }) {
@@ -125,8 +127,6 @@ fun HomeAppbar(
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = fontMedium12(MaterialTheme.colorScheme.onPrimary)
                 )
-//                Image(painter = painterResource(id = R.drawable.icon_britain)
-//                    , contentDescription = "flag")
             }
             Spacer(modifier = Modifier.padding(8.dp))
         }
