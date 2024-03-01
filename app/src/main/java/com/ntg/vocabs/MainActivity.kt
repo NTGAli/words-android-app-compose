@@ -6,14 +6,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
@@ -25,11 +23,8 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.gson.Gson
 import com.ntg.vocabs.db.AutoInsertWorker
-import com.ntg.vocabs.db.AutoInsertWorkerFactory
 import com.ntg.vocabs.model.SpendTimeType
-import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
-import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.AppNavHost
 import com.ntg.vocabs.nav.Screens
@@ -46,11 +41,9 @@ import com.ntg.vocabs.vm.MessageBoxViewModel
 import com.ntg.vocabs.vm.SignInViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 
@@ -141,7 +134,6 @@ class MainActivity : ComponentActivity() {
                         when (navDestination.route) {
                             Screens.MessagesBoxScreen.name -> {
                                 if (!checkInternet()) {
-//                                navController.popBackStack()
                                     navController.navigate(Screens.NoInternetConnection.name + "?screen=${navDestination.route}")
                                 }
                             }
@@ -177,13 +169,6 @@ class MainActivity : ComponentActivity() {
 
                     }
                 }
-
-
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    HandleLifecycle(calendarViewModel, wordViewModel, currentDes.value)
-                }
-
 
                 if (intent.getStringExtra(Constant.ACTION).orEmpty().isNotEmpty()) {
                     startDes.value = Screens.MessagesBoxScreen.name
@@ -264,51 +249,6 @@ class MainActivity : ComponentActivity() {
                 }
 
             })
-
-            val testList = listOf(
-                Word(id = 0, word = "A", type = "noun", listId = 2),
-                Word(id = 0, word = "A1", type = "noun", listId = 2),
-                Word(id = 0, word = "A17", type = "noun", listId = 2),
-                Word(id = 0, word = "A18", type = "noun", listId = 2),
-                Word(id = 0, word = "A19", type = "noun", listId = 2),
-                Word(id = 0, word = "A2", type = "noun", listId = 2),
-                Word(id = 0, word = "A21", type = "noun", listId = 2),
-                Word(id = 0, word = "A22", type = "noun", listId = 2),
-                Word(id = 0, word = "A23", type = "noun", listId = 2),
-                Word(id = 0, word = "A24", type = "noun", listId = 2),
-                Word(id = 0, word = "A25", type = "noun", listId = 2),
-                Word(id = 0, word = "A26", type = "noun", listId = 2),
-                Word(id = 0, word = "A27", type = "noun", listId = 2),
-                Word(id = 0, word = "A28", type = "noun", listId = 2),
-                Word(id = 0, word = "A29", type = "noun", listId = 2),
-                Word(id = 0, word = "A3", type = "noun", listId = 2),
-                Word(id = 0, word = "A31", type = "noun", listId = 2),
-                Word(id = 0, word = "A32", type = "noun", listId = 2),
-                Word(id = 0, word = "A33", type = "noun", listId = 2),
-                Word(id = 0, word = "A34", type = "noun", listId = 2),
-                Word(id = 0, word = "A35", type = "noun", listId = 2),
-                Word(id = 0, word = "A36", type = "noun", listId = 2),
-                Word(id = 0, word = "A37", type = "noun", listId = 2),
-                Word(id = 0, word = "A38", type = "noun", listId = 2),
-                Word(id = 0, word = "A39", type = "noun", listId = 2),
-                Word(id = 0, word = "A4", type = "noun", listId = 2),
-                Word(id = 0, word = "A5", type = "noun", listId = 2),
-                Word(id = 0, word = "A6", type = "noun", listId = 2),
-                Word(id = 0, word = "A7", type = "noun", listId = 2),
-                Word(id = 0, word = "A8", type = "noun", listId = 2),
-                Word(id = 0, word = "A9", type = "noun", listId = 2),
-                Word(id = 0, word = "A10", type = "noun", listId = 2),
-                Word(id = 0, word = "A11", type = "noun", listId = 2),
-                Word(id = 0, word = "A12", type = "noun", listId = 2),
-                Word(id = 0, word = "A13", type = "noun", listId = 2),
-                Word(id = 0, word = "A14", type = "noun", listId = 2),
-                Word(id = 0, word = "A15", type = "noun", listId = 2),
-                Word(id = 0, word = "A16", type = "noun", listId = 2),
-            )
-
-            LaunchedEffect(key1 = Unit, block = {
-//                wordViewModel.addAllWords(testList)
-            })
         }
 
     }
@@ -332,107 +272,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
-//    override fun onPause() {
-//        super.onPause()
-//        if (listId != null){
-//            calendarViewModel.stopLastTime()
-//        }
-//    }
-//
-//    override fun onStop() {
-//        super.onStop()
-//        if (listId != null){
-//            calendarViewModel.stopLastTime()
-//        }
-//    }
-//
-//    override fun onStart() {
-//        super.onStart()
-//        if (listId != null){
-//            calendarViewModel.removeNullTime()
-//        }
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//        if (listId != null){
-//            if (destination != Screens.RevisionScreen.name) {
-//                delay(100)
-//                calendarViewModel.insertSpendTime(
-//                    TimeSpent(
-//                        id = 0,
-//                        listId = listId.id,
-//                        date = LocalDate.now().toString(),
-//                        startUnix = System.currentTimeMillis(),
-//                        endUnix = null,
-//                        type = SpendTimeType.Learning.ordinal
-//                    )
-//                )
-//            }
-//        }
-//    }
-
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-private fun HandleLifecycle(
-    calendarViewModel: CalendarViewModel, wordViewModel: WordViewModel, destination: String
-) {
-
-
-    val listId = wordViewModel.currentList().observeAsState().value
-    val events = remember {
-        mutableStateOf(Lifecycle.Event.ON_START)
-    }
-
-//    if (listId?.id != null) {
-//        OnLifecycleEvent { owner, event ->
-//            events.value = event
-//        }
-//        LaunchedEffect(key1 = events, block = {
-//            timber("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ----->:::: ${events.value}")
-//
-//            when (events.value) {
-//                Lifecycle.Event.ON_START -> {
-//                    calendarViewModel.removeNullTime()
-//                }
-//
-//                Lifecycle.Event.ON_RESUME -> {
-//                        if (destination != Screens.RevisionScreen.name) {
-//                            delay(100)
-//                            calendarViewModel.insertSpendTime(
-//                                TimeSpent(
-//                                    id = 0,
-//                                    listId = listId.id,
-//                                    date = LocalDate.now().toString(),
-//                                    startUnix = System.currentTimeMillis(),
-//                                    endUnix = null,
-//                                    type = SpendTimeType.Learning.ordinal
-//                                )
-//                            )
-//                        }
-//
-//                }
-//
-//                Lifecycle.Event.ON_STOP -> {
-//                    calendarViewModel.stopLastTime()
-//                }
-//
-//                Lifecycle.Event.ON_PAUSE -> {
-//                    calendarViewModel.stopLastTime()
-//                }
-//
-//                Lifecycle.Event.ON_DESTROY -> {
-//                }
-//
-//                else -> {}
-//            }
-//
-//        })
-//
-//    }
-
-
-}

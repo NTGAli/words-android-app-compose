@@ -113,9 +113,11 @@ fun HomeScreen(
         topBar = {
 
             val userData = loginViewModel.getUserData().asLiveData().observeAsState()
+            val dataSettings = loginViewModel.getUserData().asLiveData().observeAsState().value
 
             HomeAppbar(
                 title = userData.value?.name,
+                isBackupEnabled = dataSettings?.backupOption.orEmpty() != "Never" || dataSettings?.backupOption.orEmpty() == "",
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },
@@ -176,9 +178,9 @@ private fun Content(
     val numberOfAllWords = remember {
         mutableIntStateOf(0)
     }
-    recentWordCount.value =
+    recentWordCount.intValue =
         wordViewModel.recentWords(7, listId.orZero()).observeAsState().value.orZero()
-    numberOfAllWords.value =
+    numberOfAllWords.intValue =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
     val needToReviewCount = remember {
         mutableIntStateOf(0)
@@ -188,7 +190,7 @@ private fun Content(
     var totalTime = 0L
 
 
-    needToReviewCount.value =
+    needToReviewCount.intValue =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value?.filter {
             getStateRevision(
                 it.revisionCount,
@@ -220,13 +222,13 @@ private fun Content(
         }
             .debounce(500L)
             .collectLatest { index ->
-                if (index != 0){
+                if (index != 0) {
                     wordViewModel.scrollPos = index
                 }
             }
     }
 
-    if (wordsList.value != null){
+    if (wordsList.value != null) {
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
