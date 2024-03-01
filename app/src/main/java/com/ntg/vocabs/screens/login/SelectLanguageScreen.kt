@@ -40,7 +40,6 @@ import com.ntg.vocabs.vm.WordViewModel
 @Composable
 fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewModel, listId: Int?) {
 
-    timber("akwjdklawjdlkwjadlkjawlkdjw $listId")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val submitList = remember {
         mutableStateOf(false)
