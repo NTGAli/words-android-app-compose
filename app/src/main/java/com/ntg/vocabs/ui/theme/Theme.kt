@@ -93,9 +93,6 @@ fun AppTheme(
     val dataStore = UserStore(LocalContext.current)
     val userTheme =
         dataStore.getAccessToken.collectAsState(initial = stringResource(id = R.string.system_default))
-
-    timber("THEMEEEEEEEEEEEE ::: ${userTheme.value}")
-
     val colors = if (userTheme.value == stringResource(id = R.string.system_default) || userTheme.value.isEmpty()) {
         if (!useDarkTheme) {
             LightColors
@@ -111,9 +108,6 @@ fun AppTheme(
 
 
     val view = LocalView.current
-
-
-    val ctx = LocalContext.current
     if (!view.isInEditMode) {
         val window = (view.context as Activity).window
         SideEffect {
@@ -130,10 +124,4 @@ fun AppTheme(
         colorScheme = colors,
         content = content
     )
-//    {
-////        CompositionLocalProvider(
-////            LocalRippleTheme provides AppRippleTheme,
-////            content = content
-////        )
-//    }
 }

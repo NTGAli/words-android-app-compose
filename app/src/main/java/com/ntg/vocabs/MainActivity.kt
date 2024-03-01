@@ -7,10 +7,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
@@ -114,7 +116,9 @@ class MainActivity : ComponentActivity() {
                 }
                 val navController = rememberNavController()
 
-                Scaffold {
+                Scaffold(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                ) {
                     AppNavHost(
                         wordViewModel = wordViewModel,
                         navController = navController,

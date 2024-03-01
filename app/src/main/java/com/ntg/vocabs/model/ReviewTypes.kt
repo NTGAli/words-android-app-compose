@@ -6,5 +6,6 @@ enum class ReviewTypes {
     Sound,
     Example,
     Word,
-    Image
+    Image,
+    Translate
 }
