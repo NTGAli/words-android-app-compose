@@ -12,7 +12,6 @@ import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson2.JacksonFactory
-import com.google.api.client.util.DateTime
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.gson.Gson
@@ -229,9 +228,9 @@ class BackupViewModel @Inject constructor(
             gfile.parents = parents
 
             try {
-                drive!!.Files().create(gfile, fileContent).setFields("id").execute()
+                val executedFile = drive!!.Files().create(gfile, fileContent).setFields("id").execute()
                 driveBackupDao.insert(DriveBackup(0,true,System.currentTimeMillis().toString(),""))
-                removeOldBackups(backupName, folderId)
+                removeOldBackups(executedFile.id, folderId)
                 listener.invoke(true)
             }catch (e: Exception){
                 driveBackupDao.insert(DriveBackup(0,false,System.currentTimeMillis().toString(),""))
@@ -240,7 +239,7 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    private fun removeOldBackups(lastBackupName: String, folderId: String?){
+    private fun removeOldBackups(backId: String, folderId: String?){
         viewModelScope.launch(Dispatchers.IO) {
 //            val folderId = getFolderId()
 
@@ -253,9 +252,9 @@ class BackupViewModel @Inject constructor(
                 val files = result.files
 
                 for (file in files) {
-                    val fileName = file.name
+                    val fileId = file.id
 
-                    if (fileName != lastBackupName && fileName.startsWith("VocabsBackup_")) {
+                    if (fileId != backId && fileId.startsWith("VocabsBackup_")) {
                         // Delete the file
                         drive!!.files().delete(file.id).execute()
                     }

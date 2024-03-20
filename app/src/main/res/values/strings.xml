@@ -216,5 +216,10 @@
     <string name="backup_on_google_drive">Backup on Google Drive</string>
     <string name="didnt_add_word">You haven\'t added any words.</string>
     <string name="correct_was">Correct answer : %s</string>
+    <string name="no_message">No messages available.</string>
+    <string name="pro_users">Pro users</string>
+    <string name="review">Review</string>
+    <string name="random_review">Random Review</string>
+    <string name="writing">Writing</string>
 
 </resources>

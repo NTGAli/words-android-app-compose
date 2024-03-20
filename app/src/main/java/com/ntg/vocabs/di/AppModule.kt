@@ -10,6 +10,8 @@ import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.*
+import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ntg.vocabs.UserDataAndSetting
@@ -21,6 +23,7 @@ import com.ntg.vocabs.api.LoggingInterceptor
 import com.ntg.vocabs.api.auth.AuthRepository
 import com.ntg.vocabs.api.auth.AuthRepositoryImpl
 import com.ntg.vocabs.db.AppDB
+import com.ntg.vocabs.db.dao.AdHistoryDao
 import com.ntg.vocabs.db.dao.DriveBackupDao
 import com.ntg.vocabs.db.dao.EnglishVerbDao
 import com.ntg.vocabs.db.dao.EnglishWordDao
@@ -80,6 +83,10 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun providesFirebaseDB()  = FirebaseDatabase.getInstance()
+
+    @Provides
+    @Singleton
     fun providesFireStore()  = Firebase.firestore
 
 
@@ -136,6 +143,12 @@ class AppModule {
     @Singleton
     fun provideEnglishVerbsDao(appDB: AppDB): EnglishVerbDao {
         return appDB.getEnglishVerbsDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAdDao(appDB: AppDB): AdHistoryDao {
+        return appDB.getAddHistories()
     }
 
     @Provides

@@ -31,19 +31,25 @@ class MyApp : Application(), Configuration.Provider {
         setTheme(R.style.Theme_Vocabs)
         super.onCreate()
         initTimber()
+        fcmCheck()
+    }
 
+    private fun fcmCheck(){
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token: String ->
             if (!TextUtils.isEmpty(token)) {
-                timber("FCM_TOKEN ::::: $token")
+                timber("FCM_TOKEN . ::::: $token")
+//                saveFCM(token)
             } else {
-                timber("FCM_TOKEN ::::: NULL TOKEN")
+                timber("FCM_TOKEN . ::::: NULL TOKEN")
             }
         }.addOnFailureListener { e: Exception? -> }.addOnCanceledListener {}
             .addOnCompleteListener { task: Task<String> ->
                 try {
-                    timber("FCM_TOKEN_FAIL ::::: ${task.result}")
+                    timber("FCM_TOKEN_FAIL . ::::: ${task.result}")
+//                    saveFCM(task.result)
                 }catch (e: Exception){
                     e.printStackTrace()
+                    timber("FCM_TOKEN_FAIL ::: ${e.message} --------- ${e.printStackTrace()}")
                 }
             }
     }

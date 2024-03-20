@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +33,7 @@ fun ItemList(
     subTitle: String,
     tertiaryText: String? = null,
     isSelected: Boolean,
+    image: ImageVector? = null,
     onClick: (Int) -> Unit,
     editCallback: (Int) -> Unit,
     deleteCallback: (Int) -> Unit
@@ -105,35 +108,39 @@ fun ItemList(
         }
 
 
-        Popup(
-            modifier =
-            Modifier
-                .align(Alignment.CenterEnd), popupItems = popupItems
-        ) {
-            when (it) {
-                0 -> {
-                    onClick.invoke(id)
-                }
-                1 -> {
-                    editCallback.invoke(id)
-                }
-                2 -> {
-                    deleteCallback.invoke(id)
+        if (image == null){
+            Popup(
+                modifier =
+                Modifier
+                    .align(Alignment.CenterEnd), popupItems = popupItems
+            ) {
+                when (it) {
+                    0 -> {
+                        onClick.invoke(id)
+                    }
+                    1 -> {
+                        editCallback.invoke(id)
+                    }
+                    2 -> {
+                        deleteCallback.invoke(id)
+                    }
                 }
             }
+        }else{
+
+        Icon(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp)
+                .clickable {
+                    onClick.invoke(0)
+                },
+            imageVector = image,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            contentDescription = "more"
+        )
         }
 
-//        Icon(
-//            modifier = Modifier
-//                .align(Alignment.CenterEnd)
-//                .padding(end = 16.dp)
-//                .clickable {
-//                    showPopup = true
-//                },
-//            imageVector = Icons.Rounded.MoreVert,
-//            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-//            contentDescription = "more"
-//        )
 
     }
 

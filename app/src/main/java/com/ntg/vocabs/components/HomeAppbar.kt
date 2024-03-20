@@ -5,6 +5,7 @@ import android.content.Intent
 import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,6 +34,7 @@ fun HomeAppbar(
     profileCallback: () -> Unit,
     voiceSearch: (String) -> Unit,
     backupOnClick: () -> Unit = {},
+    subscription: () -> Unit = {},
 ) {
 
 
@@ -79,9 +81,18 @@ fun HomeAppbar(
         },
         actions = {
 
-
             IconButton(
                 modifier = Modifier.padding(start = 8.dp),
+                onClick = {
+                    subscription.invoke()
+                }) {
+                Image(
+                    painter = painterResource(id = R.drawable.icons8_crown_1),
+                    contentDescription = "notifications"
+                )
+            }
+
+            IconButton(
                 onClick = {
                     backupOnClick.invoke()
                 }) {
@@ -103,7 +114,6 @@ fun HomeAppbar(
                     contentDescription = "notifications"
                 )
             }
-
 
 
 

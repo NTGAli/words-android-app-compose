@@ -273,7 +273,7 @@ private fun Content(
                 },
                 pronunciation = pronunciation,
                 definition = defSelected?.def,
-                audio = soundUrl,
+                sound = soundUrl,
                 example = defSelected?.example.orEmpty(),
                 dateCreated = System.currentTimeMillis(),
                 lastRevisionTime = System.currentTimeMillis()

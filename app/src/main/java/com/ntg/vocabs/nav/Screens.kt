@@ -36,6 +36,9 @@ enum class Screens {
     AskBackupScreen,
     BackupScreen,
     FullScreenImageScreen,
+    FullScreenAdScreen,
+    SubscriptionsScreen,
+    SelectReviewTypeScreen
 
 
 }

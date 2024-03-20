@@ -27,12 +27,6 @@ fun TypewriterText(
     enableVibrate: Boolean = true,
     style: androidx.compose.ui.text.TextStyle = fontBold24()
 ) {
-//    var name = rememberSaveable { mutableStateOf("") }
-
-
-//    val dddd = mutableStateListOf<String>()
-
-//    val ffffff = texts2.value
 
     val vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val vibratorManager =
@@ -69,7 +63,7 @@ fun TypewriterText(
 //                Log.e("Abhi", "$charIndex $textToDisplay")
                 delay(speedType)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && enableVibrate) {
-//                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
+                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
                 }
 
             }

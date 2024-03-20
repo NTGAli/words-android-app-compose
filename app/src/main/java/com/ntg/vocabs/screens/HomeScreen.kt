@@ -1,6 +1,13 @@
 package com.ntg.vocabs.screens
 
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -19,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,8 +52,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
@@ -86,9 +97,11 @@ import com.ntg.vocabs.util.orDefault
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.rememberWindowInfo
+import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
+import com.ntg.vocabs.vm.MessageBoxViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -102,7 +115,8 @@ fun HomeScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
     loginViewModel: LoginViewModel,
-    backupViewModel: BackupViewModel
+    backupViewModel: BackupViewModel,
+    messageBoxViewModel: MessageBoxViewModel
 ) {
 
     val backupOption =
@@ -138,6 +152,9 @@ fun HomeScreen(
                         navController.navigate(Screens.BackupScreen.name)
                     }
 
+                },
+                subscription = {
+                    navController.navigate(Screens.SubscriptionsScreen.name)
                 }
             )
         },
@@ -154,8 +171,108 @@ fun HomeScreen(
             ) {
                 Icon(imageVector = Icons.Rounded.Add, tint = Color.Black, contentDescription = "FL")
             }
-        }
+        },
+//        bottomBar = {
+//            var visible by remember {
+//                mutableStateOf(false)
+//            }
+//            Button(onClick = {
+//                visible = !visible
+//            }) {
+//                Text(text = "CLICK")
+//            }
+//
+//            AnimatedVisibility(
+//                visible = visible,
+//                enter = ExtendedFabExpandAnimation,
+//                exit = ExtendedFabCollapseAnimation,
+//            ) {
+//                Row(Modifier.clearAndSetSemantics {}.background(MaterialTheme.colorScheme.primary).fillMaxWidth()) {
+//                    Spacer(Modifier.width(ExtendedFabEndIconPadding))
+//                    Text(text = "Hiiiiiiiiiiiiiiiiiiii")
+//                }
+//            }
+//        }
     )
+
+
+
+    val observer = LocalLifecycleOwner.current
+    LaunchedEffect(key1 = Unit, block = {
+        messageBoxViewModel.loadFullScreenAd()
+    })
+    messageBoxViewModel.fullScreenAd.observeAsState(initial = null).value.let {
+        if (it != null){
+            if (it.preview.orFalse()) return@let
+            messageBoxViewModel.isUserAlreadySeen(it.id.orEmpty()).observe(observer){
+                if (it == null){
+                    navController.navigate(Screens.FullScreenAdScreen.name)
+                }
+            }
+
+        }
+    }
+
+
+}
+
+private val ExtendedFabEndIconPadding = 12.dp
+
+private val ExtendedFabCollapseAnimation = fadeOut(
+    animationSpec = tween(
+        durationMillis = com.ntg.vocabs.screens.MotionTokens.DurationShort2.toInt(),
+        easing = com.ntg.vocabs.screens.MotionTokens.EasingLinearCubicBezier,
+    )
+) + shrinkHorizontally(
+    animationSpec = tween(
+        durationMillis = MotionTokens.DurationLong2.toInt(),
+        easing = com.ntg.vocabs.screens.MotionTokens.EasingEmphasizedCubicBezier,
+    ),
+    shrinkTowards = Alignment.Start,
+)
+
+private val ExtendedFabExpandAnimation = fadeIn(
+    animationSpec = tween(
+        durationMillis = com.ntg.vocabs.screens.MotionTokens.DurationShort4.toInt(),
+        delayMillis = com.ntg.vocabs.screens.MotionTokens.DurationShort2.toInt(),
+        easing = com.ntg.vocabs.screens.MotionTokens.EasingLinearCubicBezier,
+    ),
+) + expandHorizontally(
+    animationSpec = tween(
+        durationMillis = MotionTokens.DurationLong2.toInt(),
+        easing = com.ntg.vocabs.screens.MotionTokens.EasingEmphasizedCubicBezier,
+    ),
+    expandFrom = Alignment.Start,
+)
+
+
+internal object MotionTokens {
+    const val DurationExtraLong1 = 700.0
+    const val DurationExtraLong2 = 800.0
+    const val DurationExtraLong3 = 900.0
+    const val DurationExtraLong4 = 1000.0
+    const val DurationLong1 = 450.0
+    const val DurationLong2 = 500.0
+    const val DurationLong3 = 550.0
+    const val DurationLong4 = 600.0
+    const val DurationMedium1 = 250.0
+    const val DurationMedium2 = 300.0
+    const val DurationMedium3 = 350.0
+    const val DurationMedium4 = 400.0
+    const val DurationShort1 = 50.0
+    const val DurationShort2 = 100.0
+    const val DurationShort3 = 150.0
+    const val DurationShort4 = 200.0
+    val EasingEmphasizedCubicBezier = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+    val EasingEmphasizedAccelerateCubicBezier = CubicBezierEasing(0.3f, 0.0f, 0.8f, 0.15f)
+    val EasingEmphasizedDecelerateCubicBezier = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f)
+    val EasingLegacyCubicBezier = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1.0f)
+    val EasingLegacyAccelerateCubicBezier = CubicBezierEasing(0.4f, 0.0f, 1.0f, 1.0f)
+    val EasingLegacyDecelerateCubicBezier = CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
+    val EasingLinearCubicBezier = CubicBezierEasing(0.0f, 0.0f, 1.0f, 1.0f)
+    val EasingStandardCubicBezier = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+    val EasingStandardAccelerateCubicBezier = CubicBezierEasing(0.3f, 0.0f, 1.0f, 1.0f)
+    val EasingStandardDecelerateCubicBezier = CubicBezierEasing(0.0f, 0.0f, 0.0f, 1.0f)
 }
 
 
@@ -264,6 +381,7 @@ private fun Content(
                 }
 
 
+
                 Text(
                     modifier = Modifier.padding(top = 28.dp),
                     text = stringResource(R.string.words),
@@ -279,6 +397,7 @@ private fun Content(
 
                 SampleItem(
                     title = word.word.toString(),
+                    secondaryText = word.type,
                     id = word.id,
                     painter = painter,
                     isBookmarked = word.bookmarked.orFalse()
@@ -476,7 +595,7 @@ fun PhoneScreenMode(
                 imageBackground = Warning100
             ) {
                 if (needToReviewCount.value != 0) {
-                    navController.navigate(Screens.RevisionScreen.name)
+                    navController.navigate(Screens.SelectReviewTypeScreen.name)
                 } else if (numberOfAllWords.value != 0) {
                     ctx.toast(ctx.getString(R.string.no_word_for_review))
                 } else {
@@ -561,7 +680,7 @@ fun TabletMode(
             imageBackground = Warning100
         ) {
             if (needToReviewCount.value != 0) {
-                navController.navigate(Screens.RevisionScreen.name)
+                navController.navigate(Screens.SelectReviewTypeScreen.name)
             } else if (numberOfAllWords.value != 0) {
                 ctx.toast(ctx.getString(R.string.no_word_for_review))
             } else {
