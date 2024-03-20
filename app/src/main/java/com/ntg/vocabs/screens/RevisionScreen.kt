@@ -335,7 +335,7 @@ private fun Content(
                                         modifier = Modifier
                                             .padding(horizontal = 24.dp)
                                             .padding(top = 16.dp, bottom = 24.dp),
-                                        text = if (reviewType == ReviewTypes.Definition) word!!.definition.orEmpty() else word!!.translation.orEmpty(),
+                                        text = if (reviewType == ReviewTypes.Definition) word!!.definition.orEmpty().replace(word!!.word.orEmpty(), " .... ") else word!!.translation.orEmpty(),
                                         style = fontMedium14(MaterialTheme.colorScheme.onBackground)
                                     )
                                 }
@@ -438,13 +438,26 @@ private fun Content(
 
                             ReviewTypes.Word -> {
                                 item {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(horizontal = 24.dp)
-                                            .padding(top = 16.dp, bottom = 24.dp),
-                                        text = word!!.word.orEmpty(),
-                                        style = fontMedium14(MaterialTheme.colorScheme.onBackground)
-                                    )
+
+                                    Row(
+                                        modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            modifier = Modifier
+                                                .padding(horizontal = 24.dp)
+                                                ,
+                                            text = word!!.word.orEmpty(),
+                                            style = fontMedium14(MaterialTheme.colorScheme.onBackground)
+                                        )
+                                        if (word!!.type != null){
+                                            Text(
+                                                text = word!!.type.orEmpty(),
+                                                style = fontMedium12(MaterialTheme.colorScheme.onBackground)
+                                            )
+                                        }
+                                    }
+
                                 }
                             }
 
@@ -468,6 +481,7 @@ private fun Content(
                             ) {
                                 wordSelected = it
                                 isCorrect = it == correctAnswer
+                                if (it == correctAnswer) rejectedList.add(word!!)
                                 showSheet = true
                             }
                         }

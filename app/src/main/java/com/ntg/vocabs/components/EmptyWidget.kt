@@ -27,7 +27,7 @@ fun EmptyWidget(
         contentAlignment = Alignment.Center
         ){
             Text(modifier = Modifier.padding(vertical = 16.dp),text = title, style = fontRegular14(
-                MaterialTheme.colorScheme.secondary))
+                MaterialTheme.colorScheme.outline))
         }
 
 

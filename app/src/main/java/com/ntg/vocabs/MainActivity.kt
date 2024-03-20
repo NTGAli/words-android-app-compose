@@ -1,5 +1,6 @@
 package com.ntg.vocabs
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
@@ -21,6 +22,8 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.gson.Gson
 import com.ntg.vocabs.db.AutoInsertWorker
 import com.ntg.vocabs.model.SpendTimeType
@@ -62,6 +65,7 @@ class MainActivity : ComponentActivity() {
     var listId: VocabItemList? = null
 
 
+    @OptIn(ExperimentalPermissionsApi::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -249,7 +253,19 @@ class MainActivity : ComponentActivity() {
                 }
 
             })
+            var notificationStatusPermission by remember {
+                mutableStateOf(false)
+            }
+            val notificationPermission =
+                rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS, onPermissionResult = {
+                    notificationStatusPermission = it
+                })
+            LaunchedEffect(key1 = Unit, block = {
+                notificationPermission.launchPermissionRequest()
+            })
         }
+
+
 
     }
 

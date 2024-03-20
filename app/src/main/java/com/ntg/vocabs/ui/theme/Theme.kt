@@ -117,6 +117,9 @@ fun AppTheme(
             WindowCompat
                 .getInsetsController(window, view)
                 .isAppearanceLightStatusBars = colors ==  LightColors
+            WindowCompat
+                .getInsetsController(window, view)
+                .isAppearanceLightNavigationBars = colors ==  LightColors
         }
     }
 

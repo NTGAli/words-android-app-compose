@@ -18,30 +18,31 @@ import androidx.compose.ui.unit.dp
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
+import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontRegular12
 
 @Composable
 fun MessageItem(
     modifier: Modifier =  Modifier,
-    title: String,
-    description: String,
-    action: String,
-    actionData: String,
+    title: String?,
+    description: String?,
+    action: String?,
+    actionData: String?,
     isSeen: Boolean = false,
     actionClick:(String) -> Unit
 ){
 
     Column(modifier = modifier.padding(vertical = 8.dp, horizontal = 24.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = title, style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant))
-            if (!isSeen){
-                Box(modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.primary).size(4.dp).padding(start = 8.dp))
-            }
+            Text(text = title.orEmpty(), style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant))
+//            if (!isSeen){
+//                Box(modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.primary).size(4.dp).padding(start = 8.dp))
+//            }
         }
-        Text(modifier = Modifier.padding(8.dp), text = description, style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant))
-        CustomButton(text = action, size = ButtonSize.XS, type = ButtonType.Primary, style = ButtonStyle.TextOnly){
-            actionClick.invoke(actionData)
+        Text(modifier = Modifier.padding(8.dp), text = description.orEmpty(), style = fontMedium12(MaterialTheme.colorScheme.onSurfaceVariant))
+        CustomButton(text = action.orEmpty(), size = ButtonSize.XS, type = ButtonType.Primary, style = ButtonStyle.TextOnly){
+            actionClick.invoke(actionData.orEmpty())
         }
         Divider(modifier = Modifier.padding(top = 8.dp),color = MaterialTheme.colorScheme.surfaceVariant)
     }

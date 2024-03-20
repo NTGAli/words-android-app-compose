@@ -87,11 +87,36 @@ val Info100 = Color(0XFFF8F6F1)
 val Info050 = Color(0XFFFCFBF8)
 
 
-
-
-
-
-
+val Pro = listOf(
+    Color(0XFF0033E7),
+    Color(0XFFDD4D00),
+    Color(0XFFC0DFE7),
+    Color(0XFF7093FF),
+    Color(0XFF11351E),
+    Color(0XFFCDCCE8),
+    Color(0XFFB3D7ED),
+    Color(0XFFF8F2EB),
+    Color(0XFF0B4251),
+    Color(0XFF87BBD7),
+    Color(0XFFF2C864),
+    Color(0XFFAEFFDE),
+    Color(0XFFF9D342),
+    Color(0XFFE1A140),
+    Color(0XFFEFCFA0),
+    Color(0XFF091235),
+    Color(0XFF88A9C3),
+    Color(0XFF2B4257),
+    Color(0XFFE1999F),
+    Color(0XFFDEB3AD),
+    Color(0XFFB68D40),
+    Color(0XFFF4EBD0),
+    Color(0XFF122620),
+    Color(0XFF1B2E3C),
+    Color(0XFFE76D57),
+    Color(0XFF8C8C8C),
+    Color(0XFFF6CBB7),
+    Color(0XFFF7E5DA),
+)
 
 
 val md_theme_light_primary = Color(0xFF0061A4)
@@ -132,7 +157,7 @@ val md_theme_dark_onPrimaryContainer = Color(0xFFD1E4FF)
 val md_theme_dark_secondary = Color(0xFFb7ccb7)
 val md_theme_dark_onSecondary = Color(0xFF233426)
 val md_theme_dark_secondaryContainer = Color(0xFF394b3b)
-val md_theme_dark_onSecondaryContainer = Color( 0xFFd3e8d3)
+val md_theme_dark_onSecondaryContainer = Color(0xFFd3e8d3)
 val md_theme_dark_tertiary = Color(0xFFA9C7FF)
 val md_theme_dark_onTertiary = Color(0xFF003063)
 val md_theme_dark_tertiaryContainer = Color(0xFF00468C)

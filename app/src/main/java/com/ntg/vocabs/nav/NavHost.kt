@@ -65,7 +65,7 @@ fun AppNavHost(
         composable(Screens.HomeScreen.name, enterTransition = { ->
             EnterTransition.None
         }) {
-            HomeScreen(navController, wordViewModel, loginViewModel, backupViewModel)
+            HomeScreen(navController, wordViewModel, loginViewModel, backupViewModel, messageBoxViewModel)
         }
 
         composable(Screens.AllWordsScreen.name + "?openSearch={openSearch}" + "&query={query}",
@@ -121,6 +121,18 @@ fun AppNavHost(
 
         composable(Screens.ThemeScreen.name) {
             ThemeScreen(navController, loginViewModel)
+        }
+
+        composable(Screens.FullScreenAdScreen.name) {
+            FullScreenAdScreen(navController, messageBoxViewModel)
+        }
+
+        composable(Screens.SubscriptionsScreen.name) {
+            SubscriptionsScreen(navController)
+        }
+
+        composable(Screens.SelectReviewTypeScreen.name) {
+            SelectReviewTypeScreen(navController,wordViewModel)
         }
 
         composable(

@@ -38,7 +38,7 @@ interface TimeSpentDao {
     @Query("SELECT * FROM TimeSpent WHERE startUnix IS NOT NULL AND endUnix IS NOT NULL")
     fun getAllValidTime(): LiveData<List<TimeSpent>>
 
-    @Query("SELECT * FROM TimeSpent WHERE type = :type AND startUnix IS NOT NULL AND endUnix IS NOT NULL AND listId=:listId")
+    @Query("SELECT * FROM TimeSpent WHERE type = :type AND startUnix IS NOT NULL AND endUnix IS NOT NULL AND listId=:listId ORDER BY id DESC")
     fun getAllValidTimesBaseType(type: Int, listId: Int): LiveData<List<TimeSpent>>
 
     @Query("SELECT * FROM TimeSpent WHERE type = 0 AND (startUnix IS NOT NULL AND endUnix IS NOT NULL)")
