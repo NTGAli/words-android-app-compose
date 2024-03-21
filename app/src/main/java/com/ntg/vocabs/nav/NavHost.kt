@@ -135,6 +135,10 @@ fun AppNavHost(
             SelectReviewTypeScreen(navController,wordViewModel)
         }
 
+        composable(Screens.WritingScreen.name) {
+            WritingScreen(navController,wordViewModel)
+        }
+
         composable(
             Screens.CodeScreen.name + "?email={email}",
             arguments = listOf(navArgument("email")
@@ -216,8 +220,13 @@ fun AppNavHost(
         }
 
 
-        composable(Screens.RevisionScreen.name) {
-            RevisionScreen(navController, wordViewModel, calendarViewModel)
+        composable(Screens.RevisionScreen.name + "?isRandom={isRandom}",
+            arguments = listOf(navArgument("isRandom")
+            {
+                type = NavType.BoolType
+                defaultValue = false
+            })) {
+            RevisionScreen(navController, wordViewModel, calendarViewModel,it.arguments?.getBoolean("isRandom").orFalse())
         }
 
         composable(Screens.ProfileScreen.name) {

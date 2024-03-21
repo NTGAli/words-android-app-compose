@@ -22,6 +22,7 @@ import com.ntg.vocabs.db.dao.EnglishVerbDao
 import com.ntg.vocabs.db.dao.EnglishWordDao
 import com.ntg.vocabs.db.dao.GermanNounsDao
 import com.ntg.vocabs.db.dao.GermanVerbsDao
+import com.ntg.vocabs.db.dao.SoundDao
 import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
@@ -31,6 +32,7 @@ import com.ntg.vocabs.model.db.EnglishVerbs
 import com.ntg.vocabs.model.db.EnglishWords
 import com.ntg.vocabs.model.db.GermanNouns
 import com.ntg.vocabs.model.db.GermanVerbs
+import com.ntg.vocabs.model.db.Sounds
 import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
@@ -62,6 +64,7 @@ class WordViewModel @Inject constructor(
     private val timeSpentDao: TimeSpentDao,
     private val germanNounsDao: GermanNounsDao,
     private val germanVerbsDao: GermanVerbsDao,
+    private val soundDao: SoundDao,
     private val englishVerbDao: EnglishVerbDao,
     private val vocabListDao: VocabListDao,
     private val englishWordDao: EnglishWordDao,
@@ -82,6 +85,7 @@ class WordViewModel @Inject constructor(
     private var dataList: LiveData<VocabItemList> = MutableLiveData()
     private var germanNounSize: LiveData<Int> = MutableLiveData()
     private var germanVerbsSize: LiveData<Int> = MutableLiveData()
+    private var soundsSize: LiveData<Int> = MutableLiveData()
     private var germanNoun: LiveData<GermanNouns> = MutableLiveData()
     private var germanVerb: LiveData<GermanVerbs> = MutableLiveData()
     private var germanVerbs: LiveData<List<GermanVerbs>> = MutableLiveData()
@@ -93,6 +97,7 @@ class WordViewModel @Inject constructor(
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var englishWordsSize: LiveData<Int> = MutableLiveData()
     private var englishVerbsSize: LiveData<Int> = MutableLiveData()
+    private var pronouns: LiveData<Sounds> = MutableLiveData()
     private var englishWords: LiveData<List<EnglishWords>> = MutableLiveData()
     private var wordData: MutableLiveData<NetworkResult<List<WordDataItem>>> = MutableLiveData()
     private var wordVocab: MutableLiveData<NetworkResult<ResponseBody<WordVocab?>>> =
@@ -110,7 +115,6 @@ class WordViewModel @Inject constructor(
     private var processingNouns = false
     private var processingArticles = false
     var scrollPos: Int = 0
-
 
     fun searchOnWords(query: String, listId: Int) {
         viewModelScope.launch {
@@ -205,6 +209,13 @@ class WordViewModel @Inject constructor(
         return germanVerbsSize
     }
 
+    fun sizeSounds(): LiveData<Int> {
+        viewModelScope.launch {
+            germanVerbsSize = soundDao.size()
+        }
+        return soundsSize
+    }
+
     fun germanNoun(word: String): LiveData<GermanNouns> {
         viewModelScope.launch {
             germanNoun = germanNounsDao.findNoun(word)
@@ -257,6 +268,9 @@ class WordViewModel @Inject constructor(
 
     fun recentWords(daysAgo: Int, listId: Int) =
         wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis(), listId)
+
+    fun randomWords(listId: Int) =
+        wordDao.randomWords(listId)
 
     fun findWord(id: Int?): LiveData<Word>? {
         if (id == -1) return null
@@ -318,6 +332,13 @@ class WordViewModel @Inject constructor(
             englishVerbsSize = englishVerbDao.size()
         }
         return englishVerbsSize
+    }
+
+    fun findPronouns(word: String, type: String): LiveData<Sounds> {
+        viewModelScope.launch {
+            pronouns = soundDao.search(word, type)
+        }
+        return pronouns
     }
 
     fun englishWords(query: String): Flow<PagingData<EnglishWords>> {

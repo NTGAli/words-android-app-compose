@@ -221,5 +221,8 @@
     <string name="review">Review</string>
     <string name="random_review">Random Review</string>
     <string name="writing">Writing</string>
+    <string name="write_here">Write here</string>
+    <string name="check">Check</string>
+    <string name="add_more_than_two_words">You need to add more than two words.</string>
 
 </resources>

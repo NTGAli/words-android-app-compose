@@ -49,7 +49,7 @@ fun HelpAndFeedbackScreen(navController: NavHostController) {
 }
 
 @Composable
-private fun Content(paddingValues: PaddingValues, navController: NavHostController){
+private fun Content(paddingValues: PaddingValues, navController: NavHostController) {
 
     val ctx = LocalContext.current
 
@@ -65,10 +65,10 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
             "            <p><strong>Choose Your Destination:</strong> Depending on your preference, you have two options:</p>\n" +
             "            <ul>\n" +
             "                <li>\n" +
-            "                    <p><strong>Server Backup:</strong> If you wish to backup your data on a server, you'll need to log in to your account.</p>\n" +
+            "                    <p><strong>Google Drive Backup:</strong> If you wish to backup your data on your Google Drive, you'll need to log in to your Google account.</p>\n" +
             "                </li>\n" +
             "                <li>\n" +
-            "                    <p><strong>Phone Backup:</strong> To keep a backup on your device, you can easily share it with any location or app of your choice.</p>\n" +
+            "                    <p><strong>Phone Backup:</strong> To keep a backup on your device, select 'on phone storage'. Your backup will be saved in the 'Documents' folder.</p>\n" +
             "                </li>\n" +
             "            </ul>\n" +
             "        </li>\n" +
@@ -87,7 +87,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
             "            <p><strong>Choose Your Source:</strong></p>\n" +
             "            <ul>\n" +
             "                <li>\n" +
-            "                    <p><strong>From Server:</strong> If you previously backed up your data on the server, select the \"On Server\" option to restore it.</p>\n" +
+            "                    <p><strong>From Your Google Drive:</strong> If you previously backed up your data on the Google Drive, select the \"On Google Drive\" option to restore it.</p>\n" +
             "                </li>\n" +
             "                <li>\n" +
             "                    <p><strong>From Local Storage:</strong> If you saved your backup on your device or elsewhere, use the \"Import\" option to restore it.</p>\n" +
@@ -96,10 +96,11 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
             "        </li>\n" +
             "    </ol>"
 
-    val fq3Desc = "<p>No, currently, there is no automatic backup feature. We recommend manually backing up your data periodically, such as after each review session or at regular intervals, to ensure your data is stored either on the server or on your phone.</p>"
+    val fq3Desc =
+        "<p>If you grant access to your Google Drive, you can select a backup period for your data. Otherwise, there is currently no automatic backup option available.</p>"
 
 
-        val fQuestions: List<Pair<String, String>> = listOf(
+    val fQuestions: List<Pair<String, String>> = listOf(
         Pair(
             first = stringResource(R.string.fq1), second = fq1Desc
         ),
@@ -112,32 +113,55 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
     )
 
 
-    LazyColumn(modifier = Modifier.padding(paddingValues)){
+    LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
-            Text(modifier = Modifier.padding(horizontal = 24.dp), text = stringResource(id = R.string.frequency_questions), style = fontMedium16(MaterialTheme.colorScheme.outline))
+            Text(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                text = stringResource(id = R.string.frequency_questions),
+                style = fontMedium16(MaterialTheme.colorScheme.outline)
+            )
         }
 
-        items(fQuestions){
-            TextDescriptionAnimated(modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .padding(top = 16.dp), text = it.first, description = it.second)
+        items(fQuestions) {
+            TextDescriptionAnimated(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp), text = it.first, description = it.second
+            )
         }
 
         item {
-            Divider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            
-            SimpleBtn(modifier = Modifier.padding(horizontal = 24.dp), title = stringResource(id = R.string.send_feedback), painter = painterResource(
-                id = R.drawable.message_circle
-            )) {
-                ctx.sendMail(ctx.getString(R.string.support_email), ctx.getString(R.string.send_feedback))
+            Divider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            SimpleBtn(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                title = stringResource(id = R.string.send_feedback),
+                painter = painterResource(
+                    id = R.drawable.message_circle
+                )
+            ) {
+                ctx.sendMail(
+                    ctx.getString(R.string.support_email),
+                    ctx.getString(R.string.send_feedback)
+                )
             }
 
-            SimpleBtn(modifier = Modifier
-                .padding(top = 8.dp)
-                .padding(horizontal = 24.dp), title = stringResource(id = R.string.report_bug), painter = painterResource(
-                id = R.drawable.message_alert_circle
-            )) {
-                ctx.sendMail(ctx.getString(R.string.support_email), ctx.getString(R.string.report_bug))
+            SimpleBtn(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 24.dp),
+                title = stringResource(id = R.string.report_bug),
+                painter = painterResource(
+                    id = R.drawable.message_alert_circle
+                )
+            ) {
+                ctx.sendMail(
+                    ctx.getString(R.string.support_email),
+                    ctx.getString(R.string.report_bug)
+                )
             }
         }
 

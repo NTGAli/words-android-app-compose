@@ -29,6 +29,7 @@ import com.ntg.vocabs.db.dao.EnglishVerbDao
 import com.ntg.vocabs.db.dao.EnglishWordDao
 import com.ntg.vocabs.db.dao.GermanNounsDao
 import com.ntg.vocabs.db.dao.GermanVerbsDao
+import com.ntg.vocabs.db.dao.SoundDao
 import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
@@ -149,6 +150,12 @@ class AppModule {
     @Singleton
     fun provideAdDao(appDB: AppDB): AdHistoryDao {
         return appDB.getAddHistories()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSoundDao(appDB: AppDB): SoundDao {
+        return appDB.getSoundsDao()
     }
 
     @Provides

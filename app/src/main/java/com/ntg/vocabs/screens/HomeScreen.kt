@@ -594,13 +594,20 @@ fun PhoneScreenMode(
                 imageTint = Warning500,
                 imageBackground = Warning100
             ) {
-                if (needToReviewCount.value != 0) {
-                    navController.navigate(Screens.SelectReviewTypeScreen.name)
-                } else if (numberOfAllWords.value != 0) {
-                    ctx.toast(ctx.getString(R.string.no_word_for_review))
-                } else {
+
+                if (numberOfAllWords.value == 0) {
                     ctx.toast(ctx.getString(R.string.need_to_word_review))
+                }else{
+                    navController.navigate(Screens.SelectReviewTypeScreen.name)
                 }
+
+//                if (needToReviewCount.value != 0) {
+//                    navController.navigate(Screens.SelectReviewTypeScreen.name)
+//                } else if (numberOfAllWords.value != 0) {
+//                    ctx.toast(ctx.getString(R.string.no_word_for_review))
+//                } else {
+//                    ctx.toast(ctx.getString(R.string.need_to_word_review))
+//                }
             }
 
             ShapeTileWidget(
@@ -679,13 +686,18 @@ fun TabletMode(
             imageTint = Warning500,
             imageBackground = Warning100
         ) {
-            if (needToReviewCount.value != 0) {
-                navController.navigate(Screens.SelectReviewTypeScreen.name)
-            } else if (numberOfAllWords.value != 0) {
-                ctx.toast(ctx.getString(R.string.no_word_for_review))
-            } else {
+            if (numberOfAllWords.value == 0) {
                 ctx.toast(ctx.getString(R.string.need_to_word_review))
+            }else{
+                navController.navigate(Screens.SelectReviewTypeScreen.name)
             }
+//            if (needToReviewCount.value != 0) {
+//                navController.navigate(Screens.SelectReviewTypeScreen.name)
+//            } else if (numberOfAllWords.value != 0) {
+//                ctx.toast(ctx.getString(R.string.no_word_for_review))
+//            } else {
+//                ctx.toast(ctx.getString(R.string.need_to_word_review))
+//            }
         }
 
         ShapeTileWidget(

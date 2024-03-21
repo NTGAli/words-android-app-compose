@@ -132,6 +132,7 @@ class MainActivity : ComponentActivity() {
                         if (navDestination.route.orEmpty() == currentDes.value) return@AppNavHost
 
                         timber("onDestinationChangeListener ${navDestination.route}")
+                        calendarViewModel.currentScreen = navDestination.route
                         currentDes.value = navDestination.route.orEmpty()
                         currentScreen = navDestination.route.orEmpty()
 
@@ -184,7 +185,8 @@ class MainActivity : ComponentActivity() {
                 if (wordViewModel.getEnglishWordsSize().observeAsState(initial = -1).value == 0 ||
                     wordViewModel.getEnglishVerbsSize().observeAsState(initial = -1).value == 0 ||
                     wordViewModel.sizeGermanNoun().observeAsState(initial = -1).value == 0 ||
-                    wordViewModel.sizeGermanVerbs().observeAsState(initial = -1).value == 0
+                    wordViewModel.sizeGermanVerbs().observeAsState(initial = -1).value == 0 ||
+                    wordViewModel.sizeSounds().observeAsState(initial = -1).value == 0
                     ){
                     val secondWorkerRequest = OneTimeWorkRequestBuilder<AutoInsertWorker>()
                         .build()
@@ -286,6 +288,33 @@ class MainActivity : ComponentActivity() {
         } catch (e: IOException) {
             e.printStackTrace()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (calendarViewModel.currentScreen != null && listId != null){
+            when(calendarViewModel.currentScreen){
+                Screens.RevisionScreen.name -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        calendarViewModel.insertSpendTime(SpendTimeType.Revision,listId!!.id)
+                    }
+                }
+
+                else ->{
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        calendarViewModel.insertSpendTime(SpendTimeType.Learning,listId!!.id)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (listId != null){
+            calendarViewModel.stopLastTime()
+        }
+
     }
 
 }

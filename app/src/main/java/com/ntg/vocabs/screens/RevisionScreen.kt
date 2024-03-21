@@ -47,7 +47,8 @@ import java.io.IOException
 fun RevisionScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
-    calendarViewModel: CalendarViewModel
+    calendarViewModel: CalendarViewModel,
+    isRandom: Boolean
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -62,7 +63,7 @@ fun RevisionScreen(
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel, navController)
+            Content(paddingValues = innerPadding, wordViewModel, navController, isRandom)
 
         }
     )
@@ -77,6 +78,7 @@ private fun Content(
     paddingValues: PaddingValues,
     wordViewModel: WordViewModel,
     navController: NavController,
+    isRandom: Boolean
 ) {
 
     val reviewTypes: ArrayList<ReviewTypes> = arrayListOf()
@@ -117,7 +119,10 @@ private fun Content(
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val allWords =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty()
-    var words =
+    var words = if (isRandom){
+        if (allWords.size > 10) allWords.shuffled().take(20)
+        else allWords
+    }else{
         allWords.filter {
             getStateRevision(
                 it.revisionCount,
@@ -127,6 +132,7 @@ private fun Content(
                 it.lastRevisionTime
             ) == 3
         }
+    }
 
     val rejectedList = remember {
         mutableStateListOf<Word>()
@@ -147,9 +153,11 @@ private fun Content(
                 correctAnswer
             ) {
                 if (wordSelected == word!!.word.orEmpty()) {
-                    word!!.revisionCount = word!!.revisionCount + 1
-                    word!!.lastRevisionTime = System.currentTimeMillis()
-                    wordViewModel.editWord(word!!.id, word!!)
+                    if (!isRandom){
+                        word!!.revisionCount = word!!.revisionCount + 1
+                        word!!.lastRevisionTime = System.currentTimeMillis()
+                        wordViewModel.editWord(word!!.id, word!!)
+                    }
                     rejectedList.add(word!!)
                 } else {
                     rejectedList.add(word!!)
@@ -163,12 +171,7 @@ private fun Content(
         }
 
         if (word != null) {
-            timber("AAAAAAAAAA", "WWWWWWWWWWWWWWWWWWWWW " + word!!.word)
-
             reviewTypes.clear()
-
-
-
 
             if (word!!.definition.orEmpty().isNotEmpty() && allWords.size > 4) reviewTypes.add(
                 ReviewTypes.Definition
@@ -274,9 +277,11 @@ private fun Content(
                                 type = ButtonType.Success,
                                 size = ButtonSize.MD
                             ) {
-                                word!!.revisionCount = word!!.revisionCount + 1
-                                word!!.lastRevisionTime = System.currentTimeMillis()
-                                wordViewModel.editWord(word!!.id, word!!)
+                                if (!isRandom){
+                                    word!!.revisionCount = word!!.revisionCount + 1
+                                    word!!.lastRevisionTime = System.currentTimeMillis()
+                                    wordViewModel.editWord(word!!.id, word!!)
+                                }
                                 rejectedList.add(word!!)
                                 isCorrect = true
                                 isCorrect = null
@@ -500,8 +505,10 @@ private fun Content(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BottomSheet(isCorrect: Boolean, answer: String, onDismiss: () -> Unit) {
+fun BottomSheet(isCorrect: Boolean, answer: String, onDismiss: () -> Unit) {
     val modalBottomSheetState = rememberModalBottomSheetState()
+
+    timber("BottomSheetBottomSheetBottomSheetBottomSheetBottomSheetBottomSheet")
 
     val correctTitles = listOf(
         "Good",

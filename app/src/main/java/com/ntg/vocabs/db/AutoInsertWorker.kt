@@ -11,6 +11,7 @@ import com.ntg.vocabs.model.db.EnglishVerbs
 import com.ntg.vocabs.model.db.EnglishWords
 import com.ntg.vocabs.model.db.GermanNouns
 import com.ntg.vocabs.model.db.GermanVerbs
+import com.ntg.vocabs.model.db.Sounds
 import com.ntg.vocabs.util.timber
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -32,12 +33,14 @@ class AutoInsertWorker @AssistedInject constructor(
     private var processingEnWords = false
     private var processingEnVerbs = false
     private var processingNouns = false
+    private var processingSounds = false
     private var processingArticles = false
 
     override suspend fun doWork(): Result {
         unzipRaw(appContext.resources.openRawResource(R.raw.en_words))
         unzipRaw(appContext.resources.openRawResource(R.raw.articles))
         unzipRaw(appContext.resources.openRawResource(R.raw.combined_data))
+        unzipRaw(appContext.resources.openRawResource(R.raw.pron))
         insertEnglishVerbsFromRes(appContext.resources.openRawResource(R.raw.word_forms))
         return Result.success()
     }
@@ -62,7 +65,8 @@ class AutoInsertWorker @AssistedInject constructor(
 
                 val jsonArray = JSONArray(jsonStringBuilder.toString())
 
-                if (zipEntry.name == "en_words.json" || zipEntry.name == "articles.json" || zipEntry.name == "combined_data.json") {
+                if (zipEntry.name == "en_words.json" || zipEntry.name == "articles.json" || zipEntry.name == "combined_data.json"
+                    || zipEntry.name == "pron.json") {
                     processJsonArray(jsonArray, zipEntry.name)
                     break
                 }
@@ -77,7 +81,7 @@ class AutoInsertWorker @AssistedInject constructor(
         }
     }
     private suspend fun processJsonArray(jsonArray: JSONArray, name: String) {
-
+        timber("processingSounds :::::::::::::::: $name")
         when(name){
 
             "en_words.json" -> {
@@ -132,6 +136,27 @@ class AutoInsertWorker @AssistedInject constructor(
                 }
 
                 appDB.germanVerbsDao().insertAll(germanVerbList)
+            }
+
+            "pron.json" -> {
+                if (processingSounds) return
+                processingSounds = true
+                val sounds = mutableListOf<Sounds>()
+                try {
+                    for (i in 0 until jsonArray.length() - 1) {
+                        val jsonObject = jsonArray.getJSONObject(i)
+                        val word = jsonObject.getString("word")
+                        val type = jsonObject.getString("type")
+                        val mp3 = jsonObject.getString("mp3")
+                        val pronouns = jsonObject.getString("pronunciation")
+                        val sound = Sounds(word = word, type = type, mp3 = mp3, pronunciation = pronouns)
+                        sounds.add(sound)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                appDB.getSoundsDao().insertAll(sounds)
             }
 
         }
