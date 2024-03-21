@@ -14,6 +14,7 @@ import com.ntg.vocabs.db.dao.EnglishVerbDao
 import com.ntg.vocabs.db.dao.EnglishWordDao
 import com.ntg.vocabs.db.dao.GermanNounsDao
 import com.ntg.vocabs.db.dao.GermanVerbsDao
+import com.ntg.vocabs.db.dao.SoundDao
 import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
@@ -23,11 +24,12 @@ import com.ntg.vocabs.model.db.EnglishVerbs
 import com.ntg.vocabs.model.db.EnglishWords
 import com.ntg.vocabs.model.db.GermanNouns
 import com.ntg.vocabs.model.db.GermanVerbs
+import com.ntg.vocabs.model.db.Sounds
 import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
 
-@Database(entities = [Word::class, TimeSpent::class, VocabItemList::class, GermanNouns::class, GermanVerbs::class, EnglishWords::class, EnglishVerbs::class, DriveBackup::class, AdHistory::class], version = 25)
+@Database(entities = [Word::class, TimeSpent::class, VocabItemList::class, GermanNouns::class, GermanVerbs::class, EnglishWords::class, EnglishVerbs::class, DriveBackup::class, AdHistory::class, Sounds::class], version = 28)
 @TypeConverters(ExamplesConverters::class, VerbFormsConverter::class, DateConverter::class, GermanVerbConverter::class, GermanVerbConverter::class, GermanDataVerbConverter::class)
 abstract class AppDB: RoomDatabase()  {
 
@@ -40,5 +42,6 @@ abstract class AppDB: RoomDatabase()  {
     abstract fun getEnglishVerbsDao(): EnglishVerbDao
     abstract fun getDriveBackup(): DriveBackupDao
     abstract fun getAddHistories(): AdHistoryDao
+    abstract fun getSoundsDao(): SoundDao
 
 }

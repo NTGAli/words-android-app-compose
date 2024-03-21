@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.O)
+//@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     private val timeSpentDao: TimeSpentDao
@@ -26,15 +26,15 @@ class CalendarViewModel @Inject constructor(
 
     // get CalendarUiModel from CalendarDataSource, and the lastSelectedDate is Today.
     private val calendarUiModel = CalendarDataSource().getData()
-
     private var lastItem: LiveData<TimeSpent> = MutableLiveData()
     private var listOfTime: LiveData<List<TimeSpent>> = MutableLiveData()
     var finalData: MutableLiveData<List<CalendarUiModel.Date>> =
         MutableLiveData(calendarUiModel.visibleDates)
     private var allValidLearningTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
     private var allValidTimeSpent: LiveData<List<TimeSpent>> = MutableLiveData()
+    var currentScreen: String? = null
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
     fun insertSpendTime(type: SpendTimeType, listId: Int) {
         stopLastTime()
         removeNullTime()

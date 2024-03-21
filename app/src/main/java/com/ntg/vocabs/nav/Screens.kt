@@ -38,7 +38,8 @@ enum class Screens {
     FullScreenImageScreen,
     FullScreenAdScreen,
     SubscriptionsScreen,
-    SelectReviewTypeScreen
+    SelectReviewTypeScreen,
+    WritingScreen
 
 
 }

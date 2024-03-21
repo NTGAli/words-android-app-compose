@@ -61,4 +61,7 @@ interface WordDao {
 
     @Query("UPDATE Word SET bookmarked=:isBookmarked WHERE id=:id")
     suspend fun isBookmark(isBookmarked: Boolean, id: Int)
+
+    @Query("SELECT * FROM Word WHERE listId=:listId ORDER BY RANDOM() LIMIT 20")
+    fun randomWords(listId: Int): LiveData<List<Word>>
 }
