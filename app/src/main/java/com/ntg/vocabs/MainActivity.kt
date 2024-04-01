@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -36,6 +37,7 @@ import com.ntg.vocabs.ui.theme.AppTheme
 import com.ntg.vocabs.util.*
 import com.ntg.vocabs.util.Constant.BACKUPS
 import com.ntg.vocabs.util.backup.BackupWorker
+import com.ntg.vocabs.util.backup.ServerBackupWorker
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.DataViewModel
@@ -81,29 +83,77 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf("")
                 }
 
+                var backupStatus by remember {
+                    mutableStateOf<Boolean?>(null)
+                }
+
+
                 listId = wordViewModel.currentList().observeAsState().value
 
+                val dataSettings = loginViewModel.getUserData().asLiveData().observeAsState().value
+                (dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty()
+                    .isNotEmpty()).let {
+                    if (backupStatus == null) backupStatus = it
+                }
 
                 loginViewModel.getUserData().collectAsState(initial = null).let { userData ->
-
                     if (userData.value != null) {
-                        if (userData.value?.email.orEmpty().isEmpty()) {
-                            if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0)) {
+                        val userDataValue = userData.value
+                        if (userDataValue?.isIntroFinished.orTrue()) {
 
-                                if (lists.value?.filter { it.isSelected }.orEmpty().isNotEmpty()) {
-                                    startDes.value = Screens.HomeScreen.name
-                                } else {
-                                    startDes.value = Screens.VocabularyListScreen.name
-                                }
-                            } else {
+                            if (!userDataValue?.isSkipped.orFalse() && userDataValue?.email.orEmpty()
+                                    .isEmpty()
+                            ) {
                                 startDes.value = Screens.InsertEmailScreen.name
+                            }else if (userDataValue?.isSkipped.orFalse() && userDataValue?.backupOption.orEmpty().isEmpty()){
+                                startDes.value = Screens.AskBackupScreen.name
+                            }else if (lists.value?.filter { it.isSelected }.orEmpty()
+                                    .isNotEmpty()
+                            ) {
+                                startDes.value = Screens.HomeScreen.name
+                            } else if (userDataValue?.backupWay.orEmpty().isNotEmpty()){
+                                startDes.value = Screens.VocabularyListScreen.name
+                            }else if (!userDataValue?.isSubscriptionSkipped.orFalse()){
+                                startDes.value = Screens.ExplainSubscriptionScreen.name
+                            }else if (!backupStatus.orFalse()){
+                                startDes.value = Screens.SelectBackupOptionsScreen.name
+                            }else{
+                                startDes.value = Screens.VocabularyListScreen.name
                             }
-                        } else if (lists.value?.size.orZero() == 0 || lists.value?.filter { it.isSelected }
-                                .orEmpty().isEmpty()) {
-                            startDes.value = Screens.VocabularyListScreen.name
+
+//                            if (userDataValue?.name.orEmpty().isEmpty()){
+//                                startDes.value = Screens.NameScreen.name
+//                            }else if (lists.value?.filter { it.isSelected }.orEmpty().isNotEmpty()){
+//                                startDes.value = Screens.HomeScreen.name
+//                            }else if (!userDataValue?.isSubscriptionSkipped.orFalse()){
+//                                startDes.value = Screens.ExplainSubscriptionScreen.name
+//                            }else if (!backupStatus.orFalse()){
+//                                startDes.value = Screens.SelectBackupOptionsScreen.name
+//                            }
+//                            else{
+//                                startDes.value = Screens.VocabularyListScreen.name
+//                            }
                         } else {
-                            startDes.value = Screens.HomeScreen.name
+                            startDes.value = Screens.IntroScreen.name
                         }
+
+//                        if (userData.value?.email.orEmpty().isEmpty()) {
+//                            if (userData.value?.isSkipped.orFalse() && (lists.value?.size.orZero() != 0)) {
+//
+//                                if (lists.value?.filter { it.isSelected }.orEmpty().isNotEmpty()) {
+//                                    startDes.value = Screens.HomeScreen.name
+//                                } else {
+//                                    startDes.value = Screens.VocabularyListScreen.name
+//                                }
+//                            } else {
+//                                startDes.value = Screens.InsertEmailScreen.name
+//                            }
+//                        } else if (lists.value?.size.orZero() == 0 || lists.value?.filter { it.isSelected }
+//                                .orEmpty().isEmpty()) {
+//                            startDes.value = Screens.VocabularyListScreen.name
+//                        } else {
+//                            startDes.value = Screens.HomeScreen.name
+//                        }
                     }
 
                     timber("VOCAB_LISTS ::::::: $lists")
@@ -145,8 +195,8 @@ class MainActivity : ComponentActivity() {
 
                         }
 
-                        if (listId != null){
-                            when(navDestination.route.orEmpty()){
+                        if (listId != null) {
+                            when (navDestination.route.orEmpty()) {
                                 Screens.LoginWithPasswordScreen.name,
                                 Screens.InsertEmailScreen.name,
                                 Screens.CodeScreen.name,
@@ -157,15 +207,23 @@ class MainActivity : ComponentActivity() {
                                     timber("LoginPages")
                                 }
 
-                                Screens.RevisionScreen.name -> {
+                                Screens.RevisionScreen.name,
+                                Screens.WritingScreen.name,
+                                -> {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        calendarViewModel.insertSpendTime(SpendTimeType.Revision,listId!!.id)
+                                        calendarViewModel.insertSpendTime(
+                                            SpendTimeType.Revision,
+                                            listId!!.id
+                                        )
                                     }
                                 }
 
-                                else ->{
+                                else -> {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        calendarViewModel.insertSpendTime(SpendTimeType.Learning,listId!!.id)
+                                        calendarViewModel.insertSpendTime(
+                                            SpendTimeType.Learning,
+                                            listId!!.id
+                                        )
                                     }
                                 }
 
@@ -187,7 +245,7 @@ class MainActivity : ComponentActivity() {
                     wordViewModel.sizeGermanNoun().observeAsState(initial = -1).value == 0 ||
                     wordViewModel.sizeGermanVerbs().observeAsState(initial = -1).value == 0 ||
                     wordViewModel.sizeSounds().observeAsState(initial = -1).value == 0
-                    ){
+                ) {
                     val secondWorkerRequest = OneTimeWorkRequestBuilder<AutoInsertWorker>()
                         .build()
                     WorkManager.getInstance(this).enqueueUniqueWork(
@@ -211,35 +269,60 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    if (dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty() != "Only when i tap ‘backup’") {
+                    if (dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty() != "Only when i tap ‘backup’"
+                        && dataSettings?.backupWay.orEmpty() != "no"
+                        && dataSettings?.email.orEmpty().isNotEmpty()
+                        && listId != null
+                    ) {
                         LaunchedEffect(key1 = Unit, block = {
+                            val constraints = Constraints.Builder()
+                                .setRequiredNetworkType(NetworkType.CONNECTED)
+                                .build()
+                            if (dataSettings?.backupWay == "drive") {
+                                val repeatTime = when (dataSettings?.backupOption) {
+                                    "Daily" -> 1L
+                                    "Weekly" -> 7L
+                                    "Monthly" -> 30L
+                                    else -> -1L
+                                }
 
-                            val repeatTime = when (dataSettings?.backupOption) {
-                                "Daily" -> 1L
-                                "Weekly" -> 7L
-                                "Monthly" -> 30L
-                                else -> -1L
-                            }
+                                if (repeatTime != -1L) {
+                                    val backupWorkRequest =
+                                        PeriodicWorkRequestBuilder<BackupWorker>(
+                                            repeatInterval = repeatTime,
+                                            repeatIntervalTimeUnit = TimeUnit.DAYS
+                                        )
+                                            .setConstraints(constraints)
+                                            .build()
 
-                            if (repeatTime != -1L) {
-                                val constraints = Constraints.Builder()
-                                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                                    .build()
+                                    WorkManager.getInstance(this@MainActivity)
+                                        .enqueueUniquePeriodicWork(
+                                            "BackupOnDrive",
+                                            ExistingPeriodicWorkPolicy.KEEP, backupWorkRequest
+                                        )
+                                }
+                            } else {
+                                val data = Data.Builder()
+                                data.putString("email", dataSettings?.email)
 
-                                val backupWorkRequest = PeriodicWorkRequestBuilder<BackupWorker>(
-                                    repeatInterval = 16,
-                                    repeatIntervalTimeUnit = TimeUnit.MINUTES
-                                )
-                                    .setConstraints(constraints)
-                                    .build()
+                                val backupWorkRequest =
+                                    PeriodicWorkRequestBuilder<ServerBackupWorker>(
+                                        repeatInterval = 7,
+                                        repeatIntervalTimeUnit = TimeUnit.DAYS
+                                    ).setInputData(data.build())
+
+                                        .setConstraints(constraints)
+                                        .build()
+
+
+
 
                                 WorkManager.getInstance(this@MainActivity)
                                     .enqueueUniquePeriodicWork(
-                                        "BackupOnDrive",
+                                        "BackupOnServer",
                                         ExistingPeriodicWorkPolicy.KEEP, backupWorkRequest
                                     )
                             }
-
 
                         })
                     }
@@ -250,7 +333,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(key1 = backupUserData?.words, block = {
                 timber("UserBackupUserBackupUserBackupUserBackup ::::")
-                if (backupUserData?.words.orEmpty().isNotEmpty()){
+                if (backupUserData?.words.orEmpty().isNotEmpty()) {
                     saveBackupFile(backupUserData)
                 }
 
@@ -259,14 +342,15 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(false)
             }
             val notificationPermission =
-                rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS, onPermissionResult = {
-                    notificationStatusPermission = it
-                })
+                rememberPermissionState(
+                    Manifest.permission.POST_NOTIFICATIONS,
+                    onPermissionResult = {
+                        notificationStatusPermission = it
+                    })
             LaunchedEffect(key1 = Unit, block = {
                 notificationPermission.launchPermissionRequest()
             })
         }
-
 
 
     }
@@ -274,6 +358,8 @@ class MainActivity : ComponentActivity() {
     private fun saveBackupFile(backupUserData: BackupUserData?) {
 
         if (backupUserData == null) return
+
+
         val json = Gson().toJson(backupUserData)
         val dataFolder = File(getExternalFilesDir(""), "backups")
 
@@ -292,17 +378,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (calendarViewModel.currentScreen != null && listId != null){
-            when(calendarViewModel.currentScreen){
-                Screens.RevisionScreen.name -> {
+        if (calendarViewModel.currentScreen != null && listId != null) {
+            when (calendarViewModel.currentScreen) {
+                Screens.RevisionScreen.name,
+                Screens.WritingScreen.name,
+                -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        calendarViewModel.insertSpendTime(SpendTimeType.Revision,listId!!.id)
+                        calendarViewModel.insertSpendTime(SpendTimeType.Revision, listId!!.id)
                     }
                 }
 
-                else ->{
+                else -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        calendarViewModel.insertSpendTime(SpendTimeType.Learning,listId!!.id)
+                        calendarViewModel.insertSpendTime(SpendTimeType.Learning, listId!!.id)
                     }
                 }
             }
@@ -311,7 +399,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (listId != null){
+        if (listId != null) {
             calendarViewModel.stopLastTime()
         }
 

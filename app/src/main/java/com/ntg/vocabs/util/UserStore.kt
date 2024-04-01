@@ -12,16 +12,16 @@ import kotlinx.coroutines.flow.map
 class UserStore(private val context: Context) {
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("settings")
-        private val USER_TOKEN_KEY = stringPreferencesKey("theme")
+        private val THEME_APP = stringPreferencesKey("theme")
     }
 
-    val getAccessToken: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[USER_TOKEN_KEY] ?: ""
+    val getTheme: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[THEME_APP] ?: "System default"
     }
 
-    suspend fun saveToken(token: String) {
+    suspend fun saveTheme(token: String) {
         context.dataStore.edit { preferences ->
-            preferences[USER_TOKEN_KEY] = token
+            preferences[THEME_APP] = token
         }
     }
 }

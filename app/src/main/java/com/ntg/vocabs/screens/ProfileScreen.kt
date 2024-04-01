@@ -94,6 +94,10 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var isPro by remember {
+        mutableStateOf(false)
+    }
+
     var openBottomSheet by remember {
         mutableStateOf(false)
     }
@@ -122,20 +126,20 @@ private fun Content(
     ) {
 
 
-        item {
-            UserDataView(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp, bottom = 24.dp),
-                userDataAndSetting = userData.value,
-                loginOnClick = {
-                    navController.navigate(Screens.InsertEmailScreen.name + "?skip=${false}")
-                },
-                editNameClick = {
-                    navController.navigate(Screens.NameScreen.name)
-
-                })
-        }
+//        item {
+//            UserDataView(
+//                modifier = Modifier
+//                    .padding(horizontal = 16.dp)
+//                    .padding(top = 16.dp, bottom = 24.dp),
+//                userDataAndSetting = userData.value,
+//                loginOnClick = {
+//                    navController.navigate(Screens.InsertEmailScreen.name + "?skip=${false}")
+//                },
+//                editNameClick = {
+//                    navController.navigate(Screens.NameScreen.name)
+//
+//                })
+//        }
 
         item {
 
@@ -294,6 +298,12 @@ private fun Content(
                 ) {
                     visible = !visible
                 }
+            }
+
+
+
+            AccountState(modifier = Modifier.padding(16.dp), isFree = isPro){
+                isPro = !isPro
             }
 
             Divider(

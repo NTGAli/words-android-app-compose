@@ -44,10 +44,6 @@ fun NameScreen(navController: NavController, loginViewModel: LoginViewModel, ema
 @Composable
 private fun Content(paddingValues: PaddingValues, navController: NavController, loginViewModel: LoginViewModel, email: String? = null, userData: UserDataAndSetting?){
 
-    val owner = LocalLifecycleOwner.current
-    val ctx = LocalContext.current
-
-
     var text by remember {
         mutableStateOf("I am no one \uD83E\uDD2D")
     }
@@ -68,41 +64,41 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
 
 
-    if (loading){
-
-        loginViewModel.updateName(
-            name = text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""),
-            email = email.orEmpty().ifEmpty { userData?.email.orEmpty() }
-        ).observe(owner){
-
-            when(it.data){
-
-                "200" -> {
-                    loginViewModel.setUsername(text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""))
-                    if (email.orEmpty().isNotEmpty()){
-                        navController.navigate(Screens.VocabularyListScreen.name)
-                    }else{
-                        navController.popBackStack()
-                    }
-
-                }
-
-                "400" -> {
-                    ctx.toast(ctx.getString(R.string.sth_wrong))
-                }
-
-                "INVALID_TOKEN" -> {
-                    ctx.toast(ctx.getString(R.string.download_from_google_play))
-                }
-
-
-            }
-
-
-        }
-
-
-    }
+//    if (loading){
+//
+//        loginViewModel.updateName(
+//            name = text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""),
+//            email = email.orEmpty().ifEmpty { userData?.email.orEmpty() }
+//        ).observe(owner){
+//
+//            when(it.data){
+//
+//                "200" -> {
+//                    loginViewModel.setUsername(text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""))
+//                    if (email.orEmpty().isNotEmpty()){
+//                        navController.navigate(Screens.VocabularyListScreen.name)
+//                    }else{
+//                        navController.popBackStack()
+//                    }
+//
+//                }
+//
+//                "400" -> {
+//                    ctx.toast(ctx.getString(R.string.sth_wrong))
+//                }
+//
+//                "INVALID_TOKEN" -> {
+//                    ctx.toast(ctx.getString(R.string.download_from_google_play))
+//                }
+//
+//
+//            }
+//
+//
+//        }
+//
+//
+//    }
 
     Column(modifier = Modifier.padding(horizontal = 32.dp)) {
         Text(modifier = Modifier
@@ -120,13 +116,10 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
 
         CustomButton(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), text = if (text.contains("no one")) stringResource(id = R.string.prefer_not_to_say) else stringResource(
             id = R.string.next
-        ), size = ButtonSize.LG, loading = loading){
+        ), size = ButtonSize.LG){
+            loginViewModel.setUsername(text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""))
+//            navController.navigate(Screens.VocabularyListScreen.name)
 
-            if (text.contains("no one")){
-                navController.navigate(Screens.VocabularyListScreen.name)
-            }else{
-                loading = true
-            }
 
         }
     }

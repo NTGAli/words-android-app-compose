@@ -11,6 +11,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ntg.vocabs.components.FullScreenImageScreen
 import com.ntg.vocabs.screens.*
+import com.ntg.vocabs.screens.intro.ExplainSubscriptionScreen
+import com.ntg.vocabs.screens.intro.IntroScreen
 import com.ntg.vocabs.screens.login.*
 import com.ntg.vocabs.screens.setting.SettingScreen
 import com.ntg.vocabs.screens.setting.ThemeScreen
@@ -128,7 +130,7 @@ fun AppNavHost(
         }
 
         composable(Screens.SubscriptionsScreen.name) {
-            SubscriptionsScreen(navController)
+            SubscriptionsScreen(navController, loginViewModel)
         }
 
         composable(Screens.SelectReviewTypeScreen.name) {
@@ -137,6 +139,14 @@ fun AppNavHost(
 
         composable(Screens.WritingScreen.name) {
             WritingScreen(navController,wordViewModel)
+        }
+
+        composable(Screens.SelectBackupOptionsScreen.name) {
+            SelectBackupOptionsScreen(navController,backupViewModel, loginViewModel)
+        }
+
+        composable(Screens.NoBackupScreen.name) {
+            NoBackupScreen(navController,backupViewModel)
         }
 
         composable(
@@ -186,6 +196,7 @@ fun AppNavHost(
                 navController,
                 loginViewModel,
                 signInViewModel,
+                backupViewModel,
                 it.arguments?.getBoolean("skip").orTrue()
             )
         }
@@ -249,6 +260,14 @@ fun AppNavHost(
             SearchScreen(navController, wordViewModel)
         }
 
+        composable(Screens.IntroScreen.name) {
+            IntroScreen(navController, loginViewModel)
+        }
+
+        composable(Screens.ExplainSubscriptionScreen.name) {
+            ExplainSubscriptionScreen(navController, loginViewModel)
+        }
+
         composable(
             Screens.DownloadScreen.name + "?enableBottomBar={enableBottomBar}",
             arguments = listOf(navArgument("enableBottomBar")
@@ -282,7 +301,7 @@ fun AppNavHost(
         }
 
         composable(Screens.BackupScreen.name) {
-            BackupScreen(navController,backupViewModel)
+            BackupScreen(navController,backupViewModel,loginViewModel)
         }
 
         composable(
@@ -298,6 +317,22 @@ fun AppNavHost(
                 navController,
                 wordViewModel,
                 backStackEntry.arguments?.getInt("wordId")
+            )
+        }
+
+        composable(
+            Screens.RestoringBackupOnServerScreen.name + "?email={email}",
+            arguments = listOf(navArgument("email")
+            {
+                type = NavType.StringType
+                defaultValue = ""
+            })
+        )
+        { backStackEntry ->
+            RestoringBackupOnServerScreen(
+                navController,
+                backupViewModel,
+                backStackEntry.arguments?.getString("email").orEmpty()
             )
         }
 

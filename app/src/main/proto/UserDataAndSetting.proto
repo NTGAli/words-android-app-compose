@@ -8,4 +8,7 @@ message UserDataAndSetting {
     string name = 2;
     bool isSkipped = 3;
     string backupOption = 4;
+    bool isIntroFinished = 5;
+    bool isSubscriptionSkipped = 6;
+    string backupWay = 7;
 }

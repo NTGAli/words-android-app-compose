@@ -1,6 +1,7 @@
 package com.ntg.vocabs.vm
 
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,7 @@ import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
 import com.ntg.vocabs.R
 import com.ntg.vocabs.db.dao.DriveBackupDao
@@ -22,10 +24,12 @@ import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
 import com.ntg.vocabs.model.DriveBackup
 import com.ntg.vocabs.model.GoogleDriveSate
+import com.ntg.vocabs.model.Success
 import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
+import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
 import com.ntg.vocabs.util.getCurrentDate
@@ -51,10 +55,13 @@ class BackupViewModel @Inject constructor(
     private val timeSpentDao: TimeSpentDao,
     private val vocabListDao: VocabListDao,
     private val driveBackupDao: DriveBackupDao,
-    private val backupDao: DriveBackupDao
+    private val backupDao: DriveBackupDao,
+    private val storage: FirebaseStorage
 ) : ViewModel() {
 
     private var drive: Drive? = null
+//    private val storage = Firebase.storage
+
     private var allBackups: LiveData<List<DriveBackup>> = MutableLiveData()
     var googleDriveState = MutableStateFlow<GoogleDriveSate?>(null)
     private var lastFileName: MutableLiveData<com.google.api.services.drive.model.File?> = MutableLiveData()
@@ -301,7 +308,7 @@ class BackupViewModel @Inject constructor(
     }
 
 
-    fun importToDB(content: String, callBack: (Boolean) -> Unit) {
+    fun importToDB(content: String, callBack: (Boolean) -> Unit = {}) {
         try {
             val backupUserData: BackupUserData =
                 Gson().fromJson(content, BackupUserData::class.java)
@@ -361,5 +368,56 @@ class BackupViewModel @Inject constructor(
             allBackups = driveBackupDao.all()
         }
         return allBackups
+    }
+
+    fun checkBackupAvailable(
+        email: String,
+        exist:(Boolean) -> Unit,
+        onFailure:(Exception) -> Unit
+    ){
+        val storageRef = storage.reference.child(email)
+        storageRef.listAll()
+            .addOnSuccessListener { listResult ->
+                exist.invoke(listResult.items.isNotEmpty())
+            }
+            .addOnFailureListener { e ->
+                onFailure.invoke(e)
+            }
+
+    }
+
+    fun restoreBackupFromServer(
+        context: Context,
+        email: String,
+        onFailure:() -> Unit
+    ) {
+        val storageRef = storage.reference.child(email)
+        val islandRef = storageRef.child("backup.zip")
+        var json: String?
+        val localFile = File.createTempFile("server-backup", "zip")
+
+        islandRef.getFile(localFile).addOnSuccessListener {
+            unzip(localFile.path,context.getExternalFilesDir("")?.path.orEmpty())
+            val unZippedFile = File(context.getExternalFilesDir("backups"),"backup")
+            localFile.delete()
+            json = try {
+                val inputStream: InputStream = unZippedFile.inputStream()
+                val size = inputStream.available()
+                val buffer = ByteArray(size)
+                inputStream.read(buffer)
+                inputStream.close()
+                String(buffer, charset("UTF-8"))
+            } catch (ex: IOException) {
+                ex.printStackTrace()
+                null
+            }
+
+            if (json != null){
+                importToDB(json!!)
+            }
+
+        }.addOnFailureListener {
+            onFailure.invoke()
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.ntg.vocabs.screens
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
+import androidx.work.WorkManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -56,6 +58,8 @@ import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.screens.setting.ReadBackupFromStorage
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontRegular12
+import com.ntg.vocabs.util.Constant.Backup.BACKUP_FILE_NAME_IN_DIRECTORY
+import com.ntg.vocabs.util.formatDate
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.util.unixTimeToReadable
@@ -132,6 +136,7 @@ private fun Content(
             onConfirmation = {
                 showDialog = false
                 loginViewModel.setBackupOption("Never")
+                WorkManager.getInstance(context).cancelAllWorkByTag("BackupOnServer")
                 navController.navigate(Screens.VocabularyListScreen.name)
             }
         )
@@ -154,7 +159,6 @@ private fun Content(
     }
 
     backupViewModel.googleDriveState.asLiveData().observeAsState(initial = null).value.let {
-        timber("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE $it")
         if (it == null) return@let
         if (backupSelected.isNotEmpty()){
             loginViewModel.setBackupOption(backupSelected)
@@ -167,11 +171,8 @@ private fun Content(
             navController.navigate(Screens.VocabularyListScreen.name)
         } else if (it == GoogleDriveSate.AlreadyExist) {
             backupViewModel.getLastFile().observeAsState(initial = null).value.let {
-                timber("NNNNNNNNNNNN 0")
                 if (it != null) {
-                    timber("NNNNNNNNNNNN 1")
                     if (it.isNotEmpty()){
-                        timber("NNNNNNNNNNNN 2")
                         loading = false
                         lastBackup = it
                     }else{
@@ -200,7 +201,7 @@ private fun Content(
                         GoogleSignIn.getSignedInAccountFromIntent(intent)
 
                     task.isSuccessful
-                    Toast.makeText(context, "Success", Toast.LENGTH_LONG).show()
+                    WorkManager.getInstance(context).cancelAllWorkByTag("BackupOnServer")
                     backupViewModel.googleInstance(context)
                     backupViewModel.createFolder()
 
@@ -265,9 +266,19 @@ private fun Content(
             }
         } else {
             item {
-                timber("Tiiiiiimmmmmmeeeeeeee ${lastBackup?.createdTime?.toStringRfc3339()} -- ${lastBackup?.createdTime?.value?.unixTimeToReadable()}")
+                val name = lastBackup?.name.orEmpty().replace(BACKUP_FILE_NAME_IN_DIRECTORY, "").replace("zip","")
+
+
                 Text(
-                    text = "lastBackup?.createdTime.toStringRfc3339()",
+                    text = try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            formatDate(name)
+                        } else {
+                            "Do you want to restore it?"
+                        }
+                    }catch (e: Exception){
+                                         "Do you want to restore it?"
+                    },
                     style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
@@ -309,7 +320,6 @@ private fun Content(
                     }
                 } else {
                     loading = true
-//                    lastBackup
                     backupViewModel.restoreBackup(context, lastBackup!!) {
                         if (it != null) {
                             backupViewModel.importToDB(it) {
@@ -331,7 +341,7 @@ private fun Content(
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
                 text = if (lastBackup.orEmpty().isEmpty()) stringResource(id = R.string.have_backup) else stringResource(
-                    id = R.string.skip_backup
+                    id = R.string.remove_backups_and_continue
                 ),
                 type = ButtonType.Primary,
                 style = ButtonStyle.TextOnly,

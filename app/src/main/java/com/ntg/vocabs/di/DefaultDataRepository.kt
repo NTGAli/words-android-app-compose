@@ -28,6 +28,12 @@ class DefaultDataRepository @Inject constructor(
         }
     }
 
+    override suspend fun setBackupWay(way: String) {
+        recentLocationsDataStore.updateData { data ->
+            data.toBuilder().setBackupWay(way).build()
+        }
+    }
+
     override suspend fun setUsername(name: String) {
         recentLocationsDataStore.updateData { data ->
             data.toBuilder().setName(name).build()
@@ -37,6 +43,18 @@ class DefaultDataRepository @Inject constructor(
     override suspend fun isSkipped(skip: Boolean) {
         recentLocationsDataStore.updateData { data ->
             data.toBuilder().setIsSkipped(skip).build()
+        }
+    }
+
+    override suspend fun isIntroFinished(finished: Boolean) {
+        recentLocationsDataStore.updateData { data ->
+            data.toBuilder().setIsIntroFinished(finished).build()
+        }
+    }
+
+    override suspend fun isSubscriptionSkipped(skipped: Boolean) {
+        recentLocationsDataStore.updateData { data ->
+            data.toBuilder().setIsSubscriptionSkipped(skipped).build()
         }
     }
 

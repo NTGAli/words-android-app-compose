@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
@@ -56,11 +57,13 @@ import com.ntg.vocabs.ui.theme.fontMedium24
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.ui.theme.fontRegular14
 import com.ntg.vocabs.util.openInBrowser
+import com.ntg.vocabs.vm.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionsScreen(
-    navController: NavController
+    navController: NavController,
+    loginViewModel: LoginViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -68,7 +71,7 @@ fun SubscriptionsScreen(
         content = { innerPadding ->
             Content(
                 paddingValues = innerPadding,
-                navController,
+                navController
             )
 
         },
@@ -83,7 +86,7 @@ fun SubscriptionsScreen(
                 )
                 TLButton(
                     modifier = Modifier.padding(horizontal = 32.dp),
-                    text = "Buy"
+                    text = "4.99$ for Pro"
                 ) {
                     navController.popBackStack()
                 }
@@ -92,11 +95,11 @@ fun SubscriptionsScreen(
                         .padding(horizontal = 32.dp)
                         .fillMaxWidth()
                         .padding(top = 4.dp),
-                    text = "continue free ",
+                    text = stringResource(id = R.string.continue_free),
                     style = ButtonStyle.TextOnly,
                     size = ButtonSize.LG
                 ) {
-                    navController.popBackStack()
+                    loginViewModel.continueFree()
                 }
             }
         }

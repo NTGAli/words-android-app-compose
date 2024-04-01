@@ -207,6 +207,7 @@
     <string name="restore_from_drive">restore from Google Drive</string>
     <string name="google_drive_backup">Google Drive Backup</string>
     <string name="download_backup_drive_msg">You can download your backup from Google Drive or in Settings > Backup.</string>
+    <string name="download_backup">You can download your backup in Settings > Backup.</string>
     <string name="success">Success</string>
     <string name="failed">Failed</string>
     <string name="backup_now">Backup now</string>
@@ -224,5 +225,25 @@
     <string name="write_here">Write here</string>
     <string name="check">Check</string>
     <string name="add_more_than_two_words">You need to add more than two words.</string>
+    <string name="start_vocabs">Start Vocabs</string>
+    <string name="upgrade_to_pro">Upgrade to Pro</string>
+    <string name="continue_free">Continue for Free</string>
+    <string name="free_account">Free Account</string>
+    <string name="pro_account">Pro Account</string>
+    <string name="remove_backups_and_continue">Remove backup(s) and continue</string>
+    <string name="backup_options">Backups options</string>
+    <string name="login_to_app">Login to Vocabs(Recommended)</string>
+    <string name="on_google_drive">On Google Drive</string>
+    <string name="login_to_drive">Login to your Google Drive</string>
+    <string name="manual_backup">Manual Backup</string>
+    <string name="restoring_backup">Restoring your backup</string>
+    <string name="manual_desc">Requires manual initiation. Not recommended.</string>
+    <string name="have_backup_drive">I have a backup on Google Drive.</string>
+    <string name="have_backup_phone">I have a backup on my device.</string>
+    <string name="import_storage">Import from your phone\'s storage.</string>
+    <string name="no_backup_start_fresh">If you don\'t have a backup, you\'ll need to start fresh. To protect your data, make sure to select a backup option for automatic backups.</string>
+    <string name="select_backup_option">Select Backup Option</string>
+    <string name="server_backuo">Server backup history</string>
+    <string name="change_method">Change method</string>
 
 </resources>

@@ -24,76 +24,90 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.BackupReportItem
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.model.components.ButtonSize
+import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.isInternetAvailable
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
+import com.ntg.vocabs.vm.LoginViewModel
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupScreen(
     navController: NavController,
-    backupViewModel: BackupViewModel
+    backupViewModel: BackupViewModel,
+    loginViewModel: LoginViewModel
 ) {
     var loading by remember {
         mutableStateOf(false)
     }
+
+    val backupWay =
+        loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupWay.orEmpty()
+
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             Appbar(
-                title = stringResource(R.string.google_drive_backup),
+                title = if (backupWay == "drive") stringResource(R.string.google_drive_backup) else stringResource(R.string.server_backuo),
                 scrollBehavior = scrollBehavior,
-                navigationOnClick = { navController.popBackStack() }
+                navigationOnClick = { navController.popBackStack() },
+                buttonText = stringResource(id = R.string.change_method),
+                actionOnClick = {
+                    navController.navigate(Screens.SelectBackupOptionsScreen.name)
+                }
             )
         },
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, backupViewModel)
+            Content(paddingValues = innerPadding, backupViewModel, backupWay)
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-            ) {
-                Divider(
-                    Modifier.padding(bottom = 16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                )
-                CustomButton(
+            if (backupWay == "drive"){
+                Column(
                     modifier = Modifier
-                        .padding(bottom = 16.dp)
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.backup_now),
-                    size = ButtonSize.XL,
-                    loading = loading
+                        .padding(horizontal = 24.dp)
                 ) {
-                    try {
-                        if (isInternetAvailable(context)) {
+                    Divider(
+                        Modifier.padding(bottom = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    CustomButton(
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.backup_now),
+                        size = ButtonSize.XL,
+                        loading = loading
+                    ) {
+                        try {
+                            if (isInternetAvailable(context)) {
 
-                            backupViewModel.googleInstance(context)
-                            backupViewModel.backupOnDrive(context){
-                                loading = false
+                                backupViewModel.googleInstance(context)
+                                backupViewModel.backupOnDrive(context){
+                                    loading = false
+                                }
+                                loading = true
                             }
-                            loading = true
+                            else{
+                                context.toast(R.string.no_internet)
+                            }
+                        } catch (e: Exception) {
+                            loading = false
                         }
-                        else{
-                            context.toast(R.string.no_internet)
-                        }
-                    } catch (e: Exception) {
-                        loading = false
                     }
-                }
 
+                }
             }
         }
     )
@@ -102,7 +116,8 @@ fun BackupScreen(
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
-    backupViewModel: BackupViewModel
+    backupViewModel: BackupViewModel,
+    backupWay: String
 ) {
 
     val backups = backupViewModel.getAllBackups().observeAsState(initial = null).value
@@ -114,7 +129,7 @@ private fun Content(
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                text = stringResource(id = R.string.download_backup_drive_msg),
+                text = if (backupWay == "drive") stringResource(id = R.string.download_backup_drive_msg) else stringResource(id = R.string.download_backup),
                 style = fontRegular12(
                     MaterialTheme.colorScheme.onSurfaceVariant
                 )

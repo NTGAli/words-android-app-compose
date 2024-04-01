@@ -32,8 +32,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -208,8 +206,24 @@ class LoginViewModel @Inject constructor(
         dataRepository.isSkipped(skip)
     }
 
+    fun setFinishIntro(finished: Boolean) = viewModelScope.launch {
+        dataRepository.isIntroFinished(finished)
+    }
+
+    fun setBackupWay(way: String) = viewModelScope.launch {
+        dataRepository.setBackupWay(way)
+    }
+
     fun setUsername(name: String) = viewModelScope.launch {
-        dataRepository.setUsername(name)
+        if (name.contains("no one")){
+            dataRepository.setUsername("no one")
+        }else{
+            dataRepository.setUsername(name)
+        }
+    }
+
+    fun continueFree() = viewModelScope.launch {
+        dataRepository.isSubscriptionSkipped(true)
     }
 
     fun getUserData(): Flow<UserDataAndSetting> {
@@ -223,11 +237,11 @@ class LoginViewModel @Inject constructor(
 
     fun setTheme(theme: String) {
         viewModelScope.launch {
-            userStore.saveToken(theme)
+            userStore.saveTheme(theme)
         }
     }
 
-    fun getTheme() = userStore.getAccessToken.asLiveData()
+    fun getTheme() = userStore.getTheme.asLiveData()
 
     val _signInState = Channel<SignInState>()
     val signInState = _signInState.receiveAsFlow()

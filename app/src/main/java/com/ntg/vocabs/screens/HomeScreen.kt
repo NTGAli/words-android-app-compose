@@ -131,7 +131,7 @@ fun HomeScreen(
 
             HomeAppbar(
                 title = userData.value?.name,
-                isBackupEnabled = dataSettings?.backupOption.orEmpty() != "Never" || dataSettings?.backupOption.orEmpty() == "",
+                isBackupEnabled = dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty().isNotEmpty(),
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },

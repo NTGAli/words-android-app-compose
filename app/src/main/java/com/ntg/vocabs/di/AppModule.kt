@@ -12,6 +12,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.database.*
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ntg.vocabs.UserDataAndSetting
@@ -89,6 +90,10 @@ class AppModule {
     @Provides
     @Singleton
     fun providesFireStore()  = Firebase.firestore
+
+    @Provides
+    @Singleton
+    fun providesFireStorage()  = Firebase.storage
 
 
     @Provides

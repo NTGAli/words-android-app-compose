@@ -1,6 +1,7 @@
 package com.ntg.vocabs.screens.login
 
 import android.app.Activity.RESULT_OK
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -9,6 +10,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -35,17 +37,23 @@ import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.DividerLine
 import com.ntg.vocabs.components.EditText
 import com.ntg.vocabs.components.TypewriterText
+import com.ntg.vocabs.model.Failure
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.model.enums.TypeOfMessagePass
+import com.ntg.vocabs.model.then
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.util.GoogleAuthUiClient
+import com.ntg.vocabs.util.enoughDigitsForPass
+import com.ntg.vocabs.util.longEnoughForPass
+import com.ntg.vocabs.util.notEmptyOrNull
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.util.validEmail
+import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.MainEvent
 import com.ntg.vocabs.vm.SignInViewModel
@@ -58,6 +66,7 @@ fun InsertEmailScreen(
     navController: NavHostController,
     loginViewModel: LoginViewModel,
     signInViewModel: SignInViewModel,
+    backupViewModel: BackupViewModel,
     skipBtn: Boolean
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -69,6 +78,7 @@ fun InsertEmailScreen(
                 navController,
                 loginViewModel,
                 signInViewModel,
+                backupViewModel,
                 skipBtn
             )
         }
@@ -81,6 +91,7 @@ private fun Content(
     navController: NavHostController,
     loginViewModel: LoginViewModel,
     signInViewModel: SignInViewModel,
+    backupViewModel: BackupViewModel,
     skipBtn: Boolean
 ) {
 
@@ -97,6 +108,10 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    val setErrorPass = remember {
+        mutableStateOf(false)
+    }
+
     val loading = remember {
         mutableStateOf(false)
     }
@@ -110,6 +125,10 @@ private fun Content(
     }
 
     val email = rememberSaveable {
+        mutableStateOf("")
+    }
+
+    val password = remember {
         mutableStateOf("")
     }
 
@@ -163,9 +182,25 @@ private fun Content(
 
             loginViewModel.setUsername(userData?.username.orEmpty())
             loginViewModel.setUserEmail(userData?.email.orEmpty())
-            navController.navigate(Screens.AskBackupScreen.name) {
-                popUpTo(0)
-            }
+//            navController.navigate(Screens.AskBackupScreen.name) {
+//                popUpTo(0)
+//            }
+
+            backupViewModel.checkBackupAvailable(userData?.email.orEmpty(),
+                exist = { userBackupAvailable ->
+                    loading.value = false
+                    if (userBackupAvailable) {
+                        loginViewModel.setUserEmail(userData?.email.orEmpty())
+                        loginViewModel.setBackupOption("Weekly-server")
+                        navController.navigate(Screens.RestoringBackupOnServerScreen.name + "?email=${userData?.email.orEmpty()}")
+                    } else {
+                        navController.navigate(Screens.VocabularyListScreen.name)
+                    }
+                },
+                onFailure = {
+                    context.toast(context.getString(R.string.sth_wrong))
+                    loading.value = false
+                })
 
 //            loginViewModel.verifyUserByGoogle(
 //                email = userData?.email.orEmpty(),
@@ -211,7 +246,7 @@ private fun Content(
 //                }
 //
 //            }
-        }else if (googleSignInState.error != null){
+        } else if (googleSignInState.error != null) {
             loadingToSignGoogle = false
         }
     })
@@ -230,18 +265,13 @@ private fun Content(
 //    }
 
 
-    Box {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-
-        ) {
-
+    LazyColumn(
+        modifier = Modifier.padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        item {
             TypewriterText(
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
                     .padding(top = 64.dp),
                 texts = listOf(
                     "Hello",
@@ -254,7 +284,6 @@ private fun Content(
                 ),
                 cursor = "\uD83D\uDC4B",
             )
-
 
             CustomButton(
                 modifier = Modifier
@@ -276,20 +305,32 @@ private fun Content(
 
             }
 
-
             DividerLine(
                 modifier = Modifier.padding(top = 24.dp),
                 title = stringResource(id = R.string.or)
             )
+        }
 
 
-
+        item {
             EditText(
                 modifier = Modifier
                     .padding(top = 24.dp)
                     .fillMaxWidth(), label = stringResource(id = R.string.email), text = email,
                 setError = setError, supportText = errorMessage.value
             )
+
+            EditText(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth(),
+                label = stringResource(id = R.string.password),
+                text = password,
+                setError = setErrorPass,
+                isPassword = true
+            ) {
+                setErrorPass.value = false
+            }
 
             CustomButton(
                 modifier = Modifier
@@ -304,10 +345,48 @@ private fun Content(
                 if (email.value.validEmail()) {
                     loading.value = true
                     loginViewModel.checkIfUserExists(email.value,
-                        onSuccess = {exists ->
-                                    timber("checkIfUserExists  $exists")
-                            navController.navigate(Screens.LoginWithPasswordScreen.name + "?email=${email.value}&isNew=${!exists}")
-                            loading.value = false
+                        onSuccess = { exists ->
+                            timber("checkIfUserExists  $exists")
+//                            navController.navigate(Screens.LoginWithPasswordScreen.name + "?email=${email.value}&isNew=${!exists}")
+
+                            if (exists) {
+                                loginViewModel.signIn(email.value, password.value,
+                                    onSuccess = {
+                                        //check backups user
+                                        backupViewModel.checkBackupAvailable(email.value,
+                                            exist = { userBackupAvailable ->
+                                                loading.value = false
+                                                if (userBackupAvailable) {
+                                                    loginViewModel.setBackupOption("Weekly-server")
+                                                    loginViewModel.setUserEmail(email.value)
+                                                    navController.navigate(Screens.RestoringBackupOnServerScreen.name + "?email=${email.value}")
+                                                } else {
+                                                    navController.navigate(Screens.NoBackupScreen.name)
+                                                }
+                                            },
+                                            onFailure = {
+                                                context.toast(context.getString(R.string.sth_wrong))
+                                                loading.value = false
+                                            })
+                                    },
+                                    onFailure = {
+                                        context.toast(context.getString(R.string.sth_wrong))
+                                        loading.value = false
+                                    })
+                            } else {
+                                loginViewModel.signUpEmailPassword(email.value, password.value,
+                                    onSuccess = {
+                                        loading.value = false
+                                        loginViewModel.setUserEmail(email.value)
+                                        navController.navigate(Screens.SelectBackupOptionsScreen.name)
+                                    },
+                                    onFailure = {
+                                        context.toast(context.getString(R.string.sth_wrong))
+                                        loading.value = false
+                                    })
+                            }
+
+
                         },
                         onFailure = {
                             timber("checkIfUserExists ERR ***** ${it.message}")
@@ -347,6 +426,31 @@ private fun Content(
                 } else {
                     errorMessage.value = context.getString(R.string.invalid_email)
                     setError.value = true
+
+
+                    val result =
+                        notEmptyOrNull(password.value, context.getString(R.string.pass_requiered))
+                            .then {
+                                enoughDigitsForPass(
+                                    password.value,
+                                    context.getString(R.string.a_digit_requier)
+                                )
+                            }
+                            .then {
+                                longEnoughForPass(
+                                    password.value,
+                                    context.getString(R.string.not_enough_pass_lenght)
+                                )
+                            }
+
+
+                    if (result is Failure) {
+                        context.toast(result.errorMessage)
+                        setError.value = true
+                    } else {
+                        setError.value = false
+                        loading.value = true
+                    }
                 }
             }
 
@@ -373,17 +477,19 @@ private fun Content(
             )
         }
 
-        if (loadingScreen) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
 
+    }
+
+
+    if (loadingScreen) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
     }
 
 

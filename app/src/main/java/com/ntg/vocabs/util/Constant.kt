@@ -19,7 +19,7 @@ object Constant {
     object Backup{
         const val BACKUP_ZIP_NAME = "vocabsBackup.zip"
         const val BACKUP_FOLDER_NAME = "Vocabs Backup"
-        const val BACKUP_FILE_NAME_IN_DIRECTORY = "vocabsBackup_"
+        const val BACKUP_FILE_NAME_IN_DIRECTORY = "VocabsBackup_"
     }
 
 

@@ -39,7 +39,12 @@ enum class Screens {
     FullScreenAdScreen,
     SubscriptionsScreen,
     SelectReviewTypeScreen,
-    WritingScreen
+    WritingScreen,
+    IntroScreen,
+    ExplainSubscriptionScreen,
+    SelectBackupOptionsScreen,
+    RestoringBackupOnServerScreen,
+    NoBackupScreen
 
 
 }

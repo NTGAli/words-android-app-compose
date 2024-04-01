@@ -38,13 +38,11 @@ import com.ntg.vocabs.util.Constant.Backup.BACKUP_FOLDER_NAME
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.delay
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.nio.channels.FileChannel
 import java.util.*
 
@@ -124,7 +122,7 @@ private fun Content(
         loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
 
     val theme =
-        store.getAccessToken.collectAsState(initial = stringResource(id = R.string.system_default))
+        store.getTheme.collectAsState(initial = stringResource(id = R.string.system_default))
     val backupOption =
         loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupOption.orEmpty()
     val userWords = wordViewModel.getSizeOfWords().observeAsState(initial = -1).value

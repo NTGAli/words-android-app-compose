@@ -81,23 +81,24 @@ fun HomeAppbar(
         },
         actions = {
 
-            IconButton(
-                modifier = Modifier.padding(start = 8.dp),
-                onClick = {
-                    subscription.invoke()
-                }) {
-                Image(
-                    painter = painterResource(id = R.drawable.icons8_crown_1),
-                    contentDescription = "notifications"
-                )
-            }
+//            IconButton(
+//                modifier = Modifier.padding(start = 8.dp),
+//                onClick = {
+//                    subscription.invoke()
+//                }) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.icons8_crown_1),
+//                    contentDescription = "notifications"
+//                )
+//            }
 
             IconButton(
+                modifier = Modifier.padding(start = 8.dp),
                 onClick = {
                     backupOnClick.invoke()
                 }) {
                 Icon(
-                    painter = painterResource(id = R.drawable.drive),
+                    painter = painterResource(id = R.drawable.cloud),
                     contentDescription = "Download State",
                     tint = if (!isBackupEnabled) MaterialTheme.colorScheme.error else LocalContentColor.current
                 )

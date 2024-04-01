@@ -103,9 +103,10 @@ fun Appbar(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-//                        MaterialTheme.colorScheme.background
-                ),
+//                colors = TopAppBarDefaults.topAppBarColors(
+////                        MaterialTheme.colorScheme.background
+//                )
+//                ,
 //                scrollBehavior = scrollBehavior,
                 windowInsets = TopAppBarDefaults.windowInsets
             )

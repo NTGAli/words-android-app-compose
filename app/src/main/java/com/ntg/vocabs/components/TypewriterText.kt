@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.ntg.vocabs.ui.theme.fontBold24
+import com.ntg.vocabs.util.timber
 import kotlinx.coroutines.delay
 import kotlin.streams.toList
 
@@ -23,9 +24,11 @@ fun TypewriterText(
     texts:List<String>,
     cursor: String="",
     speedType: Long = 40L,
+    delayTime: Long = 2000,
     singleText: Boolean = false,
     enableVibrate: Boolean = true,
-    style: androidx.compose.ui.text.TextStyle = fontBold24()
+    style: androidx.compose.ui.text.TextStyle = fontBold24(),
+    onFinished:(Boolean) -> Unit = {}
 ) {
 
     val vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -60,15 +63,14 @@ fun TypewriterText(
                     ).joinToString(
                         separator = "",
                     )
-//                Log.e("Abhi", "$charIndex $textToDisplay")
                 delay(speedType)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && enableVibrate) {
-                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
+//                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
                 }
 
             }
             textIndex = (textIndex + 1) % texts.size
-            delay(2000)
+            delay(delayTime)
 
             if (singleText) break
 
@@ -82,12 +84,17 @@ fun TypewriterText(
     Row(modifier = modifier, horizontalArrangement = Arrangement.Center) {
         Text(
             text = textToDisplay,
-            style = fontBold24(MaterialTheme.colorScheme.onBackground)
+            style = fontBold24(MaterialTheme.colorScheme.onSurface)
         )
         Text(
             text = cursor,
             style = style
         )
+
+        onFinished.invoke(
+            textToDisplay.length == texts.first().length
+        )
+
     }
 }
 

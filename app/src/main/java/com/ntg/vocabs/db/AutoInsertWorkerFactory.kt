@@ -13,8 +13,6 @@ class AutoInsertWorkerFactory (private val appDB: AppDB) : WorkerFactory() {
         workerClassName: String,
         workerParameters: WorkerParameters
     ): ListenableWorker? {
-        timber("WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORKER TWO start")
-
         return when(workerClassName){
             AutoInsertWorker::class.java.name -> {
                 AutoInsertWorker(appContext, workerParameters, appDB)

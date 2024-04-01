@@ -95,21 +95,21 @@ private fun Content(
 
 
     list.value = wordViewModel.getAllVocabList().observeAsState().value ?: listOf()
-    username = loginViewModel.getUserData().asLiveData().observeAsState().value?.name.orEmpty()
-    email = loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
-    wordViewModel.lastUserBackup(email).observe(LocalLifecycleOwner.current) {
-        when (it) {
-            is NetworkResult.Error -> {
-            }
-            is NetworkResult.Loading -> {
-            }
-            is NetworkResult.Success -> {
-                if (it.data != "NO_BACKUP_FOUND") {
-                    backupTime = it.data.orEmpty()
-                }
-            }
-        }
-    }
+//    username = loginViewModel.getUserData().asLiveData().observeAsState().value?.name.orEmpty()
+//    email = loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
+//    wordViewModel.lastUserBackup(email).observe(LocalLifecycleOwner.current) {
+//        when (it) {
+//            is NetworkResult.Error -> {
+//            }
+//            is NetworkResult.Loading -> {
+//            }
+//            is NetworkResult.Success -> {
+//                if (it.data != "NO_BACKUP_FOUND") {
+//                    backupTime = it.data.orEmpty()
+//                }
+//            }
+//        }
+//    }
 
     if (restoreData) {
         restoreData = false
@@ -128,7 +128,11 @@ private fun Content(
     }
 
     if (list.value.isEmpty()) {
-        title.value = listOf(stringResource(id = R.string.no_list_message, username))
+        if (username == "no one"){
+            title.value = listOf(stringResource(id = R.string.no_list_message, ""))
+        }else{
+            title.value = listOf(stringResource(id = R.string.no_list_message, username))
+        }
     } else {
         title.value = listOf(stringResource(id = R.string.select_a_list, username))
     }

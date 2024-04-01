@@ -2,29 +2,37 @@
 
 package com.ntg.vocabs.components
 
+import android.graphics.RenderEffect
+import android.graphics.RuntimeShader
+import android.graphics.Shader
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandIn
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,101 +40,72 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import android.graphics.RenderEffect
-import android.graphics.RuntimeShader
-import android.graphics.Shader
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import com.ntg.vocabs.ui.theme.fontMedium24
 import org.intellij.lang.annotations.Language
 
-const val original = "Bye"
-const val translated = "Tschüs"
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun TextChange() {
-    var text by remember {
-        mutableStateOf(original)
-    }
+fun TextChange(
+    firstText: MutableState<String> = remember { mutableStateOf("") },
+    secondText: String = ""
+) {
+//    var text by remember {
+//        mutableStateOf(firstText)
+//    }
 
     val time = 1000
 
     val blur = remember { Animatable(0f) }
 
-    LaunchedEffect(text) {
+    LaunchedEffect(firstText.value) {
         blur.animateTo(30f, tween(time / 2, easing = LinearEasing))
         blur.animateTo(0f, tween(time / 2, easing = LinearEasing))
     }
 
 
-    Column(
+    MetaContainer(
         modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .animateContentSize()
+            .clipToBounds(),
+        cutoff = .2f
     ) {
-
-        MetaContainer(
-            modifier = Modifier
-                .animateContentSize()
-                .clipToBounds()
-                .fillMaxWidth(),
-            cutoff = .2f
-        ) {
-            MetaEntity(
-                modifier = Modifier.fillMaxWidth(),
-                blur = blur.value,
-                metaContent = {
-                    AnimatedContent(
-                        targetState = text,
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        transitionSpec = {
-                            fadeIn(tween(time, easing = LinearEasing)) + expandVertically(
-                                tween(
-                                    time,
-                                    easing = LinearEasing
-                                ), expandFrom = Alignment.CenterVertically
-                            ) with fadeOut(
-                                tween(
-                                    time,
-                                    easing = LinearEasing
-                                )
-                            ) + shrinkVertically(
-                                tween(
-                                    time,
-                                    easing = LinearEasing
-                                ), shrinkTowards = Alignment.CenterVertically
+        MetaEntity(
+            blur = blur.value,
+            metaContent = {
+                AnimatedContent(
+                    targetState = firstText.value,
+                    transitionSpec = {
+                        fadeIn(tween(time, easing = LinearEasing)) + expandVertically(
+                            tween(
+                                time,
+                                easing = LinearEasing
+                            ), expandFrom = Alignment.CenterVertically
+                        ) with fadeOut(
+                            tween(
+                                time,
+                                easing = LinearEasing
                             )
-                        }, label = ""
-                    ) { text ->
-                        Text(
-                            text,
-                            modifier = Modifier.fillMaxWidth(),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 50.sp,
-                            textAlign = TextAlign.Center,
+                        ) + shrinkVertically(
+                            tween(
+                                time,
+                                easing = LinearEasing
+                            ), shrinkTowards = Alignment.CenterVertically
                         )
-                    }
-                }) {}
-        }
-        Button(onClick = {
-            text = if (text == original) translated else original
-        }) {
-            Text("Translate text")
-        }
+                    }, label = ""
+                ) { text ->
+                    Text(
+                        text,
+                        style = fontMedium24(MaterialTheme.colorScheme.onSurface)
+                    )
+                }
+            }) {}
     }
 }
 

@@ -8,6 +8,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        relase {
+            keyAlias 'vocabs-key'
+            storePassword 'lkugdisjl@vocabs#android'
+            keyPassword 'lkugdisjl@vocabs#android'
+            storeFile file('E:/apk keys/Vocab/key.jks')
+        }
+    }
     namespace 'com.ntg.vocabs'
     compileSdk 34
 
@@ -32,6 +40,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.relase
         }
     }
     compileOptions {
@@ -194,6 +203,8 @@ dependencies {
     //coil
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    //storage firebase
+    implementation("com.google.firebase:firebase-storage")
 
 }
 

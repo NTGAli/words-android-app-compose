@@ -9,11 +9,13 @@ import android.graphics.Typeface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +57,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -154,6 +157,23 @@ fun Long.calculateRevisionStatus(numberOfRevision: Int) {
 
 //    if ()
 
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatDate(inputDate: String): String {
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        val date = LocalDate.parse(inputDate, formatter)
+
+        val year = date.year
+        val month = date.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+//    val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+        val dayOfMonth = date.dayOfMonth
+
+        "$year $month $dayOfMonth"
+    }catch (e: Exception){
+        "Do you want to restore it?"
+    }
 }
 
 fun getDaysBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
@@ -295,15 +315,15 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
             when (diffTime) {
 
                 in 0..1 -> {
-                    painterResource(id = R.drawable.chart_full)
+                    painterResource(id = R.drawable.full_pie)
                 }
 
                 2 -> {
-                    painterResource(id = R.drawable.chart_medium)
+                    painterResource(id = R.drawable.medium_pie)
                 }
 
                 else -> {
-                    painterResource(id = R.drawable.chart_low)
+                    painterResource(id = R.drawable.low_pie)
                 }
 
             }
@@ -313,15 +333,15 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
             when (diffTime) {
 
                 in 0..5 -> {
-                    painterResource(id = R.drawable.chart_full)
+                    painterResource(id = R.drawable.full_pie)
                 }
 
                 in 6..11 -> {
-                    painterResource(id = R.drawable.chart_medium)
+                    painterResource(id = R.drawable.medium_pie)
                 }
 
                 else -> {
-                    painterResource(id = R.drawable.chart_low)
+                    painterResource(id = R.drawable.low_pie)
                 }
 
             }
@@ -331,15 +351,15 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
             when (diffTime) {
 
                 in 0..10 -> {
-                    painterResource(id = R.drawable.chart_full)
+                    painterResource(id = R.drawable.full_pie)
                 }
 
                 in 10..15 -> {
-                    painterResource(id = R.drawable.chart_medium)
+                    painterResource(id = R.drawable.medium_pie)
                 }
 
                 else -> {
-                    painterResource(id = R.drawable.chart_low)
+                    painterResource(id = R.drawable.low_pie)
                 }
             }
         }
@@ -349,15 +369,15 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
             when (diffTime) {
 
                 in 0..(revisionCount * 7) -> {
-                    painterResource(id = R.drawable.chart_full)
+                    painterResource(id = R.drawable.full_pie)
                 }
 
                 in (revisionCount * 7)..(revisionCount + 10) -> {
-                    painterResource(id = R.drawable.chart_medium)
+                    painterResource(id = R.drawable.medium_pie)
                 }
 
                 else -> {
-                    painterResource(id = R.drawable.chart_low)
+                    painterResource(id = R.drawable.low_pie)
                 }
 
             }
