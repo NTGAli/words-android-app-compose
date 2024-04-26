@@ -1,19 +1,29 @@
 package com.ntg.vocabs.screens.login
 
-import android.app.Activity.RESULT_OK
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -22,17 +32,13 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.ntg.vocabs.R
-import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.DividerLine
 import com.ntg.vocabs.components.EditText
@@ -41,7 +47,6 @@ import com.ntg.vocabs.model.Failure
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
-import com.ntg.vocabs.model.enums.TypeOfMessagePass
 import com.ntg.vocabs.model.then
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.fontRegular12
@@ -49,16 +54,12 @@ import com.ntg.vocabs.util.GoogleAuthUiClient
 import com.ntg.vocabs.util.enoughDigitsForPass
 import com.ntg.vocabs.util.longEnoughForPass
 import com.ntg.vocabs.util.notEmptyOrNull
-import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.util.validEmail
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
-import com.ntg.vocabs.vm.MainEvent
 import com.ntg.vocabs.vm.SignInViewModel
-import kotlinx.coroutines.launch
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,8 +97,6 @@ private fun Content(
 ) {
 
     val context = LocalContext.current
-    val owner = LocalLifecycleOwner.current
-    val coroutineScope = rememberCoroutineScope()
 
 
     val errorMessage = remember {
@@ -191,7 +190,6 @@ private fun Content(
                     loading.value = false
                     if (userBackupAvailable) {
                         loginViewModel.setUserEmail(userData?.email.orEmpty())
-                        loginViewModel.setBackupOption("Weekly-server")
                         navController.navigate(Screens.RestoringBackupOnServerScreen.name + "?email=${userData?.email.orEmpty()}")
                     } else {
                         navController.navigate(Screens.VocabularyListScreen.name)
@@ -272,7 +270,8 @@ private fun Content(
         item {
             TypewriterText(
                 modifier = Modifier
-                    .padding(top = 64.dp),
+//                    .padding(top = 64.dp)
+                    .aspectRatio(2f),
                 texts = listOf(
                     "Hello",
                     "Bonjour",
@@ -288,7 +287,7 @@ private fun Content(
             CustomButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 64.dp),
+                    .padding(top = 32.dp),
                 text = stringResource(R.string.continiue_with_google), iconStart = painterResource(
                     id = R.drawable.google_logo
                 ), loading = loadingToSignGoogle, type = ButtonType.Variance, size = ButtonSize.LG
@@ -352,22 +351,19 @@ private fun Content(
                             if (exists) {
                                 loginViewModel.signIn(email.value, password.value,
                                     onSuccess = {
-                                        //check backups user
-                                        backupViewModel.checkBackupAvailable(email.value,
-                                            exist = { userBackupAvailable ->
+
+
+
+                                            backupViewModel.restoreBackupFromServer(context, email.value){
+                                                context.toast(R.string.sth_wrong)
                                                 loading.value = false
-                                                if (userBackupAvailable) {
-                                                    loginViewModel.setBackupOption("Weekly-server")
-                                                    loginViewModel.setUserEmail(email.value)
-                                                    navController.navigate(Screens.RestoringBackupOnServerScreen.name + "?email=${email.value}")
-                                                } else {
-                                                    navController.navigate(Screens.NoBackupScreen.name)
-                                                }
-                                            },
-                                            onFailure = {
-                                                context.toast(context.getString(R.string.sth_wrong))
+                                            }
+
+                                            backupViewModel.restoreVocabularies(email.value){
+                                                loginViewModel.checkBackup(it)
+                                                loginViewModel.setUserEmail(email.value)
                                                 loading.value = false
-                                            })
+                                            }
                                     },
                                     onFailure = {
                                         context.toast(context.getString(R.string.sth_wrong))

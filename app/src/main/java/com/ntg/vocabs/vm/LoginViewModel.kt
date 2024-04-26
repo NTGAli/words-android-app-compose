@@ -214,6 +214,10 @@ class LoginViewModel @Inject constructor(
         dataRepository.setBackupWay(way)
     }
 
+    fun checkBackup(setBackup: Boolean) = viewModelScope.launch {
+        dataRepository.checkBackup(setBackup)
+    }
+
     fun setUsername(name: String) = viewModelScope.launch {
         if (name.contains("no one")){
             dataRepository.setUsername("no one")

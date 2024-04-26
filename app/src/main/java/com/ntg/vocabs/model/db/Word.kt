@@ -4,11 +4,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class Word (
+data class Word(
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val listId:Int=0,
+    val listId: Int = 0,
     val word: String? = null,
     val translation: String? = null,
     val type: String? = null,
@@ -28,8 +28,11 @@ data class Word (
     var sound: String? = null,
     var images: List<String>? = null,
     var bookmarked: Boolean? = false,
-    var synced: Boolean? = null,
-        )
+    var synced: Boolean? = false,
+    var voiceSynced: Boolean? = null,
+    var imageSynced: Boolean? = null,
+    var email: String? = null
+)
 
 data class VerbForms(
     val pastSimple: String? = null,

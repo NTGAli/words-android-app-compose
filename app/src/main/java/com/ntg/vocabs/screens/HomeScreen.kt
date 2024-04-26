@@ -144,15 +144,16 @@ fun HomeScreen(
                 voiceSearch = {
                     navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}" + "&query=$it")
                 },
-                backupOnClick = {
+//                backupOnClick = {
+//
+//                    if (backupOption.isEmpty() || backupOption == "Never" || backupOption == "Only when i tap ‘backup’") {
+//                        navController.navigate(Screens.AskBackupScreen.name)
+//                    } else {
+//                        navController.navigate(Screens.BackupScreen.name)
+//                    }
+//
+//                }
 
-                    if (backupOption.isEmpty() || backupOption == "Never" || backupOption == "Only when i tap ‘backup’") {
-                        navController.navigate(Screens.AskBackupScreen.name)
-                    } else {
-                        navController.navigate(Screens.BackupScreen.name)
-                    }
-
-                },
                 subscription = {
                     navController.navigate(Screens.SubscriptionsScreen.name)
                 }
@@ -216,65 +217,6 @@ fun HomeScreen(
 
 }
 
-private val ExtendedFabEndIconPadding = 12.dp
-
-private val ExtendedFabCollapseAnimation = fadeOut(
-    animationSpec = tween(
-        durationMillis = com.ntg.vocabs.screens.MotionTokens.DurationShort2.toInt(),
-        easing = com.ntg.vocabs.screens.MotionTokens.EasingLinearCubicBezier,
-    )
-) + shrinkHorizontally(
-    animationSpec = tween(
-        durationMillis = MotionTokens.DurationLong2.toInt(),
-        easing = com.ntg.vocabs.screens.MotionTokens.EasingEmphasizedCubicBezier,
-    ),
-    shrinkTowards = Alignment.Start,
-)
-
-private val ExtendedFabExpandAnimation = fadeIn(
-    animationSpec = tween(
-        durationMillis = com.ntg.vocabs.screens.MotionTokens.DurationShort4.toInt(),
-        delayMillis = com.ntg.vocabs.screens.MotionTokens.DurationShort2.toInt(),
-        easing = com.ntg.vocabs.screens.MotionTokens.EasingLinearCubicBezier,
-    ),
-) + expandHorizontally(
-    animationSpec = tween(
-        durationMillis = MotionTokens.DurationLong2.toInt(),
-        easing = com.ntg.vocabs.screens.MotionTokens.EasingEmphasizedCubicBezier,
-    ),
-    expandFrom = Alignment.Start,
-)
-
-
-internal object MotionTokens {
-    const val DurationExtraLong1 = 700.0
-    const val DurationExtraLong2 = 800.0
-    const val DurationExtraLong3 = 900.0
-    const val DurationExtraLong4 = 1000.0
-    const val DurationLong1 = 450.0
-    const val DurationLong2 = 500.0
-    const val DurationLong3 = 550.0
-    const val DurationLong4 = 600.0
-    const val DurationMedium1 = 250.0
-    const val DurationMedium2 = 300.0
-    const val DurationMedium3 = 350.0
-    const val DurationMedium4 = 400.0
-    const val DurationShort1 = 50.0
-    const val DurationShort2 = 100.0
-    const val DurationShort3 = 150.0
-    const val DurationShort4 = 200.0
-    val EasingEmphasizedCubicBezier = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
-    val EasingEmphasizedAccelerateCubicBezier = CubicBezierEasing(0.3f, 0.0f, 0.8f, 0.15f)
-    val EasingEmphasizedDecelerateCubicBezier = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f)
-    val EasingLegacyCubicBezier = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1.0f)
-    val EasingLegacyAccelerateCubicBezier = CubicBezierEasing(0.4f, 0.0f, 1.0f, 1.0f)
-    val EasingLegacyDecelerateCubicBezier = CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
-    val EasingLinearCubicBezier = CubicBezierEasing(0.0f, 0.0f, 1.0f, 1.0f)
-    val EasingStandardCubicBezier = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
-    val EasingStandardAccelerateCubicBezier = CubicBezierEasing(0.3f, 0.0f, 1.0f, 1.0f)
-    val EasingStandardDecelerateCubicBezier = CubicBezierEasing(0.0f, 0.0f, 0.0f, 1.0f)
-}
-
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -285,8 +227,18 @@ private fun Content(
 ) {
 
     val listId = wordViewModel.currentList().observeAsState().value?.id
-    val wordsList: State<List<Word>?> =
-        wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState(initial = null)
+    var wordsList by remember {
+        mutableStateOf<List<Word>>(listOf())
+    }
+
+    val owner = LocalLifecycleOwner.current
+
+    LaunchedEffect(key1 = listId, block = {
+        wordViewModel.getWordsBaseListId(listId.orZero()).observe(owner){
+            wordsList = it
+        }
+
+    })
 
 
     val recentWordCount = remember {
@@ -345,7 +297,6 @@ private fun Content(
             }
     }
 
-    if (wordsList.value != null) {
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
@@ -391,7 +342,7 @@ private fun Content(
             }
 
 
-            items(wordsList.value.orEmpty()) { word ->
+            items(wordsList) { word ->
 
                 val painter = getIconStateRevision(word.revisionCount, word.lastRevisionTime)
 
@@ -407,13 +358,13 @@ private fun Content(
             }
 
             item {
-                if (wordsList.value.orEmpty().isNotEmpty()) {
+                if (wordsList.isNotEmpty()) {
                     Spacer(modifier = Modifier.padding(vertical = 64.dp))
                 }
             }
 
             item {
-                if (wordsList.value != null && wordsList.value?.size == 0) {
+                if (wordsList.isEmpty()) {
 
                     LottieExample()
 
@@ -440,7 +391,6 @@ private fun Content(
             }
         }
 
-    }
 
 }
 

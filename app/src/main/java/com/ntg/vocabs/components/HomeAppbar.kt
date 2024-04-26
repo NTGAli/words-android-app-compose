@@ -33,7 +33,7 @@ fun HomeAppbar(
     notificationCallback: () -> Unit,
     profileCallback: () -> Unit,
     voiceSearch: (String) -> Unit,
-    backupOnClick: () -> Unit = {},
+//    backupOnClick: () -> Unit = {},
     subscription: () -> Unit = {},
 ) {
 
@@ -92,17 +92,17 @@ fun HomeAppbar(
 //                )
 //            }
 
-            IconButton(
-                modifier = Modifier.padding(start = 8.dp),
-                onClick = {
-                    backupOnClick.invoke()
-                }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.cloud),
-                    contentDescription = "Download State",
-                    tint = if (!isBackupEnabled) MaterialTheme.colorScheme.error else LocalContentColor.current
-                )
-            }
+//            IconButton(
+//                modifier = Modifier.padding(start = 8.dp),
+//                onClick = {
+//                    backupOnClick.invoke()
+//                }) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.cloud),
+//                    contentDescription = "Download State",
+//                    tint = if (!isBackupEnabled) MaterialTheme.colorScheme.error else LocalContentColor.current
+//                )
+//            }
 
 
             IconButton(

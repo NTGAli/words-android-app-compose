@@ -64,4 +64,19 @@ interface WordDao {
 
     @Query("SELECT * FROM Word WHERE listId=:listId ORDER BY RANDOM() LIMIT 20")
     fun randomWords(listId: Int): LiveData<List<Word>>
+
+    @Query("SELECT * FROM Word WHERE synced=0")
+    suspend fun getUnSyncedWords(): List<Word>
+
+    @Query("UPDATE Word SET synced=1 WHERE id=:id")
+    suspend fun synced(id: Int)
+
+    @Query("SELECT * FROM Word WHERE (voiceSynced NOT NULL OR imageSynced NOT NULL) AND (voiceSynced =0 OR imageSynced=0)")
+    suspend fun getUnSyncedMedia(): List<Word>
+
+    @Query("UPDATE Word SET imageSynced=1 WHERE id=:id")
+    suspend fun imageSynced(id: Int)
+
+    @Query("UPDATE Word SET voiceSynced=1 WHERE id=:id")
+    suspend fun voiceSynced(id: Int)
 }

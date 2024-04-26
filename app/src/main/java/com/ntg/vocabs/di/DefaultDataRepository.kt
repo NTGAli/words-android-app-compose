@@ -52,6 +52,12 @@ class DefaultDataRepository @Inject constructor(
         }
     }
 
+    override suspend fun checkBackup(setBackup: Boolean) {
+        recentLocationsDataStore.updateData { data ->
+            data.toBuilder().setCheckBackup(setBackup).build()
+        }
+    }
+
     override suspend fun isSubscriptionSkipped(skipped: Boolean) {
         recentLocationsDataStore.updateData { data ->
             data.toBuilder().setIsSubscriptionSkipped(skipped).build()

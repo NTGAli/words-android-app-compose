@@ -12,6 +12,7 @@ interface DataRepository {
     suspend fun setUsername(name: String)
     suspend fun isSkipped(skip: Boolean)
     suspend fun isIntroFinished(finished: Boolean)
+    suspend fun checkBackup(setBackup: Boolean)
     suspend fun isSubscriptionSkipped(skipped: Boolean)
     suspend fun clearAllUserData()
 

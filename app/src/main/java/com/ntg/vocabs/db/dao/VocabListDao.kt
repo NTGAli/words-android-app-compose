@@ -39,6 +39,12 @@ interface VocabListDao {
     @Query("SELECT * FROM VocabItemList WHERE isSelected=1")
     fun getDataOfListSelected(): LiveData<VocabItemList>
 
+    @Query("SELECT * FROM VocabItemList WHERE synced=0")
+    suspend fun getUnSyncedLists(): List<VocabItemList>
+
+    @Query("UPDATE VocabItemList SET synced = 1 WHERE id=:id")
+    suspend fun synced(id: Int)
+
     @Query("SELECT COUNT(*) FROM VocabItemList WHERE title=:name AND language=:language")
     fun isExist(name: String, language: String): LiveData<Int>
 

@@ -22,24 +22,29 @@ import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
+import com.ntg.vocabs.vm.LoginViewModel
 
 @Composable
 fun RestoringBackupOnServerScreen(
     navController: NavController,
     backupViewModel: BackupViewModel,
+    loginViewModel: LoginViewModel,
     email: String,
 ) {
+
+    if (email.isEmpty()) return
 
     val context = LocalContext.current
 
     LaunchedEffect(key1 = Unit, block = {
-        backupViewModel.restoreBackupFromServer(
-            context,
-            email,
-            onFailure = {
-                context.toast(R.string.sth_wrong)
-                navController.popBackStack()
-            })
+
+        backupViewModel.restoreBackupFromServer(context, email){
+            context.toast(R.string.sth_wrong)
+        }
+
+        backupViewModel.restoreVocabularies(email){
+            loginViewModel.checkBackup(it)
+        }
     })
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

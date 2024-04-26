@@ -11,4 +11,5 @@ message UserDataAndSetting {
     bool isIntroFinished = 5;
     bool isSubscriptionSkipped = 6;
     string backupWay = 7;
+    bool checkBackup = 8;
 }

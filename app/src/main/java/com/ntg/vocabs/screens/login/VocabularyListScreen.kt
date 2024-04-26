@@ -95,21 +95,8 @@ private fun Content(
 
 
     list.value = wordViewModel.getAllVocabList().observeAsState().value ?: listOf()
-//    username = loginViewModel.getUserData().asLiveData().observeAsState().value?.name.orEmpty()
 //    email = loginViewModel.getUserData().asLiveData().observeAsState().value?.email.orEmpty()
-//    wordViewModel.lastUserBackup(email).observe(LocalLifecycleOwner.current) {
-//        when (it) {
-//            is NetworkResult.Error -> {
-//            }
-//            is NetworkResult.Loading -> {
-//            }
-//            is NetworkResult.Success -> {
-//                if (it.data != "NO_BACKUP_FOUND") {
-//                    backupTime = it.data.orEmpty()
-//                }
-//            }
-//        }
-//    }
+
 
     if (restoreData) {
         restoreData = false

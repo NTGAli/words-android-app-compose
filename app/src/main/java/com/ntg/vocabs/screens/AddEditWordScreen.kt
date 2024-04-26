@@ -3,11 +3,8 @@ package com.ntg.vocabs.screens
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,7 +25,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -47,13 +44,16 @@ import com.ntg.vocabs.model.db.VerbForms
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.response.Definition
 import com.ntg.vocabs.model.response.DefinitionX
-import com.ntg.vocabs.model.response.WordDataItem
 import com.ntg.vocabs.model.then
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.record.AndroidAudioRecorder
+import com.ntg.vocabs.syncData
+import com.ntg.vocabs.syncMedia
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.*
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.PermissionViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -69,6 +69,7 @@ import java.io.IOException
 fun AddEditWordScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
     wordId: Int? = null
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -78,6 +79,15 @@ fun AddEditWordScreen(
     }
     var example = ""
 
+    var email by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    loginViewModel.getUserData().collectAsState(initial = null).value.let { dataSettings ->
+        if (dataSettings?.email != null) {
+            email = dataSettings.email
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -119,7 +129,7 @@ fun AddEditWordScreen(
                     wordData.example = ex.toList()
                 }
                 if (isExist?.isEmpty().orTrue() || wordId != null) {
-                    submitWord(wordData, wordViewModel, context, wordId != -1, navController)
+                    submitWord(wordData, wordViewModel, context, wordId != -1, email, navController)
                 } else {
                     context.toast(context.getString(R.string.err_word_already_exist))
                 }
@@ -155,6 +165,7 @@ private fun submitWord(
     wordViewModel: WordViewModel,
     context: Context,
     isEdit: Boolean,
+    email: String?,
     navController: NavController
 ) {
     val result = notEmptyOrNull(wordData.word, context.getString(R.string.err_word_required))
@@ -183,6 +194,13 @@ private fun submitWord(
                 wordViewModel.editWord(wordData.id, wordData)
             } else {
                 wordViewModel.addNewWord(wordData)
+                timber("getUnSyncedWords ::::: $email")
+                if (email != null) {
+                    syncData(email, BACKUP_WORDS, context)
+                    if (wordData.imageSynced != null || wordData.voiceSynced != null) {
+                        syncMedia(email, context)
+                    }
+                }
             }
             navController.popBackStack()
         }
@@ -446,7 +464,9 @@ private fun Content(
             sound = soundUrl.value,
             images = if (imagePath.orEmpty().isEmpty()) null else listOf(imagePath.orEmpty()),
             synonyms = if (synonym.value.isNotEmpty()) synonym.value.split(",") else null,
-            antonyms = if (antonyms.value.isNotEmpty()) antonyms.value.split(",") else null
+            antonyms = if (antonyms.value.isNotEmpty()) antonyms.value.split(",") else null,
+            voiceSynced = if (audioFile == null) null else false,
+            imageSynced = if (imagePath.orEmpty().isNotEmpty()) false else null,
         )
     )
 
@@ -1360,5 +1380,4 @@ private fun saveImageInFolder(bitmap: Bitmap?, context: Context, name: String): 
 
     return directory
 }
-
 

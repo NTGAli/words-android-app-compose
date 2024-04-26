@@ -17,8 +17,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.EditText
@@ -29,17 +29,19 @@ import com.ntg.vocabs.model.Success
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.then
-import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.syncData
 import com.ntg.vocabs.ui.theme.fontMedium14
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.notEmptyOrNull
-import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewModel, listId: Int?) {
+fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewModel, loginViewModel: LoginViewModel, listId: Int?) {
 
+    val email = loginViewModel.getUserData().collectAsState(initial = null).value?.email
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val submitList = remember {
         mutableStateOf(false)
@@ -48,7 +50,7 @@ fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewMo
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
             val listData = wordViewModel.findList(listId)?.observeAsState()
-            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value, submitList)
+            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value,email, submitList)
         },
         bottomBar = {
             BottomBar(submitList, listId != -1)
@@ -64,6 +66,7 @@ private fun Content(
     navController: NavController,
     wordViewModel: WordViewModel,
     listForEdit: VocabItemList?,
+    email: String?,
     submitList: MutableState<Boolean> = remember { mutableStateOf(false) }
 ) {
     val list = listOf(
@@ -128,15 +131,11 @@ private fun Content(
                     wordViewModel.selectList(it.toInt())
                     navController.popBackStack()
                 }
-//                if (language == "German"){
-//                    navController.navigate(Screens.DownloadScreen.name + "?enableBottomBar=${true}",
-//                        NavOptions.Builder()
-//                            .setPopUpTo(Screens.SelectLanguageScreen.name, inclusive = true)
-//                            .build()
-//                    )
-//                }else{
-//                }
-//                navController.popBackStack()
+
+
+                if (email != null){
+                    syncData(email, BACKUP_LISTS, ctx)
+                }
 
             }
         }else if (result is Failure){
@@ -245,7 +244,10 @@ private fun BottomBar(
     submitList: MutableState<Boolean> = remember { mutableStateOf(false) },
     isEdit: Boolean
 ){
-    Column(modifier = Modifier.padding(horizontal = 32.dp).background(MaterialTheme.colorScheme.background)) {
+
+    Column(modifier = Modifier
+        .padding(horizontal = 32.dp)
+        .background(MaterialTheme.colorScheme.background)) {
         Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
 
         CustomButton(

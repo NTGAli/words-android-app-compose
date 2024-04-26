@@ -22,6 +22,13 @@ object Constant {
         const val BACKUP_FILE_NAME_IN_DIRECTORY = "VocabsBackup_"
     }
 
+    object BackTypes{
+        const val BACKUP_WORDS = "Word"
+        const val BACKUP_LISTS = "VocabLists"
+        const val BACKUP_TIMES = "Times"
+        const val BACKUP_MEDIA = "Media"
+    }
+
 
 //    object PreferenceKeys {
 //        val USER_NAME = preferencesKey<String>("user_name")

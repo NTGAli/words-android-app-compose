@@ -102,7 +102,7 @@ fun AppNavHost(
                 defaultValue = -1
             })
         ) {
-            SelectLanguageScreen(navController, wordViewModel, it.arguments?.getInt("listId"))
+            SelectLanguageScreen(navController, wordViewModel,loginViewModel, it.arguments?.getInt("listId"))
         }
 
         composable(Screens.TimeScreen.name) {
@@ -316,6 +316,7 @@ fun AppNavHost(
             AddEditWordScreen(
                 navController,
                 wordViewModel,
+                loginViewModel,
                 backStackEntry.arguments?.getInt("wordId")
             )
         }
@@ -332,6 +333,7 @@ fun AppNavHost(
             RestoringBackupOnServerScreen(
                 navController,
                 backupViewModel,
+                loginViewModel,
                 backStackEntry.arguments?.getString("email").orEmpty()
             )
         }

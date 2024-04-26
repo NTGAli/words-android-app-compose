@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey
 @Entity
 data class VocabItemList (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    var title: String,
-    var language: String,
-    var isSelected: Boolean,
-    var synced: Boolean? = null,
-
+    val id: Int=0,
+    var title: String="",
+    var language: String="",
+    var isSelected: Boolean=false,
+    var synced: Boolean? = false,
+    var email: String?=null
     )

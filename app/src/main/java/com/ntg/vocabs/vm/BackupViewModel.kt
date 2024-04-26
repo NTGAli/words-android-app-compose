@@ -1,7 +1,6 @@
 package com.ntg.vocabs.vm
 
 import android.content.Context
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +14,7 @@ import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
 import com.ntg.vocabs.R
@@ -24,14 +24,16 @@ import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
 import com.ntg.vocabs.model.DriveBackup
 import com.ntg.vocabs.model.GoogleDriveSate
-import com.ntg.vocabs.model.Success
 import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
-import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.util.Constant
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
+import com.ntg.vocabs.util.backup.IMAGES
+import com.ntg.vocabs.util.backup.Voices
 import com.ntg.vocabs.util.getCurrentDate
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
@@ -56,7 +58,8 @@ class BackupViewModel @Inject constructor(
     private val vocabListDao: VocabListDao,
     private val driveBackupDao: DriveBackupDao,
     private val backupDao: DriveBackupDao,
-    private val storage: FirebaseStorage
+    private val storage: FirebaseStorage,
+    private val mFirestore: FirebaseFirestore
 ) : ViewModel() {
 
     private var drive: Drive? = null
@@ -64,7 +67,8 @@ class BackupViewModel @Inject constructor(
 
     private var allBackups: LiveData<List<DriveBackup>> = MutableLiveData()
     var googleDriveState = MutableStateFlow<GoogleDriveSate?>(null)
-    private var lastFileName: MutableLiveData<com.google.api.services.drive.model.File?> = MutableLiveData()
+    private var lastFileName: MutableLiveData<com.google.api.services.drive.model.File?> =
+        MutableLiveData()
 
     fun googleInstance(context: Context) {
         GoogleSignIn.getLastSignedInAccount(context)?.let { googleAccount ->
@@ -142,7 +146,7 @@ class BackupViewModel @Inject constructor(
 
             if (result.files.isNotEmpty()) {
                 lastFileName.postValue(result.files.first { it.name.startsWith("VocabsBackup_") && !it.trashed.orFalse() })
-            }else{
+            } else {
                 lastFileName.postValue(com.google.api.services.drive.model.File())
             }
 
@@ -160,7 +164,11 @@ class BackupViewModel @Inject constructor(
         return result.files?.firstOrNull()?.id
     }
 
-    fun restoreBackup(context: Context, file: com.google.api.services.drive.model.File, listener: (String?) -> Unit) {
+    fun restoreBackup(
+        context: Context,
+        file: com.google.api.services.drive.model.File,
+        listener: (String?) -> Unit
+    ) {
         val fileName = "LsatBackup"
         viewModelScope.launch(Dispatchers.IO) {
 
@@ -185,9 +193,9 @@ class BackupViewModel @Inject constructor(
 
             val json: String?
             val finalFile = File(context.getExternalFilesDir(""), fileName) // zip file
-            unzip(finalFile.path,context.getExternalFilesDir("")?.path.orEmpty())
+            unzip(finalFile.path, context.getExternalFilesDir("")?.path.orEmpty())
 
-            val unZippedFile = File(context.getExternalFilesDir("backups"),"backup")
+            val unZippedFile = File(context.getExternalFilesDir("backups"), "backup")
             unZippedFile.inputStream()
             json = try {
                 val inputStream: InputStream = unZippedFile.inputStream()
@@ -209,13 +217,19 @@ class BackupViewModel @Inject constructor(
     }
 
 
-    fun backupOnDrive(context: Context, listener:(Boolean) -> Unit ={}) {
-        zipFolder(context.getExternalFilesDir("backups")?.path.toString(),context.getExternalFilesDir("")?.path.toString()+"/${Constant.Backup.BACKUP_ZIP_NAME}").also {
-            backupDB(File(context.getExternalFilesDir("")?.path.toString()+"/${Constant.Backup.BACKUP_ZIP_NAME}"), listener)
+    fun backupOnDrive(context: Context, listener: (Boolean) -> Unit = {}) {
+        zipFolder(
+            context.getExternalFilesDir("backups")?.path.toString(),
+            context.getExternalFilesDir("")?.path.toString() + "/${Constant.Backup.BACKUP_ZIP_NAME}"
+        ).also {
+            backupDB(
+                File(context.getExternalFilesDir("")?.path.toString() + "/${Constant.Backup.BACKUP_ZIP_NAME}"),
+                listener
+            )
         }
     }
 
-    private fun backupDB(file: File, listener:(Boolean) -> Unit ={}){
+    private fun backupDB(file: File, listener: (Boolean) -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
 
             val folderId = getFolderId()
@@ -235,18 +249,33 @@ class BackupViewModel @Inject constructor(
             gfile.parents = parents
 
             try {
-                val executedFile = drive!!.Files().create(gfile, fileContent).setFields("id").execute()
-                driveBackupDao.insert(DriveBackup(0,true,System.currentTimeMillis().toString(),""))
+                val executedFile =
+                    drive!!.Files().create(gfile, fileContent).setFields("id").execute()
+                driveBackupDao.insert(
+                    DriveBackup(
+                        0,
+                        true,
+                        System.currentTimeMillis().toString(),
+                        ""
+                    )
+                )
                 removeOldBackups(executedFile.id, folderId)
                 listener.invoke(true)
-            }catch (e: Exception){
-                driveBackupDao.insert(DriveBackup(0,false,System.currentTimeMillis().toString(),""))
+            } catch (e: Exception) {
+                driveBackupDao.insert(
+                    DriveBackup(
+                        0,
+                        false,
+                        System.currentTimeMillis().toString(),
+                        ""
+                    )
+                )
                 listener.invoke(false)
             }
         }
     }
 
-    private fun removeOldBackups(backId: String, folderId: String?){
+    private fun removeOldBackups(backId: String, folderId: String?) {
         viewModelScope.launch(Dispatchers.IO) {
 //            val folderId = getFolderId()
 
@@ -357,7 +386,7 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun backupLog(driveBackup: DriveBackup){
+    fun backupLog(driveBackup: DriveBackup) {
         viewModelScope.launch {
             driveBackupDao.insert(driveBackup)
         }
@@ -372,9 +401,9 @@ class BackupViewModel @Inject constructor(
 
     fun checkBackupAvailable(
         email: String,
-        exist:(Boolean) -> Unit,
-        onFailure:(Exception) -> Unit
-    ){
+        exist: (Boolean) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
         val storageRef = storage.reference.child(email)
         storageRef.listAll()
             .addOnSuccessListener { listResult ->
@@ -386,38 +415,114 @@ class BackupViewModel @Inject constructor(
 
     }
 
+    fun restoreVocabularies(email: String, onSuccess: (Boolean) -> Unit) {
+        val db = mFirestore
+        val wordsRef = db.collection(BACKUP_WORDS)
+        val listRef = db.collection(BACKUP_LISTS)
+        wordsRef.whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val word = document.toObject(Word::class.java)
+                    word.synced = true
+                    word.imageSynced = if (word.imageSynced != null) true else null
+                    word.voiceSynced = if (word.voiceSynced != null) true else null
+                    viewModelScope.launch {
+                        wordDao.insert(word)
+                    }
+
+                }
+                onSuccess.invoke(true)
+            }
+            .addOnFailureListener { exception ->
+                onSuccess.invoke(false)
+            }
+
+
+        listRef.whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val vocabList = document.toObject(VocabItemList::class.java)
+                    vocabList.synced = true
+                    vocabList.isSelected = false
+                    viewModelScope.launch {
+                        vocabListDao.insert(vocabList)
+                    }
+                }
+                onSuccess.invoke(true)
+            }
+            .addOnFailureListener { exception ->
+                onSuccess.invoke(false)
+            }
+    }
+
     fun restoreBackupFromServer(
         context: Context,
         email: String,
-        onFailure:() -> Unit
+        onFailure: () -> Unit
     ) {
         val storageRef = storage.reference.child(email)
-        val islandRef = storageRef.child("backup.zip")
-        var json: String?
-        val localFile = File.createTempFile("server-backup", "zip")
 
-        islandRef.getFile(localFile).addOnSuccessListener {
-            unzip(localFile.path,context.getExternalFilesDir("")?.path.orEmpty())
-            val unZippedFile = File(context.getExternalFilesDir("backups"),"backup")
-            localFile.delete()
-            json = try {
-                val inputStream: InputStream = unZippedFile.inputStream()
-                val size = inputStream.available()
-                val buffer = ByteArray(size)
-                inputStream.read(buffer)
-                inputStream.close()
-                String(buffer, charset("UTF-8"))
-            } catch (ex: IOException) {
-                ex.printStackTrace()
-                null
+
+        storageRef.listAll()
+            .addOnSuccessListener {
+                it.items.forEach { backupZip ->
+                    timber("OOOOOOOOOOOOOOO ${backupZip.name}")
+
+
+                    val islandRef = storageRef.child(backupZip.name)
+                    val localFile = File.createTempFile(backupZip.name, "zip")
+
+                    islandRef.getFile(localFile).addOnSuccessListener {
+                        unzip(localFile.path, context.getExternalFilesDir("")?.path.orEmpty())
+                        val imagesDirectory = File(context.getExternalFilesDir(""), IMAGES)
+                        val voicesDirectory = File(context.getExternalFilesDir(""), Voices)
+                        if (voicesDirectory.exists()){
+                            voicesDirectory.listFiles()
+                                ?.let { it1 -> copyFilesToFolder(context, it1.map { it.path }, "backups/sounds") }
+                        }
+
+                        if (imagesDirectory.exists()){
+                            imagesDirectory.listFiles()
+                                ?.let { it1 -> copyFilesToFolder(context, it1.map { it.path }, "backups/images") }
+                        }
+                        imagesDirectory.deleteRecursively()
+                        voicesDirectory.deleteRecursively()
+                        localFile.delete()
+
+
+                    }.addOnFailureListener {
+                        onFailure.invoke()
+                    }
+
+
+                }
+
+            }.addOnFailureListener {
+                onFailure.invoke()
             }
 
-            if (json != null){
-                importToDB(json!!)
-            }
 
-        }.addOnFailureListener {
-            onFailure.invoke()
+    }
+
+
+    private fun copyFilesToFolder(context: Context, sourcePaths: List<String>, destinationPath: String): File {
+        val destinationDir = File(context.getExternalFilesDir(""), destinationPath)
+
+        // Create destination directory if it doesn't exist
+        if (!destinationDir.exists()) {
+            destinationDir.mkdirs()
         }
+
+        // Copy files from source paths to destination directory
+        sourcePaths.forEach { sourcePath ->
+            val sourceFile = File(sourcePath)
+            if (sourceFile.exists()) {
+                val outputFile = File(destinationDir, sourceFile.name)
+                sourceFile.copyTo(outputFile, overwrite = true)
+            }
+        }
+        return destinationDir
     }
 }

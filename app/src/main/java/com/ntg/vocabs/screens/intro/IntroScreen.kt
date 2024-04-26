@@ -50,7 +50,7 @@ fun IntroScreen(
         painterResource(R.drawable.time_1),
         painterResource(R.drawable.no_ads),
         painterResource(R.drawable.survey_1),
-        painterResource(R.drawable.drive_72),
+        painterResource(R.drawable.cloud),
     )
 
     val titles = listOf(
@@ -59,17 +59,17 @@ fun IntroScreen(
         "Track Your Progress",
         "Ad-Free Experience",
         "Review",
-        "Google Drive Backup",
+        "Auto Backup",
     )
 
 
     val descriptions = listOf(
-        "Vocabs, The Ultimate Vocabulary Companion",
+        "The Ultimate Vocabulary Companion",
         "Add an unlimited number of words to your vocabulary lists.",
         "Monitor the time spent on each list and during reviews to enhance your learning journey.",
         "Say goodbye to interruptions - Vocabs is completely ad-free.",
         "Efficiently review and reinforce your vocabulary.",
-        "Securely backup your data to Google Drive automatically. Peace of mind included.",
+        "Back up your vocabularies on the server.",
     )
 
 
@@ -119,32 +119,14 @@ fun IntroScreen(
 
 
 
-                if (pagerState.currentPage == 0){
-                    TypewriterText(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally),
-                        texts = listOf(
-                            "Hello",
-                            "Bonjour",
-                            "こんにちは",
-                            "Hola",
-                            "Hallo",
-                            "Ciao",
-                            "مرحبًا",
-                        ),
-                        cursor = "\uD83D\uDC4B",
-                        delayTime = 1500
-                    )
-                }else{
-                    TypewriterText(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally),
-                        texts = listOf(
-                            titles[pagerState.currentPage]
-                        ),
-                        singleText = true
-                    )
-                }
+                TypewriterText(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
+                    texts = listOf(
+                        titles[pagerState.currentPage]
+                    ),
+                    singleText = true
+                )
 
                 Text(
                     modifier = Modifier
