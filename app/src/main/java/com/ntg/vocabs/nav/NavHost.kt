@@ -202,7 +202,7 @@ fun AppNavHost(
         }
 
         composable(Screens.VocabularyListScreen.name) {
-            VocabularyListScreen(navController, wordViewModel, loginViewModel)
+            VocabularyListScreen(navController, wordViewModel, loginViewModel, backupViewModel)
         }
 
         composable(

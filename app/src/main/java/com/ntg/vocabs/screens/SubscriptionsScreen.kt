@@ -97,7 +97,7 @@ fun SubscriptionsScreen(
                         .padding(top = 4.dp),
                     text = stringResource(id = R.string.continue_free),
                     style = ButtonStyle.TextOnly,
-                    size = ButtonSize.LG
+                    size = ButtonSize.XL
                 ) {
                     loginViewModel.continueFree()
                 }

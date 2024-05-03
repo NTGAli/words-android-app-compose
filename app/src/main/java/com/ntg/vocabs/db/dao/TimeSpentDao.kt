@@ -17,11 +17,14 @@ interface TimeSpentDao {
     @Update
     suspend fun update(timeSpent: TimeSpent)
 
-    @Query("DELETE FROM TimeSpent WHERE  listId =:listId")
+    @Query("UPDATE TimeSpent SET isDeleted=1 WHERE  listId =:listId")
     suspend fun deleteTimeOfList(listId: Int)
 
     @Query("DELETE FROM TimeSpent")
     suspend fun clear()
+
+    @Delete
+    suspend fun delete(timeSpent: TimeSpent)
 
     @Query("DELETE FROM TimeSpent WHERE endUnix IS NULL")
     suspend fun removeNullTime()
@@ -50,6 +53,9 @@ interface TimeSpentDao {
 
     @Query("SELECT * FROM TimeSpent WHERE synced=0")
     fun getUnSyncedTime(): List<TimeSpent>
+
+    @Query("UPDATE TimeSpent SET synced=1, fid=:fid WHERE id=:id")
+    fun synced(id: Int, fid: String)
 
     @Query("UPDATE TimeSpent SET synced=1 WHERE id=:id")
     fun synced(id: Int)

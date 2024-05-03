@@ -40,6 +40,7 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.backup.BackupWorker
 import com.ntg.vocabs.util.backup.FirebaseBackupWorker
 import com.ntg.vocabs.util.backup.MediaBackupWorker
+import com.ntg.vocabs.util.backup.StopSpendTimeWorker
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.DataViewModel
@@ -48,6 +49,9 @@ import com.ntg.vocabs.vm.MessageBoxViewModel
 import com.ntg.vocabs.vm.SignInViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -95,15 +99,13 @@ class MainActivity : ComponentActivity() {
                                     .isEmpty()
                             ) {
                                 startDes.value = Screens.InsertEmailScreen.name
-                            }
-                            else if (!userData.value?.isSubscriptionSkipped.orTrue()) {
+                            } else if (!userData.value?.isSubscriptionSkipped.orTrue()) {
                                 startDes.value = Screens.ExplainSubscriptionScreen.name
-                            }
-                            else if (lists.value?.filter { it.isSelected }.orEmpty()
+                            } else if (lists.value?.filter { it.isSelected }.orEmpty()
                                     .isEmpty()
                             ) {
                                 startDes.value = Screens.VocabularyListScreen.name
-                            }  else {
+                            } else {
                                 startDes.value = Screens.HomeScreen.name
                             }
                         } else {
@@ -346,6 +348,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        timber("calendarViewModellll :::: res")
         if (calendarViewModel.currentScreen != null && listId != null) {
             when (calendarViewModel.currentScreen) {
                 Screens.RevisionScreen.name,
@@ -368,9 +371,10 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         if (listId != null) {
-            calendarViewModel.stopLastTime()
+            CoroutineScope(Dispatchers.IO).launch {
+                calendarViewModel.stopLastTime()
+            }
         }
-
     }
 
 }

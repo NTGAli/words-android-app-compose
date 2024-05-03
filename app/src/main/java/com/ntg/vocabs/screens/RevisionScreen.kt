@@ -28,7 +28,6 @@ import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.model.db.Word
-import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.getStateRevision
@@ -156,6 +155,7 @@ private fun Content(
                     if (!isRandom){
                         word!!.revisionCount = word!!.revisionCount + 1
                         word!!.lastRevisionTime = System.currentTimeMillis()
+                        word!!.synced = false
                         wordViewModel.editWord(word!!.id, word!!)
                     }
                     rejectedList.add(word!!)
@@ -280,6 +280,7 @@ private fun Content(
                                 if (!isRandom){
                                     word!!.revisionCount = word!!.revisionCount + 1
                                     word!!.lastRevisionTime = System.currentTimeMillis()
+                                    word!!.synced = false
                                     wordViewModel.editWord(word!!.id, word!!)
                                 }
                                 rejectedList.add(word!!)

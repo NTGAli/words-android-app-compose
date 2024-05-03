@@ -179,26 +179,38 @@ private fun Content(
             loadingScreen = true
             val userData = googleAuthUiClient.getSingInUser()
 
-            loginViewModel.setUsername(userData?.username.orEmpty())
-            loginViewModel.setUserEmail(userData?.email.orEmpty())
+
+
+            backupViewModel.restoreBackupFromServer(context, userData?.email.orEmpty()){
+                context.toast(R.string.sth_wrong)
+                loading.value = false
+            }
+
+            backupViewModel.restoreVocabularies(userData?.email.orEmpty()){
+                loginViewModel.checkBackup(it)
+                loginViewModel.setUsername(userData?.username.orEmpty())
+                loginViewModel.setUserEmail(userData?.email.orEmpty())
+                loading.value = false
+            }
+
 //            navController.navigate(Screens.AskBackupScreen.name) {
 //                popUpTo(0)
 //            }
 
-            backupViewModel.checkBackupAvailable(userData?.email.orEmpty(),
-                exist = { userBackupAvailable ->
-                    loading.value = false
-                    if (userBackupAvailable) {
-                        loginViewModel.setUserEmail(userData?.email.orEmpty())
-                        navController.navigate(Screens.RestoringBackupOnServerScreen.name + "?email=${userData?.email.orEmpty()}")
-                    } else {
-                        navController.navigate(Screens.VocabularyListScreen.name)
-                    }
-                },
-                onFailure = {
-                    context.toast(context.getString(R.string.sth_wrong))
-                    loading.value = false
-                })
+//            backupViewModel.checkBackupAvailable(userData?.email.orEmpty(),
+//                exist = { userBackupAvailable ->
+//                    loading.value = false
+//                    if (userBackupAvailable) {
+//                        loginViewModel.setUserEmail(userData?.email.orEmpty())
+//                        navController.navigate(Screens.RestoringBackupOnServerScreen.name + "?email=${userData?.email.orEmpty()}")
+//                    } else {
+//                        navController.navigate(Screens.VocabularyListScreen.name)
+//                    }
+//                },
+//                onFailure = {
+//                    context.toast(context.getString(R.string.sth_wrong))
+//                    loading.value = false
+//                })
 
 //            loginViewModel.verifyUserByGoogle(
 //                email = userData?.email.orEmpty(),
@@ -351,9 +363,6 @@ private fun Content(
                             if (exists) {
                                 loginViewModel.signIn(email.value, password.value,
                                     onSuccess = {
-
-
-
                                             backupViewModel.restoreBackupFromServer(context, email.value){
                                                 context.toast(R.string.sth_wrong)
                                                 loading.value = false
@@ -374,7 +383,6 @@ private fun Content(
                                     onSuccess = {
                                         loading.value = false
                                         loginViewModel.setUserEmail(email.value)
-                                        navController.navigate(Screens.SelectBackupOptionsScreen.name)
                                     },
                                     onFailure = {
                                         context.toast(context.getString(R.string.sth_wrong))

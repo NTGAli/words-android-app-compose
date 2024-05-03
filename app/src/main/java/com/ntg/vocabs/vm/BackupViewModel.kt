@@ -424,6 +424,7 @@ class BackupViewModel @Inject constructor(
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     val word = document.toObject(Word::class.java)
+                    word.fid = document.id
                     word.synced = true
                     word.imageSynced = if (word.imageSynced != null) true else null
                     word.voiceSynced = if (word.voiceSynced != null) true else null

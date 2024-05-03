@@ -164,6 +164,12 @@ class WordViewModel @Inject constructor(
         }
     }
 
+    fun deleteWord(id: Int) {
+        viewModelScope.launch {
+            wordDao.delete(id)
+        }
+    }
+
     fun deleteWordsOfList(listId: Int) {
         viewModelScope.launch {
             wordDao.deleteWordOfList(listId)
@@ -458,6 +464,12 @@ class WordViewModel @Inject constructor(
     fun deleteListById(id: Int) {
         viewModelScope.launch {
             vocabListDao.deleteById(id)
+        }
+    }
+
+    fun deleteList(vocabItemList: VocabItemList) {
+        viewModelScope.launch {
+            vocabListDao.delete(vocabItemList)
         }
     }
 

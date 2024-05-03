@@ -29,7 +29,7 @@ import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
 
-@Database(entities = [Word::class, TimeSpent::class, VocabItemList::class, GermanNouns::class, GermanVerbs::class, EnglishWords::class, EnglishVerbs::class, DriveBackup::class, AdHistory::class, Sounds::class], version = 29)
+@Database(entities = [Word::class, TimeSpent::class, VocabItemList::class, GermanNouns::class, GermanVerbs::class, EnglishWords::class, EnglishVerbs::class, DriveBackup::class, AdHistory::class, Sounds::class], version = 1)
 @TypeConverters(ExamplesConverters::class, VerbFormsConverter::class, DateConverter::class, GermanVerbConverter::class, GermanVerbConverter::class, GermanDataVerbConverter::class)
 abstract class AppDB: RoomDatabase()  {
 

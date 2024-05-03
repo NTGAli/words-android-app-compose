@@ -1,5 +1,10 @@
 package com.ntg.vocabs.screens.login
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,23 +20,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
+import androidx.work.WorkManager
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.Task
 import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.ItemList
 import com.ntg.vocabs.components.Message
+import com.ntg.vocabs.components.SampleItem
 import com.ntg.vocabs.components.TypewriterText
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.screens.getGoogleSignInClient
+import com.ntg.vocabs.screens.setting.ReadBackupFromStorage
 import com.ntg.vocabs.screens.setting.RestoreUserDataFromServer
 import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.util.unixTimeToReadable
+import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 
@@ -40,15 +53,55 @@ import com.ntg.vocabs.vm.WordViewModel
 fun VocabularyListScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    backupViewModel: BackupViewModel
 ) {
+
+    var openBottomSheet by remember {
+        mutableStateOf(false)
+    }
+
+    var loading by remember {
+        mutableStateOf(false)
+    }
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
             Content(paddingValues = innerPadding, navController, wordViewModel, loginViewModel)
+        },
+        bottomBar = {
+            CustomButton(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                text = stringResource(id = R.string.have_backup),
+                type = ButtonType.Primary,
+                style = ButtonStyle.TextOnly,
+                size = ButtonSize.LG,
+            ) {
+                openBottomSheet = true
+
+            }
         }
     )
+
+    ReadBackupFromStorage(launch = openBottomSheet, isLaunched = {openBottomSheet = false}) {
+        if (it.orEmpty().isNotEmpty()) {
+            backupViewModel.importToDB(it!!) { isSucceed ->
+                if (isSucceed) {
+                    context.toast(R.string.backup_imported)
+                    navController.navigate(Screens.VocabularyListScreen.name)
+                } else {
+                    context.toast(R.string.file_not_supported)
+                }
+                loading = false
+
+            }
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -191,7 +244,8 @@ private fun Content(
                 .fillMaxWidth(),
             text = stringResource(id = R.string.add_new),
             style = ButtonStyle.TextOnly,
-            type = ButtonType.Primary
+            type = ButtonType.Primary,
+            size = ButtonSize.XL
         ) {
             navController.navigate(Screens.SelectLanguageScreen.name)
         }

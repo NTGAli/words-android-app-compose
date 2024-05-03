@@ -245,5 +245,6 @@
     <string name="select_backup_option">Select Backup Option</string>
     <string name="server_backuo">Server backup history</string>
     <string name="change_method">Change method</string>
+    <string name="auto_fill_from_third">Fill with Dictionary 3</string>
 
 </resources>

@@ -159,7 +159,16 @@ private fun SetupAppbar(
                         text = "yes",
                         type = ButtonType.Danger
                     ) {
-                        wordViewModel.deleteWord(word ?: Word())
+                        timber("DDDDDDDDDDDDDDDD :::: $word")
+                        if (word != null){
+                            timber("DDDDDDDDDDDDDDDD :::: 111")
+                            if (word.fid != null){
+                                timber("DDDDDDDDDDDDDDDD :::: 222 ---- ${word.id}")
+                                wordViewModel.deleteWord(word.id)
+                            }else{
+                                wordViewModel.deleteWord(word)
+                            }
+                        }
                         openBottomSheet = false
                         navController.popBackStack()
                     }

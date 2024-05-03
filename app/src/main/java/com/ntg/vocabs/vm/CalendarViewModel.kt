@@ -11,7 +11,9 @@ import com.ntg.vocabs.model.CalendarDataSource
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.components.CalendarUiModel
 import com.ntg.vocabs.model.db.TimeSpent
+import com.ntg.vocabs.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -36,7 +38,9 @@ class CalendarViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun insertSpendTime(type: SpendTimeType, listId: Int) {
-        stopLastTime()
+        viewModelScope.launch {
+            stopLastTime()
+        }
         removeNullTime()
         viewModelScope.launch {
             val spendTime = TimeSpent(
@@ -67,10 +71,14 @@ class CalendarViewModel @Inject constructor(
 
     fun removeNullTime() = viewModelScope.launch { timeSpentDao.removeNullTime() }
 
-    fun stopLastTime() {
-        viewModelScope.launch {
-            timeSpentDao.stopTime(System.currentTimeMillis())
-        }
+    suspend fun stopLastTime() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                timeSpentDao.stopTime(System.currentTimeMillis())
+            } catch (e: Exception) {
+                timber("Database ::: Error stopping time :: ${e.message}")
+            }
+        }.join()
     }
 
     fun selectDate(date: CalendarUiModel.Date) {

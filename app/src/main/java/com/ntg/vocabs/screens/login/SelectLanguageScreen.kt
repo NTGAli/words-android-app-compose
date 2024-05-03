@@ -112,6 +112,7 @@ private fun Content(
             if (listForEdit != null) {
                 listForEdit.language = language
                 listForEdit.title = name.value
+                listForEdit.synced = false
                 wordViewModel.updateVocabList(
                     listForEdit
                 )

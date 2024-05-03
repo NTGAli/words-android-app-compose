@@ -11,6 +11,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -26,9 +27,11 @@ import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.syncData
 import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontRegular12
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.vm.CalendarViewModel
@@ -79,6 +82,8 @@ private fun Content(
     calendarViewModel: CalendarViewModel
 ) {
 
+    val context = LocalContext.current
+
     val list = remember {
         mutableStateOf(listOf<VocabsListWithCount>())
     }
@@ -101,6 +106,12 @@ private fun Content(
     var openBottomSheet by remember {
         mutableStateOf(false)
     }
+
+    var email by remember {
+        mutableStateOf("")
+    }
+
+
     list.value = wordViewModel.getListWithCount()
         .observeAsState().value?.sortedByDescending { it.isSelected } ?: listOf()
     val userData = loginViewModel.getUserData().asLiveData().observeAsState()
@@ -109,7 +120,11 @@ private fun Content(
         navController.navigate(Screens.VocabularyListScreen.name)
     }
 
-    val language = wordViewModel.currentList().observeAsState().value?.language
+    loginViewModel.getUserData().collectAsState(initial = null).value.let { dataSettings ->
+        if (dataSettings?.email != null) {
+            email = dataSettings.email
+        }
+    }
 
     if (deleteList) {
         wordViewModel.deleteListById(listId.value)
@@ -118,6 +133,9 @@ private fun Content(
         wordViewModel.checkIfNoListSelected()
         openBottomSheet = false
         deleteList = false
+        if (email.isNotEmpty()){
+            syncData(email, BACKUP_LISTS, context)
+        }
     }
 
     LazyColumn(

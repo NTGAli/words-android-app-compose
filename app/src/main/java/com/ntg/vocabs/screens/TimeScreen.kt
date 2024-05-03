@@ -138,6 +138,17 @@ private fun TimeContentItem(
 
     timeOfDate.orEmpty().forEach {
         if (it.startUnix != null && it.endUnix != null) {
+
+
+            if (getSecBetweenTimestamps(
+                    it.startUnix.orDefault(),
+                    it.endUnix.orDefault()
+                ) == 33752){
+
+                timber("TTTTTTTTIIIMMMM ${it}")
+
+            }
+
             totalTimeOfDate += getSecBetweenTimestamps(
                 it.startUnix.orDefault(),
                 it.endUnix.orDefault()

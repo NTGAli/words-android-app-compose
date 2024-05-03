@@ -195,13 +195,18 @@ private fun submitWord(
             } else {
                 wordViewModel.addNewWord(wordData)
                 timber("getUnSyncedWords ::::: $email")
+
                 if (email != null) {
-                    syncData(email, BACKUP_WORDS, context)
                     if (wordData.imageSynced != null || wordData.voiceSynced != null) {
                         syncMedia(email, context)
                     }
                 }
             }
+
+            if (email != null) {
+                syncData(email, BACKUP_WORDS, context)
+            }
+
             navController.popBackStack()
         }
 
@@ -445,6 +450,7 @@ private fun Content(
     wordData(
         Word(
             if (wordEdit?.id != null && wordEdit.id != -1) wordEdit.id else 0,
+            fid = wordEdit?.fid,
             listId = listId.orZero(),
             word = word.value,
             type = type.value,
@@ -467,6 +473,7 @@ private fun Content(
             antonyms = if (antonyms.value.isNotEmpty()) antonyms.value.split(",") else null,
             voiceSynced = if (audioFile == null) null else false,
             imageSynced = if (imagePath.orEmpty().isNotEmpty()) false else null,
+            synced = false
         )
     )
 
@@ -959,7 +966,7 @@ private fun Content(
                 language == "English"
             ) {
 
-                Row(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)) {
+                Row(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)) {
                     CustomButton(
                         modifier = Modifier
                             .weight(1f)
@@ -985,6 +992,19 @@ private fun Content(
                         fetchDataWord.value = true
                         dictionaryApi.intValue = 2
                     }
+                }
+
+                CustomButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom= 16.dp),
+                    text = stringResource(id = R.string.auto_fill_from_third),
+                    size = ButtonSize.LG,
+                    type = ButtonType.Secondary,
+                    style = ButtonStyle.Contained
+                ) {
+                    fetchDataWord.value = true
+                    dictionaryApi.intValue = 3
                 }
 
             }
