@@ -53,9 +53,7 @@ fun AccountState(
 
             Icon(modifier = Modifier.padding(top = 16.dp).size(42.dp),painter = painterResource(id = R.drawable.v_pro), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             
-            Text(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp).clickable {
-                                                                                   upgradeClick.invoke()
-            }, text = stringResource(id = R.string.pro_account), style = fontMedium12(MaterialTheme.colorScheme.onSurfaceVariant))
+            Text(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp), text = stringResource(id = R.string.pro_account), style = fontMedium12(MaterialTheme.colorScheme.onSurfaceVariant))
 
         }
     }

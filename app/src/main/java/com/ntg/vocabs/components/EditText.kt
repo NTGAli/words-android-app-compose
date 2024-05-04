@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.rounded.Add
@@ -18,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,6 +44,7 @@ fun EditText(
     leadingIconOnClick: (String) -> Unit = {},
     leftIconOnClick: (String) -> Unit = {},
     searchMode: Boolean = false,
+    singleLine: Boolean = true,
     onClick: () -> Unit = {},
     onChange: (String) -> Unit = {}
 
@@ -126,7 +130,7 @@ fun EditText(
                 containerColor = MaterialTheme.colorScheme.background
             )
         } else OutlinedTextFieldDefaults.colors(),
-        singleLine = searchMode,
+        singleLine = searchMode || singleLine,
         leadingIcon = if (searchMode) {
             {
                 IconButton(onClick = {
@@ -139,7 +143,12 @@ fun EditText(
                 }
             }
 
-        } else null
+        } else null,
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Done
+        ),
 
     )
 
