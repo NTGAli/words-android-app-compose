@@ -67,7 +67,7 @@ fun TypewriterText(
                     )
                 delay(speedType)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && enableVibrate) {
-//                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
+                    vib.vibrate(VibrationEffect.createOneShot(3L,20))
                 }
 
             }

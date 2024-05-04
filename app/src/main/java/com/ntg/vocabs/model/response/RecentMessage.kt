@@ -7,7 +7,7 @@ data class Messages(
 )
 
 data class RecentMessage(
-    val id: Int? = null,
+    val id: String? = null,
     val title: String? = null,
     val message: String? = null,
     val action: String? = null,
