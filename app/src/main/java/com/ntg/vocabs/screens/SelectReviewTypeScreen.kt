@@ -7,9 +7,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -20,18 +22,23 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
+import com.ntg.vocabs.components.DescriptionType
+import com.ntg.vocabs.components.NeedProDialog
 import com.ntg.vocabs.components.ReviewItem
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.util.getStateRevision
+import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.toast
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectReviewTypeScreen(
     navController: NavController,
-    wordViewModel: WordViewModel
+    wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel
 ){
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -46,7 +53,7 @@ fun SelectReviewTypeScreen(
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding,navController, wordViewModel)
+            Content(paddingValues = innerPadding,navController, wordViewModel, loginViewModel)
 
         }
     )
@@ -57,13 +64,21 @@ fun SelectReviewTypeScreen(
 private fun Content(
     paddingValues: PaddingValues,
     navController: NavController,
-    wordViewModel: WordViewModel
+    wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel
 ){
+
+    val isPurchased = loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
+    val email = loginViewModel.getUserData().collectAsState(initial = null).value?.email
 
     val ctx = LocalContext.current
 
     var needToReviewCount by remember {
         mutableIntStateOf(0)
+    }
+
+    var openDialog by remember {
+        mutableStateOf(false)
     }
 
     val listId = wordViewModel.currentList().observeAsState().value?.id
@@ -102,11 +117,15 @@ private fun Content(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .padding(horizontal = 16.dp),
-                count = -1, title = stringResource(id = R.string.random_review), isPro = true) {
-                if (wordsCount > 2){
-                    navController.navigate(Screens.RevisionScreen.name + "?isRandom=${true}")
+                count = -1, title = stringResource(id = R.string.random_review), isPro = !isPurchased) {
+                if (isPurchased){
+                    if (wordsCount > 2){
+                        navController.navigate(Screens.RevisionScreen.name + "?isRandom=${true}")
+                    }else{
+                        ctx.toast(ctx.getString(R.string.add_more_than_two_words))
+                    }
                 }else{
-                    ctx.toast(ctx.getString(R.string.add_more_than_two_words))
+                    openDialog = true
                 }
             }
         }
@@ -117,16 +136,35 @@ private fun Content(
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .padding(horizontal = 16.dp),
-                count = -1, title = stringResource(id = R.string.writing), isPro = true) {
-                if (wordsCount > 2){
-                    navController.navigate(Screens.WritingScreen.name)
+                count = -1, title = stringResource(id = R.string.writing), isPro = !isPurchased) {
+
+                if (isPurchased){
+                    if (wordsCount > 2){
+                        navController.navigate(Screens.WritingScreen.name)
+                    }else{
+                        ctx.toast(ctx.getString(R.string.add_more_than_two_words))
+                    }
                 }else{
-                    ctx.toast(ctx.getString(R.string.add_more_than_two_words))
+                    openDialog = true
                 }
             }
         }
 
 
+    }
+
+    if (openDialog){
+        NeedProDialog(
+            type = DescriptionType.LIST,
+            onClick = {
+                if (email.orEmpty().isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
+        }) {
+            openDialog = false
+        }
     }
 
 

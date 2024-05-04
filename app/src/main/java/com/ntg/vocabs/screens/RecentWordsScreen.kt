@@ -9,6 +9,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,11 +28,12 @@ import com.ntg.vocabs.util.getIconStateRevision
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.timber
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel) {
+fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel, loginViewModel: LoginViewModel) {
 
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
@@ -65,7 +67,7 @@ fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel)
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel, navController)
+            Content(paddingValues = innerPadding, wordViewModel, loginViewModel, navController)
 
         }, floatingActionButton = {
             FloatingActionButton(
@@ -85,11 +87,13 @@ fun RecentWordScreen(navController: NavController, wordViewModel: WordViewModel)
 private fun Content(
     paddingValues: PaddingValues,
     wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
     navController: NavController,
 ){
 
     val wordsList = wordViewModel.searchedRecentWord.observeAsState().value
-
+    val isPurchased =
+        loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
 
         items(wordsList.orEmpty()) { word ->
@@ -101,7 +105,8 @@ private fun Content(
                 title = word.word.toString(),
                 id = word.id,
                 painter = painter,
-                isBookmarked = word.bookmarked.orFalse()
+                isBookmarked = word.bookmarked.orFalse(),
+                unavailableBackup = if (!isPurchased && wordsList.orEmpty().filter { !it.synced.orFalse() }.size < 50) !word.synced.orFalse() else false
             ) { title, id, _ ->
 
                 timber("kawljdlkajwdlkjawlkdj $id")

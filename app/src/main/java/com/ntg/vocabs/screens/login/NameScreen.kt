@@ -118,6 +118,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavController, 
             id = R.string.next
         ), size = ButtonSize.LG){
             loginViewModel.setUsername(text.replace("I am ", "").replace("\uD83D\uDE0E", "").replace("\uD83E\uDD2D", ""))
+            navController.popBackStack()
 //            navController.navigate(Screens.VocabularyListScreen.name)
 
 

@@ -107,10 +107,16 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
     var email by remember {
         mutableStateOf("")
     }
 
+
+    val isPurchased = loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
 
     list.value = wordViewModel.getListWithCount()
         .observeAsState().value?.sortedByDescending { it.isSelected } ?: listOf()
@@ -181,8 +187,12 @@ private fun Content(
                     ),
                     size = ButtonSize.SM,
                     style = ButtonStyle.TextOnly
-                ) {
-                    navController.navigate(Screens.SelectLanguageScreen.name)
+                ){
+                    if (list.value.size <= 2 || isPurchased){
+                        navController.navigate(Screens.SelectLanguageScreen.name)
+                    }else{
+                        openDialog = true
+                    }
                 }
 
             }
@@ -320,8 +330,12 @@ private fun Content(
 
 
 
-            AccountState(modifier = Modifier.padding(16.dp), isFree = isPro){
-                isPro = !isPro
+            AccountState(modifier = Modifier.padding(16.dp), isFree = !isPurchased){
+                if (userData.value?.email.orEmpty().isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
             }
 
             Divider(
@@ -420,5 +434,18 @@ private fun Content(
         }
     }
 
+    if (openDialog){
+        NeedProDialog(
+            type = DescriptionType.LIST,
+            onClick = {
+                if (email.isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
+        }) {
+            openDialog = false
+        }
+    }
 
 }

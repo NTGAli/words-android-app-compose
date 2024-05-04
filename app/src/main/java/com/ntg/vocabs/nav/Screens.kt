@@ -44,7 +44,11 @@ enum class Screens {
     ExplainSubscriptionScreen,
     SelectBackupOptionsScreen,
     RestoringBackupOnServerScreen,
-    NoBackupScreen
+    NoBackupScreen,
+    PaywallScreen,
+    GoogleLoginScreen,
+    TermsAndConditionsScreen,
+    SuccessPurchaseScreen
 
 
 }

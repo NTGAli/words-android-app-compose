@@ -218,6 +218,10 @@ class LoginViewModel @Inject constructor(
         dataRepository.checkBackup(setBackup)
     }
 
+    fun setPurchase(isSuccess: Boolean) = viewModelScope.launch {
+        dataRepository.isUserPurchased(isSuccess)
+    }
+
     fun setUsername(name: String) = viewModelScope.launch {
         if (name.contains("no one")){
             dataRepository.setUsername("no one")

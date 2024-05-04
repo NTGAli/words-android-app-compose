@@ -85,13 +85,14 @@ fun AppNavHost(
             AllWordsScreen(
                 navController,
                 wordViewModel,
+                loginViewModel,
                 it.arguments?.getBoolean("openSearch").orFalse(),
                 it.arguments?.getString("query").orEmpty()
             )
         }
 
         composable(Screens.RecentWordScreen.name) {
-            RecentWordScreen(navController, wordViewModel)
+            RecentWordScreen(navController, wordViewModel, loginViewModel)
         }
 
         composable(
@@ -121,6 +122,10 @@ fun AppNavHost(
             PrivacyPolicyScreen(navController)
         }
 
+        composable(route = Screens.TermsAndConditionsScreen.name) {
+            TermsAndConditionsScreen(navController)
+        }
+
         composable(Screens.ThemeScreen.name) {
             ThemeScreen(navController, loginViewModel)
         }
@@ -134,7 +139,7 @@ fun AppNavHost(
         }
 
         composable(Screens.SelectReviewTypeScreen.name) {
-            SelectReviewTypeScreen(navController,wordViewModel)
+            SelectReviewTypeScreen(navController,wordViewModel, loginViewModel)
         }
 
         composable(Screens.WritingScreen.name) {
@@ -147,6 +152,10 @@ fun AppNavHost(
 
         composable(Screens.NoBackupScreen.name) {
             NoBackupScreen(navController,backupViewModel)
+        }
+
+        composable(Screens.PaywallScreen.name) {
+            PaywallScreen(navController,loginViewModel)
         }
 
         composable(
@@ -193,6 +202,22 @@ fun AppNavHost(
             })
         ) {
             InsertEmailScreen(
+                navController,
+                loginViewModel,
+                signInViewModel,
+                backupViewModel,
+                it.arguments?.getBoolean("skip").orTrue()
+            )
+        }
+
+        composable(
+            Screens.GoogleLoginScreen.name + "?skip={skip}",
+            arguments = listOf(navArgument("skip") {
+                type = NavType.BoolType
+                defaultValue = true
+            })
+        ) {
+            GoogleLoginScreen(
                 navController,
                 loginViewModel,
                 signInViewModel,
@@ -257,7 +282,7 @@ fun AppNavHost(
         }
 
         composable(Screens.SearchScreen.name) {
-            SearchScreen(navController, wordViewModel)
+            SearchScreen(navController, wordViewModel, loginViewModel)
         }
 
         composable(Screens.IntroScreen.name) {
@@ -407,7 +432,23 @@ fun AppNavHost(
             OnlineWordDetailsScreen(
                 navController = navController,
                 wordViewModel = wordViewModel,
+                loginViewModel,
                 backStackEntry.arguments?.getString("word").orEmpty(),
+                backStackEntry.arguments?.getString("type").orEmpty()
+            )
+        }
+
+        composable(
+            Screens.SuccessPurchaseScreen.name + "?type={type}",
+            arguments = listOf(
+                navArgument("type")
+                {
+                    type = NavType.StringType
+                    defaultValue = ""
+                })
+        ) { backStackEntry ->
+            SuccessPurchaseScreen(
+                navController = navController,
                 backStackEntry.arguments?.getString("type").orEmpty()
             )
         }

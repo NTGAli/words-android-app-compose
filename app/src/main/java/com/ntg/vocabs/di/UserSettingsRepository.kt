@@ -15,5 +15,6 @@ interface DataRepository {
     suspend fun checkBackup(setBackup: Boolean)
     suspend fun isSubscriptionSkipped(skipped: Boolean)
     suspend fun clearAllUserData()
+    suspend fun isUserPurchased(isPurchased: Boolean)
 
 }

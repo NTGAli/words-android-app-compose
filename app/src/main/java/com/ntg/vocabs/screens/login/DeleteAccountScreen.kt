@@ -84,7 +84,7 @@ private fun Content(
             wordViewModel.clearTimesTable()
             loginViewModel.clearUserData()
             openBottomSheet.value = false
-            navController.navigate(Screens.InsertEmailScreen.name) {
+            navController.navigate(Screens.GoogleLoginScreen.name) {
                 popUpTo(0)
             }
         }

@@ -24,6 +24,9 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.gson.Gson
 import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.R
@@ -32,6 +35,7 @@ import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.ItemOption
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.screens.getGoogleSignInClient
 import com.ntg.vocabs.screens.login.logoutBottomSheet
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.*
@@ -40,7 +44,10 @@ import com.ntg.vocabs.util.Constant.Backup.BACKUP_FILE_NAME_IN_DIRECTORY
 import com.ntg.vocabs.util.Constant.Backup.BACKUP_FOLDER_NAME
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -135,16 +142,27 @@ private fun Content(
         loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupOption.orEmpty()
     val userWords = wordViewModel.getSizeOfWords().observeAsState(initial = -1).value
 
+    val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = ctx,
+            oneTapClient = Identity.getSignInClient(ctx)
+        )
+    }
 
     if (openBottomSheet.value) {
         logoutBottomSheet(openBottomSheet) {
-            wordViewModel.clearWordsTable()
-            wordViewModel.clearVocabListsTable()
-            wordViewModel.clearTimesTable()
-            loginViewModel.clearUserData()
-            openBottomSheet.value = false
-            navController.navigate(Screens.InsertEmailScreen.name) {
-                popUpTo(0)
+            getGoogleSignInClient(ctx).signOut().addOnCompleteListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    googleAuthUiClient.signOut()
+                }
+                wordViewModel.clearWordsTable()
+                wordViewModel.clearVocabListsTable()
+                wordViewModel.clearTimesTable()
+                loginViewModel.clearUserData()
+                openBottomSheet.value = false
+                navController.navigate(Screens.GoogleLoginScreen.name) {
+                    popUpTo(0)
+                }
             }
         }
 
@@ -195,11 +213,6 @@ private fun Content(
     }
 
 
-
-
-
-
-
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
 
         item {
@@ -218,22 +231,17 @@ private fun Content(
 
             SettingTitle(title = stringResource(id = R.string.account))
 
+            SettingTitle(title = stringResource(id = R.string.account))
             if (isUserLogged.value.orFalse()) {
                 ItemOption(text = stringResource(id = R.string.name)) {
                     navController.navigate(Screens.NameScreen.name)
                 }
-//                ItemOption(text = stringResource(id = R.string.email)) {
-//                    navController.navigate(Screens.UpdateEmailScreen.name)
+//                ItemOption(text = stringResource(id = R.string.delete_account), divider = false) {
+//                    navController.navigate(Screens.DeleteAccountScreen.name)
 //                }
-//                ItemOption(text = stringResource(id = R.string.change_password)) {
-//
-//                }
-                ItemOption(text = stringResource(id = R.string.delete_account), divider = false) {
-                    navController.navigate(Screens.DeleteAccountScreen.name)
-                }
             } else {
                 ItemOption(text = stringResource(id = R.string.login), divider = false) {
-                    navController.navigate(Screens.InsertEmailScreen.name + "?skip=${false}")
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
                 }
             }
 

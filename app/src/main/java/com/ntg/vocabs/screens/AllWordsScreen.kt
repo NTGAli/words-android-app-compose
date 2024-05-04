@@ -23,11 +23,12 @@ import com.ntg.vocabs.model.components.AppbarItem
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.*
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel, openSearch: Boolean, query: String) {
+fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel,loginViewModel: LoginViewModel, openSearch: Boolean, query: String) {
 
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
@@ -62,7 +63,7 @@ fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel, o
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel, navController)
+            Content(paddingValues = innerPadding, wordViewModel,loginViewModel, navController)
 
         }, floatingActionButton = {
             FloatingActionButton(
@@ -82,9 +83,12 @@ fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel, o
 private fun Content(
     paddingValues: PaddingValues,
     wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
     navController: NavController,
 ){
 
+    val isPurchased =
+        loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
     val wordsList = wordViewModel.searchedWord.observeAsState().value
 
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
@@ -98,7 +102,8 @@ private fun Content(
                 title = word.word.toString(),
                 id = word.id,
                 painter = painter,
-                isBookmarked = word.bookmarked.orFalse()
+                isBookmarked = word.bookmarked.orFalse(),
+                unavailableBackup = if (!isPurchased && wordsList.orEmpty().filter { !it.synced.orFalse() }.size < 50) !word.synced.orFalse() else false
             ) { _, id, _ ->
                 navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
 

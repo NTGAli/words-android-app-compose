@@ -12,6 +12,9 @@ import com.ntg.vocabs.db.AppDB
 import com.ntg.vocabs.db.AutoInsertWorkerFactory
 import com.ntg.vocabs.db.dao.EnglishWordDao
 import com.ntg.vocabs.util.timber
+import com.revenuecat.purchases.LogLevel
+import com.revenuecat.purchases.Purchases
+import com.revenuecat.purchases.PurchasesConfiguration
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
@@ -32,6 +35,17 @@ class MyApp : Application(), Configuration.Provider {
         super.onCreate()
         initTimber()
         fcmCheck()
+        initPurchase()
+    }
+
+    private fun initPurchase(){
+        Purchases.logLevel = LogLevel.DEBUG
+        Purchases.configure(
+            PurchasesConfiguration.Builder(
+                context = this,
+                apiKey= "goog_DJihKMxRlxZoobNaHtfljBaJWCW"
+            ).build()
+        )
     }
 
     private fun fcmCheck(){

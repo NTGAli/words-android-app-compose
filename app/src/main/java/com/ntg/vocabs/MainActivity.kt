@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
@@ -26,6 +27,7 @@ import androidx.work.WorkManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.gson.Gson
+import com.ntg.vocabs.db.AutoInsertWorker
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.req.BackupUserData
@@ -98,7 +100,7 @@ class MainActivity : ComponentActivity() {
                             if (!userDataValue?.isSkipped.orFalse() && userDataValue?.email.orEmpty()
                                     .isEmpty()
                             ) {
-                                startDes.value = Screens.InsertEmailScreen.name
+                                startDes.value = Screens.GoogleLoginScreen.name
                             } else if (!userData.value?.isSubscriptionSkipped.orTrue()) {
                                 startDes.value = Screens.ExplainSubscriptionScreen.name
                             } else if (lists.value?.filter { it.isSelected }.orEmpty()
@@ -155,7 +157,7 @@ class MainActivity : ComponentActivity() {
                         if (listId != null) {
                             when (navDestination.route.orEmpty()) {
                                 Screens.LoginWithPasswordScreen.name,
-                                Screens.InsertEmailScreen.name,
+                                Screens.GoogleLoginScreen.name,
                                 Screens.CodeScreen.name,
                                 Screens.FinishScreen.name,
                                 Screens.SplashScreen.name,
@@ -197,20 +199,20 @@ class MainActivity : ComponentActivity() {
                 }
 
 
-//                if (wordViewModel.getEnglishWordsSize().observeAsState(initial = -1).value == 0 ||
-//                    wordViewModel.getEnglishVerbsSize().observeAsState(initial = -1).value == 0 ||
-//                    wordViewModel.sizeGermanNoun().observeAsState(initial = -1).value == 0 ||
-//                    wordViewModel.sizeGermanVerbs().observeAsState(initial = -1).value == 0 ||
-//                    wordViewModel.sizeSounds().observeAsState(initial = -1).value == 0
-//                ) {
-//                    val secondWorkerRequest = OneTimeWorkRequestBuilder<AutoInsertWorker>()
-//                        .build()
-//                    WorkManager.getInstance(this).enqueueUniqueWork(
-//                        "INSERTING_TO_DB",
-//                        ExistingWorkPolicy.KEEP,
-//                        secondWorkerRequest
-//                    )
-//                }
+                if (wordViewModel.getEnglishWordsSize().observeAsState(initial = -1).value == 0 ||
+                    wordViewModel.getEnglishVerbsSize().observeAsState(initial = -1).value == 0 ||
+                    wordViewModel.sizeGermanNoun().observeAsState(initial = -1).value == 0 ||
+                    wordViewModel.sizeGermanVerbs().observeAsState(initial = -1).value == 0 ||
+                    wordViewModel.sizeSounds().observeAsState(initial = -1).value == 0
+                ) {
+                    val secondWorkerRequest = OneTimeWorkRequestBuilder<AutoInsertWorker>()
+                        .build()
+                    WorkManager.getInstance(this).enqueueUniqueWork(
+                        "INSERTING_TO_DB",
+                        ExistingWorkPolicy.KEEP,
+                        secondWorkerRequest
+                    )
+                }
             }
 
 //            var backupUserData by remember {
@@ -316,6 +318,16 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(key1 = Unit, block = {
                 notificationPermission.launchPermissionRequest()
             })
+
+            OnLifecycleEvent{owner, event ->
+                if (event == Lifecycle.Event.ON_PAUSE){
+                    if (listId != null) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            calendarViewModel.stopLastTime()
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -368,14 +380,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        if (listId != null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                calendarViewModel.stopLastTime()
-            }
-        }
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        if (listId != null) {
+//            CoroutineScope(Dispatchers.IO).launch {
+//                calendarViewModel.stopLastTime()
+//            }
+//        }
+//    }
 
 }
 

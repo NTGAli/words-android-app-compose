@@ -49,6 +49,7 @@ import com.ntg.vocabs.components.TLButton
 import com.ntg.vocabs.components.TypewriterText
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
+import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.Pro
 import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontMedium14
@@ -86,9 +87,9 @@ fun SubscriptionsScreen(
                 )
                 TLButton(
                     modifier = Modifier.padding(horizontal = 32.dp),
-                    text = "4.99$ for Pro"
+                    text = "4.99$ for Master PLus"
                 ) {
-                    navController.popBackStack()
+                    navController.navigate(Screens.PaywallScreen.name)
                 }
                 CustomButton(
                     modifier = Modifier
@@ -122,7 +123,7 @@ private fun Content(
 //    })
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -195,7 +196,6 @@ private fun Content(
                         text = "Add unlimited Words \n" +
                                 "3 Lists\n" +
                                 "No Ads\n" +
-                                "Auto backup\n" +
                                 "One Online Dictionary\n" +
                                 "Review",
                         style = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant)
@@ -226,7 +226,7 @@ private fun Content(
                     Text(
                         modifier = Modifier
                             .padding(top = 16.dp, bottom = 8.dp)
-                            .padding(horizontal = 16.dp), text = "Premium", style = fontMedium16(
+                            .padding(horizontal = 16.dp), text = "Master Plus", style = fontMedium16(
                             MaterialTheme.colorScheme.primary
                         )
                     )
@@ -236,19 +236,20 @@ private fun Content(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp),
+                        style = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant),
                         text = "One time pay\n" +
                                 "Add unlimited Words \n" +
                                 "Add unlimited Lists\n" +
                                 "No Ads\n" +
                                 "Auto backup\n" +
-                                "Three Online English Dictionary\n" +
+                                "More Online English Dictionary\n" +
                                 "German Dictionary\n" +
                                 "Review\n" +
+                                "Writing\n" +
                                 "Random Review\n" +
-                                "Spend Time\n" +
+                                "Spend Time Track\n" +
                                 "Add Images for word\n" +
-                                "Support Developers",
-                        style = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant)
+                                "Support Developers"
                     )
 
 

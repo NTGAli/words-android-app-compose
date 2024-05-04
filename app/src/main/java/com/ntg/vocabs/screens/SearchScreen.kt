@@ -30,6 +30,7 @@ import androidx.navigation.NavHostController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.EditText
 import com.ntg.vocabs.components.OpenVoiceSearch
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.launch
 
@@ -37,7 +38,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchScreen(
     navHostController: NavHostController,
-    wordViewModel: WordViewModel
+    wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel
 ) {
 
     var openVoiceToSpeech by rememberSaveable {
@@ -128,6 +130,7 @@ fun SearchScreen(
                             YourWordScreen(
                                 navController = navHostController,
                                 wordViewModel = wordViewModel,
+                                loginViewModel,
                                 query = query.value
                             )
                         } else if (tabData[index] == stringResource(id = R.string.all_words)) {
@@ -147,6 +150,7 @@ fun SearchScreen(
                         YourWordScreen(
                             navController = navHostController,
                             wordViewModel = wordViewModel,
+                            loginViewModel,
                             query = query.value
                         )
                     }

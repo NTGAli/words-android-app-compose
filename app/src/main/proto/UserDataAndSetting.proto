@@ -12,4 +12,5 @@ message UserDataAndSetting {
     bool isSubscriptionSkipped = 6;
     string backupWay = 7;
     bool checkBackup = 8;
+    bool isPurchased = 9;
 }

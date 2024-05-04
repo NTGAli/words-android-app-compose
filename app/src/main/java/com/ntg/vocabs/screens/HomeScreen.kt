@@ -1,13 +1,6 @@
 package com.ntg.vocabs.screens
 
 import android.content.Context
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -27,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -38,7 +29,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -55,7 +46,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
@@ -71,7 +61,9 @@ import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.CustomButton
+import com.ntg.vocabs.components.DescriptionType
 import com.ntg.vocabs.components.HomeAppbar
+import com.ntg.vocabs.components.NeedProDialog
 import com.ntg.vocabs.components.SampleItem
 import com.ntg.vocabs.components.ShapeTileWidget
 import com.ntg.vocabs.model.components.ButtonStyle
@@ -97,7 +89,6 @@ import com.ntg.vocabs.util.orDefault
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.rememberWindowInfo
-import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
@@ -131,7 +122,8 @@ fun HomeScreen(
 
             HomeAppbar(
                 title = userData.value?.name,
-                isBackupEnabled = dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty().isNotEmpty(),
+                isBackupEnabled = dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty()
+                    .isNotEmpty(),
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },
@@ -161,9 +153,10 @@ fun HomeScreen(
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel, navController)
+            Content(paddingValues = innerPadding, wordViewModel, loginViewModel, navController)
 
-        }, floatingActionButton = {
+        },
+        floatingActionButton = {
             FloatingActionButton(
                 onClick = {
                     navController.navigate(Screens.AddEditScreen.name)
@@ -197,16 +190,15 @@ fun HomeScreen(
     )
 
 
-
     val observer = LocalLifecycleOwner.current
     LaunchedEffect(key1 = Unit, block = {
         messageBoxViewModel.loadFullScreenAd()
     })
     messageBoxViewModel.fullScreenAd.observeAsState(initial = null).value.let {
-        if (it != null){
+        if (it != null) {
             if (it.preview.orFalse()) return@let
-            messageBoxViewModel.isUserAlreadySeen(it.id.orEmpty()).observe(observer){
-                if (it == null){
+            messageBoxViewModel.isUserAlreadySeen(it.id.orEmpty()).observe(observer) {
+                if (it == null) {
                     navController.navigate(Screens.FullScreenAdScreen.name)
                 }
             }
@@ -223,6 +215,7 @@ fun HomeScreen(
 private fun Content(
     paddingValues: PaddingValues,
     wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
     navController: NavController
 ) {
 
@@ -234,7 +227,7 @@ private fun Content(
     val owner = LocalLifecycleOwner.current
 
     LaunchedEffect(key1 = listId, block = {
-        wordViewModel.getWordsBaseListId(listId.orZero()).observe(owner){
+        wordViewModel.getWordsBaseListId(listId.orZero()).observe(owner) {
             wordsList = it
         }
 
@@ -270,6 +263,10 @@ private fun Content(
     val timeSpent = wordViewModel.getAllValidTimeSpentBaseListId(listId.orZero())
         .observeAsState().value.orEmpty()
         .toMutableStateList()
+    val isPurchased =
+        loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
+
+    val email = loginViewModel.getUserData().collectAsState(initial = null).value?.email
 
     timeSpent.forEach {
         if (it.startUnix != null && it.endUnix != null) {
@@ -297,76 +294,81 @@ private fun Content(
             }
     }
 
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            state = lazyListState
-        ) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        state = lazyListState
+    ) {
 
-            item {
-                Text(
-                    modifier = Modifier.padding(top = 24.dp, bottom = 12.dp),
-                    text = stringResource(R.string.workout_report),
-                    style = fontBold14(
-                        MaterialTheme.colorScheme.onBackground
-                    )
+        item {
+            Text(
+                modifier = Modifier.padding(top = 24.dp, bottom = 12.dp),
+                text = stringResource(R.string.workout_report),
+                style = fontBold14(
+                    MaterialTheme.colorScheme.onBackground
                 )
+            )
 
-                if (windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) {
-                    PhoneScreenMode(
-                        needToReviewCount,
-                        totalTime,
-                        recentWordCount,
-                        numberOfAllWords,
-                        navController
-                    )
-                } else {
-                    TabletMode(
-                        needToReviewCount,
-                        totalTime,
-                        recentWordCount,
-                        numberOfAllWords,
-                        navController
-                    )
-                }
-
-
-
-                Text(
-                    modifier = Modifier.padding(top = 28.dp),
-                    text = stringResource(R.string.words),
-                    style = fontBold14(MaterialTheme.colorScheme.onBackground)
+            if (windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) {
+                PhoneScreenMode(
+                    needToReviewCount,
+                    totalTime,
+                    recentWordCount,
+                    numberOfAllWords,
+                    navController,
+                    isPurchased,
+                    email
                 )
-
+            } else {
+                TabletMode(
+                    needToReviewCount,
+                    totalTime,
+                    recentWordCount,
+                    numberOfAllWords,
+                    navController,
+                    isPurchased,
+                    email
+                )
             }
 
 
-            items(wordsList) { word ->
 
-                val painter = getIconStateRevision(word.revisionCount, word.lastRevisionTime)
+            Text(
+                modifier = Modifier.padding(top = 28.dp),
+                text = stringResource(R.string.words),
+                style = fontBold14(MaterialTheme.colorScheme.onBackground)
+            )
 
-                SampleItem(
-                    title = word.word.toString(),
-                    secondaryText = word.type,
-                    id = word.id,
-                    painter = painter,
-                    isBookmarked = word.bookmarked.orFalse()
-                ) { _, id, _ ->
-                    navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
-                }
+        }
+
+
+        items(wordsList) { word ->
+
+            val painter = getIconStateRevision(word.revisionCount, word.lastRevisionTime)
+
+            SampleItem(
+                title = word.word.toString(),
+                secondaryText = word.type,
+                id = word.id,
+                painter = painter,
+                isBookmarked = word.bookmarked.orFalse(),
+                unavailableBackup = if (!isPurchased && wordsList.filter { !it.synced.orFalse() }.size < 50) !word.synced.orFalse() else false
+            ) { _, id, _ ->
+                navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
             }
+        }
 
-            item {
-                if (wordsList.isNotEmpty()) {
-                    Spacer(modifier = Modifier.padding(vertical = 64.dp))
-                }
+        item {
+            if (wordsList.isNotEmpty()) {
+                Spacer(modifier = Modifier.padding(vertical = 64.dp))
             }
+        }
 
-            item {
-                if (wordsList.isEmpty()) {
+        item {
+            if (wordsList.isEmpty()) {
 
-                    LottieExample()
+                LottieExample()
 
 //                TypewriterText(
 //                    modifier = Modifier
@@ -376,20 +378,20 @@ private fun Content(
 //                    enableVibrate = false,
 //                    style = fontMedium24(MaterialTheme.colorScheme.outline)
 //                )
-                    CustomButton(
-                        modifier = Modifier
+                CustomButton(
+                    modifier = Modifier
 //                        .offset(y = -(24).dp)
-                            .fillMaxWidth(),
-                        text = "add first word for this list",
-                        style = ButtonStyle.TextOnly,
-                        type = ButtonType.Primary
-                    ) {
-                        navController.navigate(Screens.AddEditScreen.name)
-                    }
+                        .fillMaxWidth(),
+                    text = "add first word for this list",
+                    style = ButtonStyle.TextOnly,
+                    type = ButtonType.Primary
+                ) {
+                    navController.navigate(Screens.AddEditScreen.name)
                 }
-
             }
+
         }
+    }
 
 
 }
@@ -491,9 +493,14 @@ fun PhoneScreenMode(
     totalTime: Long,
     recentWordCount: MutableIntState,
     numberOfAllWords: MutableIntState,
-    navController: NavController
+    navController: NavController,
+    isPurchased: Boolean,
+    email: String?
 ) {
     val ctx = LocalContext.current
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
     Column {
         Row {
             ShapeTileWidget(
@@ -547,7 +554,7 @@ fun PhoneScreenMode(
 
                 if (numberOfAllWords.value == 0) {
                     ctx.toast(ctx.getString(R.string.need_to_word_review))
-                }else{
+                } else {
                     navController.navigate(Screens.SelectReviewTypeScreen.name)
                 }
 
@@ -565,16 +572,34 @@ fun PhoneScreenMode(
                     .weight(1f)
                     .padding(vertical = 4.dp)
                     .padding(start = 4.dp),
-                title = totalTime.formatTime(),
+                title = if (true) totalTime.formatTime() else "--:--",
                 subTitle = stringResource(R.string.time_spent),
                 painter = painterResource(
-                    id = R.drawable.icons8_clock_1_1
+                    id = if (true) R.drawable.calendar_check else R.drawable.icons8_clock_1_1
                 ),
                 imageTint = Secondary500,
                 imageBackground = Secondary100
             ) {
-                navController.navigate(Screens.TimeScreen.name)
+                if (true) {
+                    navController.navigate(Screens.TimeScreen.name)
+                } else {
+                    openDialog = true
+                }
             }
+        }
+    }
+
+    if (openDialog) {
+        NeedProDialog(
+            type = DescriptionType.TIME,
+            onClick = {
+                if (email.orEmpty().isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
+        }) {
+            openDialog = false
         }
     }
 }
@@ -586,9 +611,14 @@ fun TabletMode(
     totalTime: Long,
     recentWordCount: MutableIntState,
     numberOfAllWords: MutableIntState,
-    navController: NavController
+    navController: NavController,
+    isPurchased: Boolean,
+    email: String?
 ) {
     val ctx = LocalContext.current
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
     Row {
         ShapeTileWidget(
             modifier = Modifier
@@ -638,7 +668,7 @@ fun TabletMode(
         ) {
             if (numberOfAllWords.value == 0) {
                 ctx.toast(ctx.getString(R.string.need_to_word_review))
-            }else{
+            } else {
                 navController.navigate(Screens.SelectReviewTypeScreen.name)
             }
 //            if (needToReviewCount.value != 0) {
@@ -655,15 +685,34 @@ fun TabletMode(
                 .weight(1f)
                 .padding(vertical = 4.dp)
                 .padding(start = 4.dp),
-            title = totalTime.formatTime(),
+            title = if (isPurchased) totalTime.formatTime() else "--:--",
             subTitle = stringResource(R.string.time_spent),
             painter = painterResource(
-                id = R.drawable.icons8_clock_1_1
+                id = if (isPurchased) R.drawable.calendar_check else R.drawable.icons8_clock_1_1
             ),
             imageTint = Secondary500,
             imageBackground = Secondary100
         ) {
-            navController.navigate(Screens.TimeScreen.name)
+            if (isPurchased) {
+                navController.navigate(Screens.TimeScreen.name)
+            } else {
+                openDialog = true
+            }
+        }
+
+    }
+
+    if (openDialog) {
+        NeedProDialog(
+            type = DescriptionType.TIME,
+            onClick = {
+                if (email.orEmpty().isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
+        }) {
+            openDialog = false
         }
     }
 }

@@ -19,6 +19,7 @@ import com.ntg.vocabs.R
 import com.ntg.vocabs.components.EmptyWidget
 import com.ntg.vocabs.components.SampleItem
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.vm.WordViewModel
 
@@ -59,12 +60,14 @@ private fun Content(
         .padding(horizontal = 16.dp),content = {
 
         items(words.itemCount){
-            SampleItem(
-                title = words[it]?.word.orEmpty(),
-                secondaryText = words[it]?.type,
-                id = words[it]?.id,
-            ) { _, id, _ ->
-                navController.navigate(Screens.OnlineWordDetailsScreen.name + "?word=${words[it]?.word}&type=${words[it]?.type}")
+            if (words[it]?.word?.firstOrNull()?.isLowerCase().orTrue()){
+                SampleItem(
+                    title = words[it]?.word.orEmpty(),
+                    secondaryText = words[it]?.type,
+                    id = words[it]?.id,
+                ) { _, id, _ ->
+                    navController.navigate(Screens.OnlineWordDetailsScreen.name + "?word=${words[it]?.word}&type=${words[it]?.type}")
+                }
             }
         }
 

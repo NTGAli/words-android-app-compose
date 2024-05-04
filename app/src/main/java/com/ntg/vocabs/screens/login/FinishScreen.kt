@@ -23,7 +23,7 @@ fun FinishScreen(navController: NavController){
         TypewriterText(texts = listOf("We are sorry that we could not meet your needs.\uD83E\uDD72 \n\n We will be happy if you come back\uD83D\uDE09"), singleText = true)
 
         CustomButton(modifier = Modifier.fillMaxWidth().padding(top = 32.dp), text = stringResource(id = R.string.finish)){
-            navController.navigate(Screens.InsertEmailScreen.name) {
+            navController.navigate(Screens.GoogleLoginScreen.name) {
                 popUpTo(0)
             }
         }

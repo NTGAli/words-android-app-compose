@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -46,21 +48,26 @@ import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.DefinitionItem
+import com.ntg.vocabs.components.DescriptionType
 import com.ntg.vocabs.components.LoadingView
+import com.ntg.vocabs.components.NeedProDialog
 import com.ntg.vocabs.components.SampleItem
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.TextWithContext
 import com.ntg.vocabs.model.db.EnglishVerbs
 import com.ntg.vocabs.model.db.VerbForms
 import com.ntg.vocabs.model.db.Word
+import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.Primary500
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontMedium24
 import com.ntg.vocabs.util.getSubdirectory
+import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toPronunciation
 import com.ntg.vocabs.util.toast
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +77,7 @@ import java.io.IOException
 private val listOfDictionary = listOf(
     "Dictionary number one",
     "Dictionary number two",
-    "Dictionary number three",
+//    "Dictionary number three",
 )
 
 data class DefData(
@@ -83,6 +90,7 @@ data class DefData(
 fun OnlineWordDetailsScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
     word: String,
     type: String
 ) {
@@ -97,9 +105,18 @@ fun OnlineWordDetailsScreen(
         mutableStateOf(false)
     }
 
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
     var selectedDictionary by remember {
         mutableStateOf(listOfDictionary.first())
     }
+
+    val isPurchased =
+        loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
+
+    val email = loginViewModel.getUserData().collectAsState(initial = null).value?.email
 
     Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -184,14 +201,18 @@ fun OnlineWordDetailsScreen(
                         )
                     }
 
-                    items(listOfDictionary) {
+                    itemsIndexed(listOfDictionary) {index, it ->
                         SampleItem(
                             title = it,
                             enableRadioButton = true,
                             radioSelect = mutableStateOf(selectedDictionary == it),
                             onClick = { text, _, isSelect ->
-                                selectedDictionary = text
-                                openBottomSheet = false
+                                if (isPurchased || index == 0){
+                                    selectedDictionary = text
+                                    openBottomSheet = false
+                                }else{
+                                    openDialog = true
+                                }
                             })
                     }
 
@@ -203,6 +224,18 @@ fun OnlineWordDetailsScreen(
             }
 
 
+        }
+    }
+
+    if (openDialog){
+        NeedProDialog(type = DescriptionType.DICTIONARY, onClick = {
+            if (email.orEmpty().isNotEmpty()){
+                navController.navigate(Screens.PaywallScreen.name)
+            }else{
+                navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+            }
+        }) {
+            openDialog = false
         }
     }
 }

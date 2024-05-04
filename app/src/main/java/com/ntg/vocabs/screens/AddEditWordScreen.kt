@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -106,6 +107,8 @@ fun AddEditWordScreen(
                 navController = navController,
                 wordEdit = word?.value,
                 wordViewModel = wordViewModel,
+                loginViewModel = loginViewModel,
+                email,
                 wordData = {
                     wordData = it
                 },
@@ -230,6 +233,8 @@ private fun Content(
     navController: NavController,
     wordEdit: Word?,
     wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
+    email: String?,
     wordData: (Word) -> Unit,
     exampleField: (String) -> Unit
 ) {
@@ -361,6 +366,14 @@ private fun Content(
         mutableStateOf(false)
     }
 
+    var openDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var descriptionType by rememberSaveable {
+        mutableStateOf(DescriptionType.IMAGE)
+    }
+
     val exampleList = remember {
         mutableStateListOf<String>()
     }
@@ -386,6 +399,8 @@ private fun Content(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val listId = wordViewModel.currentList().observeAsState().value?.id
+
+    val isPurchased = loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
 
     timber("LIST_ID_SELECTED :::: $listId")
 
@@ -987,25 +1002,33 @@ private fun Content(
                         text = stringResource(id = R.string.auto_fill_from_second),
                         size = ButtonSize.LG,
                         type = ButtonType.Secondary,
-                        style = ButtonStyle.Contained
+                        style = ButtonStyle.Contained,
+                        iconStart = painterResource(id = R.drawable.icons8_clock_1_1)
                     ) {
-                        fetchDataWord.value = true
-                        dictionaryApi.intValue = 2
+
+                        if (isPurchased){
+                            fetchDataWord.value = true
+                            dictionaryApi.intValue = 2
+                        }else{
+                            descriptionType = DescriptionType.DICTIONARY
+                            openDialog = true
+                        }
+
                     }
                 }
 
-                CustomButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom= 16.dp),
-                    text = stringResource(id = R.string.auto_fill_from_third),
-                    size = ButtonSize.LG,
-                    type = ButtonType.Secondary,
-                    style = ButtonStyle.Contained
-                ) {
-                    fetchDataWord.value = true
-                    dictionaryApi.intValue = 3
-                }
+//                CustomButton(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp),
+//                    text = stringResource(id = R.string.auto_fill_from_third),
+//                    size = ButtonSize.LG,
+//                    type = ButtonType.Secondary,
+//                    style = ButtonStyle.Contained
+//                ) {
+//                    fetchDataWord.value = true
+//                    dictionaryApi.intValue = 3
+//                }
 
             }
 
@@ -1184,19 +1207,26 @@ private fun Content(
                 icon = R.drawable.image_rectangle,
                 imagePath = imagePath
             ) {
-                if (imagePath == null) {
-                    mediaPicker
-                        .launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
+
+                if (isPurchased){
+                    if (imagePath == null) {
+                        mediaPicker
+                            .launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
                             )
-                        )
-                } else {
-                    File(imagePath!!).delete()
-                    imagePath = null
-                    imageUri = null
-                    bitmap = null
+                    } else {
+                        File(imagePath!!).delete()
+                        imagePath = null
+                        imageUri = null
+                        bitmap = null
+                    }
+                }else{
+                    descriptionType = DescriptionType.IMAGE
+                    openDialog = true
                 }
+
             }
 
         }
@@ -1377,6 +1407,21 @@ private fun Content(
             Spacer(modifier = Modifier.padding(24.dp))
         }
 
+    }
+
+
+    if (openDialog){
+        NeedProDialog(
+            type = descriptionType,
+            onClick = {
+                if (email.orEmpty().isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
+        }) {
+            openDialog = false
+        }
     }
 }
 

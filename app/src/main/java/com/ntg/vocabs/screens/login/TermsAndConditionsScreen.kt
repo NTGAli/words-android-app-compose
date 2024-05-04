@@ -15,7 +15,7 @@ import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrivacyPolicyScreen(navHostController: NavHostController){
+fun TermsAndConditionsScreen(navHostController: NavHostController){
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -28,7 +28,7 @@ fun PrivacyPolicyScreen(navHostController: NavHostController){
 @Composable
 private fun Content(paddingValues: PaddingValues){
 
-    val mUrl = "https://myvocabulary.ntgt.ir/PrivacyPolicy.html"
+    val mUrl = "https://myvocabulary.ntgt.ir/Terms.html"
 
     AndroidView(factory = {
         WebView(it).apply {

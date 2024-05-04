@@ -16,8 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ntg.vocabs.R
 import com.ntg.vocabs.ui.theme.*
 
 @Composable
@@ -29,6 +31,7 @@ fun SampleItem(
     painter: Painter? = null,
     isBookmarked: Boolean = false,
     enableRadioButton: Boolean = false,
+    unavailableBackup: Boolean = false,
     radioSelect: MutableState<Boolean> = remember { mutableStateOf(false) },
     onClick: ((String, Int?, Boolean?) -> Unit)? = null,
 
@@ -105,6 +108,13 @@ fun SampleItem(
             }
 
             Spacer(modifier = Modifier.weight(1f))
+
+
+            if (unavailableBackup){
+                Icon(
+                    modifier = Modifier.padding(end = 16.dp).size(18.dp),
+                    painter = painterResource(id = R.drawable.unavailable_cloud), contentDescription = "No Backup available", tint = Warning600)
+            }
 
             if (isBookmarked) {
                 Icon(

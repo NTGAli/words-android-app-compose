@@ -69,4 +69,10 @@ class DefaultDataRepository @Inject constructor(
             it.toBuilder().clear().build()
         }
     }
+
+    override suspend fun isUserPurchased(isPurchased: Boolean) {
+        recentLocationsDataStore.updateData {
+            it.toBuilder().setIsPurchased(isPurchased).build()
+        }
+    }
 }

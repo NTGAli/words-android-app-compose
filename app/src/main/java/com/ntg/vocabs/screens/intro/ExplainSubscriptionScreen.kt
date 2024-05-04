@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +42,7 @@ fun ExplainSubscriptionScreen(
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val email = loginViewModel.getUserData().collectAsState(initial = null).value?.email
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
@@ -60,7 +62,11 @@ fun ExplainSubscriptionScreen(
                     modifier = Modifier.padding(horizontal = 32.dp),
                     text = stringResource(id = R.string.upgrade_to_pro)
                 ) {
-                    navController.navigate(Screens.SubscriptionsScreen.name)
+                    if (email.orEmpty().isNotEmpty()){
+                        navController.navigate(Screens.SubscriptionsScreen.name)
+                    }else{
+                        navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                    }
                 }
                 CustomButton(
                     modifier = Modifier
