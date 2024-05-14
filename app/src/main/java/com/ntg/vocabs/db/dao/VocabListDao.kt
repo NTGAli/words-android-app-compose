@@ -8,7 +8,7 @@ import com.ntg.vocabs.model.db.VocabItemList
 @Dao
 interface VocabListDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(vocabList: VocabItemList): Long
 
     @Update

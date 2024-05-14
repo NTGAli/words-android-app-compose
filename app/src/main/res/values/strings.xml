@@ -255,5 +255,9 @@
     <string name="thanks_purchase">🎉 Thank you for upgrading to VocabsMaster Plus! \nWe appreciate your support. Enjoy your enhanced features and improved experience!\nyou can access all features forever! 🚀</string>
     <string name="success_restore">🎉 Welcome back to VocabsMaster Plus!\nYour account has been successfully restored.\nEnjoy unlimited access to all features and continue mastering your vocabulary with ease! 🚀</string>
     <string name="continue_str">Continue</string>
+    <string name="err_restoration">Your restoration wasn\'t successful.</string>
+    <string name="login_to_backup">Your vocabulary data isn\'t backed up. To ensure your vocabulary is backed up, please log in.</string>
+    <string name="upgrade_backup">Your data isn\'t backed up. To back up more than 50 words, upgrade to VocabsMaster Plus.</string>
+    <string name="left_format">%s left</string>
 
 </resources>

@@ -51,18 +51,24 @@ fun RevisionScreen(
 ) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var left by remember {
+        mutableIntStateOf(0)
+    }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             Appbar(
                 title = stringResource(R.string.revision),
                 scrollBehavior = scrollBehavior,
-                navigationOnClick = { navController.popBackStack() }
+                navigationOnClick = { navController.popBackStack() },
+                endText = stringResource(id = R.string.left_format, left.toString())
             )
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel, navController, isRandom)
+            Content(paddingValues = innerPadding, wordViewModel, navController, isRandom){
+                left = it
+            }
 
         }
     )
@@ -77,7 +83,8 @@ private fun Content(
     paddingValues: PaddingValues,
     wordViewModel: WordViewModel,
     navController: NavController,
-    isRandom: Boolean
+    isRandom: Boolean,
+    onChange:(Int)-> Unit,
 ) {
 
     val reviewTypes: ArrayList<ReviewTypes> = arrayListOf()
@@ -108,6 +115,10 @@ private fun Content(
         mutableStateOf<List<Word>>(listOf())
     }
 
+    var words by remember {
+        mutableStateOf<List<Word>>(listOf())
+    }
+
     var reviewType by remember {
         mutableStateOf<ReviewTypes?>(null)
     }
@@ -118,20 +129,24 @@ private fun Content(
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val allWords =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty()
-    var words = if (isRandom){
-        if (allWords.size > 10) allWords.shuffled().take(20)
-        else allWords
-    }else{
-        allWords.filter {
-            getStateRevision(
-                it.revisionCount,
-                it.lastRevisionTime
-            ) == 2 || getStateRevision(
-                it.revisionCount,
-                it.lastRevisionTime
-            ) == 3
+
+    if (words.isEmpty()){
+        words = if (isRandom){
+            if (allWords.size > 10) allWords.shuffled().take(20)
+            else allWords
+        }else{
+            allWords.filter {
+                getStateRevision(
+                    it.revisionCount,
+                    it.lastRevisionTime
+                ) == 2 || getStateRevision(
+                    it.revisionCount,
+                    it.lastRevisionTime
+                ) == 3
+            }
         }
     }
+
 
     val rejectedList = remember {
         mutableStateListOf<Word>()
@@ -139,6 +154,7 @@ private fun Content(
 
 
     words = words.filterNot { it in rejectedList }
+    onChange.invoke(words.size)
 
     if (words.isNotEmpty()) {
 
@@ -188,7 +204,7 @@ private fun Content(
             if (word!!.definition.orEmpty().isNotEmpty() && allWords.filter {
                     it.definition.orEmpty().isNotEmpty()
                 }.size > 4) reviewTypes.add(ReviewTypes.Word)
-            if (word!!.images.orEmpty().isNotEmpty()) reviewTypes.add(ReviewTypes.Image)
+            if (word!!.images.orEmpty().isNotEmpty() && File(word!!.images.orEmpty().first()).exists()) reviewTypes.add(ReviewTypes.Image)
 
             if (reviewTypes.isEmpty()) reviewTypes.add(ReviewTypes.Simple)
 

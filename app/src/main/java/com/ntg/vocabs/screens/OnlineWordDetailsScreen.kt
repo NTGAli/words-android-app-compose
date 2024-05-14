@@ -61,6 +61,7 @@ import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.Primary500
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontMedium24
+import com.ntg.vocabs.util.generateUniqueFiveDigitId
 import com.ntg.vocabs.util.getSubdirectory
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orTrue
@@ -77,7 +78,7 @@ import java.io.IOException
 private val listOfDictionary = listOf(
     "Dictionary number one",
     "Dictionary number two",
-//    "Dictionary number three",
+    "Dictionary number three",
 )
 
 data class DefData(
@@ -168,7 +169,7 @@ fun OnlineWordDetailsScreen(
                     } else if (isExist.orTrue()) {
                         context.toast(context.getString(R.string.err_word_already_exist))
                     } else if (onlineWord != null) {
-                        wordViewModel.addNewWord(onlineWord!!)
+                        wordViewModel.addNewWord(onlineWord!!.apply { id = generateUniqueFiveDigitId() })
                         navController.popBackStack()
                     }
                 }

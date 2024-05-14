@@ -8,8 +8,8 @@ import com.ntg.vocabs.util.orZero
 
 @Entity
 data class TimeSpent(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    @PrimaryKey(autoGenerate = false)
+    val id: Int=0,
     val fid: String? = null,
     val listId: Int? = null,
     val date: String? = null,

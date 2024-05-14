@@ -196,7 +196,7 @@ private fun submitWord(
             if (isEdit) {
                 wordViewModel.editWord(wordData.id, wordData)
             } else {
-                wordViewModel.addNewWord(wordData)
+                wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
 
                 if (email != null) {
@@ -631,6 +631,10 @@ private fun Content(
                     }
                 }
 
+                item {
+                    Spacer(modifier = Modifier.padding(24.dp))
+                }
+
             }
         }
     }
@@ -1003,7 +1007,7 @@ private fun Content(
                         size = ButtonSize.LG,
                         type = ButtonType.Secondary,
                         style = ButtonStyle.Contained,
-                        iconStart = painterResource(id = R.drawable.icons8_clock_1_1)
+                        iconStart = if (!isPurchased) painterResource(id = R.drawable.icons8_clock_1_1) else null
                     ) {
 
                         if (isPurchased){
@@ -1017,18 +1021,18 @@ private fun Content(
                     }
                 }
 
-//                CustomButton(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 16.dp),
-//                    text = stringResource(id = R.string.auto_fill_from_third),
-//                    size = ButtonSize.LG,
-//                    type = ButtonType.Secondary,
-//                    style = ButtonStyle.Contained
-//                ) {
-//                    fetchDataWord.value = true
-//                    dictionaryApi.intValue = 3
-//                }
+                CustomButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    text = stringResource(id = R.string.auto_fill_from_third),
+                    size = ButtonSize.LG,
+                    type = ButtonType.Secondary,
+                    style = ButtonStyle.Contained
+                ) {
+                    fetchDataWord.value = true
+                    dictionaryApi.intValue = 3
+                }
 
             }
 

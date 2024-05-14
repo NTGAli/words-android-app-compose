@@ -32,6 +32,7 @@ import com.ntg.vocabs.model.then
 import com.ntg.vocabs.syncData
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
+import com.ntg.vocabs.util.generateUniqueFiveDigitId
 import com.ntg.vocabs.util.notEmptyOrNull
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.LoginViewModel
@@ -123,7 +124,7 @@ private fun Content(
             } else {
                 wordViewModel.addNewVocabList(
                     VocabItemList(
-                        0,
+                        generateUniqueFiveDigitId(),
                         title = name.value,
                         language = language,
                         isSelected = false

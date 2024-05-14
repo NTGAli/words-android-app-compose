@@ -74,6 +74,10 @@ fun WritingScreen(
         mutableStateOf<Boolean?>(null)
     }
 
+    var left by remember {
+        mutableIntStateOf(0)
+    }
+
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -82,7 +86,8 @@ fun WritingScreen(
             Appbar(
                 title = stringResource(R.string.writing),
                 scrollBehavior = scrollBehavior,
-                navigationOnClick = { navController.popBackStack() }
+                navigationOnClick = { navController.popBackStack() },
+                endText = if (left != 0) stringResource(id = R.string.left_format, left) else null
             )
         },
         content = { innerPadding ->
@@ -90,7 +95,10 @@ fun WritingScreen(
                 paddingValues = innerPadding,
                 wordViewModel,
                 navController,
-                isCorrect
+                isCorrect,
+                onSize = {
+                    left = it
+                }
             ) { user, correctWord ->
                 word = user
                 correct = correctWord
@@ -99,7 +107,7 @@ fun WritingScreen(
         },
         bottomBar = {
             Column(
-                modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                modifier = Modifier.background(MaterialTheme.colorScheme.background),
             ) {
                 Divider(
                     color = MaterialTheme.colorScheme.surfaceVariant
@@ -125,6 +133,7 @@ private fun Content(
     wordViewModel: WordViewModel,
     navController: NavController,
     isCorrect: Boolean?,
+    onSize:(Int) -> Unit,
     onValue: (String, String) -> Unit
 ) {
     timber("ContentContentContentContentContent")
@@ -188,6 +197,7 @@ private fun Content(
                 pos++
                 userType = ""
                 onValue.invoke("", words.value[pos].word.orEmpty())
+                onSize.invoke(words.value.size - pos)
             } else {
                 navController.popBackStack()
             }
@@ -203,10 +213,8 @@ private fun Content(
                 word.value?.type.orEmpty()
             )
                 .observe(lifecycle) {
-                    timber("findPronouns********** $it --- ${words.value.size}")
                     if (it != null) {
                         if (it.id != (pronouns.value?.id ?: -1)) {
-                            timber("findPronouns ${it.id} ---- ${pronouns.value?.id}")
                             pronouns.value = it
                         }
                     } else if (pos < words.value.size - 1) {

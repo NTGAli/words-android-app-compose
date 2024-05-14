@@ -8,8 +8,8 @@ import com.ntg.vocabs.util.orFalse
 @Entity
 data class Word(
 
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    var id: Int = 0,
     var fid: String?= null,
     val listId: Int = 0,
     val word: String? = null,

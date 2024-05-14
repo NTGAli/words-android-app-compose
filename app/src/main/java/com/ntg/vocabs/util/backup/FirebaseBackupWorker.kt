@@ -9,6 +9,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.ntg.vocabs.db.AppDB
 import com.ntg.vocabs.db.dao.WordDao
+import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.db.toMap
 import com.ntg.vocabs.util.Constant
@@ -16,11 +17,14 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_MEDIA
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
+import com.ntg.vocabs.util.orDefault
 import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.timber
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import kotlin.reflect.KClass
 
 class FirebaseBackupWorker(
@@ -131,39 +135,65 @@ class FirebaseBackupWorker(
                 }
 
                 BACKUP_TIMES -> {
-                    appDB.timeSpentDao().getUnSyncedTime().let {
-                        timber("getUnSyncedWords :::: $it")
+                    val dataOfToday = LocalDate.now().toString()
+                    var totalMill = 0L
+                    appDB.timeSpentDao().getUnSyncedTime(dataOfToday).groupBy { it.date }.forEach { time ->
 
-                        it.forEach { time ->
+                        time.value.groupBy { it.listId }.forEach {spendInList ->
 
-                            if (time.isDeleted.orFalse() && time.fid != null) {
-                                deleteOnFirestore(time.fid, type) {
-                                    if (it) {
+                            spendInList.value.groupBy { it.type }.forEach {spendInType ->
+
+                                spendInType.value.forEach { spendTime ->
+
+                                    if (spendTime.isDeleted.orFalse()){
+                                        if (spendTime.fid != null){
+                                            deleteOnFirestore(spendTime.fid.orEmpty(), type) {
+                                                if (it) {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        appDB.timeSpentDao().delete(spendTime)
+                                                    }
+                                                }
+                                            }
+                                        }else{
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                appDB.timeSpentDao().delete(spendTime)
+                                            }
+                                        }
+                                    }else{
+                                        if (spendTime.endUnix != null && spendTime.startUnix != null){
+                                            totalMill += (spendTime.endUnix.orDefault() - spendTime.startUnix.orDefault())
+                                        }
+                                    }
+
+
+                                }
+
+                                val finalMill = totalMill
+                                backupOnFirestore(
+                                    TimeSpent(
+                                        listId = spendInList.key,
+                                        synced = true,
+                                        email = email,
+                                        date = time.key!!,
+                                        id = 0,
+                                        startUnix = 0,
+                                        endUnix = finalMill,
+                                        type = spendInType.key
+                                    )
+                                    , type) {ref ->
+
+                                    spendInList.value.forEach {
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            appDB.timeSpentDao().delete(time)
+                                            appDB.timeSpentDao().synced(it.id, ref.id)
                                         }
                                     }
                                 }
-                            }else if (time.fid == null) {
-                                backupOnFirestore(time.apply {
-                                    this.email = email
-                                    this.synced = true
-                                }, type) {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        appDB.timeSpentDao().synced(time.id, it.id)
-                                    }
-                                }
-                            } else {
-                                updateBackupOnFirestore(time.apply {
-                                    this.email = email
-                                    this.synced = true
-                                }.toMap(),time.fid, type) {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        appDB.timeSpentDao().synced(time.id)
-                                    }
-                                }
+                                totalMill = 0
+
                             }
+
                         }
+
                     }
                 }
 

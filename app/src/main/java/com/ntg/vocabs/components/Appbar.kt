@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,8 +18,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.ntg.vocabs.R
 import com.ntg.vocabs.model.components.AppbarItem
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
@@ -33,6 +36,7 @@ fun Appbar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     title: String = "",
     buttonText: String? = null,
+    endText: String? = null,
     titleColor: Color = Secondary900,
     color: Color = Color.White,
     enableNavigation: Boolean = true,
@@ -101,6 +105,14 @@ fun Appbar(
                         ) {
                             actionOnClick.invoke(0)
                         }
+                    }
+
+                    if (endText != null){
+                        Text(
+                            modifier = Modifier.padding(end = 24.dp),
+                            text = endText,
+                            style = fontMedium12(MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
                     }
                 },
 //                colors = TopAppBarDefaults.topAppBarColors(

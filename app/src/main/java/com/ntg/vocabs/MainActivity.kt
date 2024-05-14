@@ -14,14 +14,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -37,12 +33,10 @@ import com.ntg.vocabs.ui.theme.AppTheme
 import com.ntg.vocabs.util.*
 import com.ntg.vocabs.util.Constant.BACKUPS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
-import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_MEDIA
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
-import com.ntg.vocabs.util.backup.BackupWorker
 import com.ntg.vocabs.util.backup.FirebaseBackupWorker
 import com.ntg.vocabs.util.backup.MediaBackupWorker
-import com.ntg.vocabs.util.backup.StopSpendTimeWorker
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.DataViewModel
@@ -51,9 +45,6 @@ import com.ntg.vocabs.vm.MessageBoxViewModel
 import com.ntg.vocabs.vm.SignInViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -155,37 +146,43 @@ class MainActivity : ComponentActivity() {
                         }
 
                         if (listId != null) {
-                            when (navDestination.route.orEmpty()) {
-                                Screens.LoginWithPasswordScreen.name,
-                                Screens.GoogleLoginScreen.name,
-                                Screens.CodeScreen.name,
-                                Screens.FinishScreen.name,
-                                Screens.SplashScreen.name,
-                                Screens.SplashScreen.name,
-                                -> {
-                                    timber("LoginPages")
-                                }
 
-                                Screens.RevisionScreen.name,
-                                Screens.WritingScreen.name,
-                                -> {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        calendarViewModel.insertSpendTime(
-                                            SpendTimeType.Revision,
-                                            listId!!.id
-                                        )
+                            with(navDestination.route.orEmpty()){
+
+                                timber("CCCCCCCCCCCCCCCC ::::: $this ------ ${this.contains(Screens.RevisionScreen.name)}")
+                                when  {
+                                    contains(Screens.LoginWithPasswordScreen.name) ||
+                                    contains(Screens.GoogleLoginScreen.name) ||
+                                    contains(Screens.CodeScreen.name) ||
+                                    contains(Screens.FinishScreen.name) ||
+                                    contains(Screens.SplashScreen.name) ||
+                                    contains(Screens.SplashScreen.name)
+                                    -> {
+                                        timber("LoginPages")
                                     }
-                                }
 
-                                else -> {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        calendarViewModel.insertSpendTime(
-                                            SpendTimeType.Learning,
-                                            listId!!.id
-                                        )
+                                    contains(Screens.RevisionScreen.name) ||
+                                    contains(Screens.WritingScreen.name)
+                                    -> {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            calendarViewModel.insertSpendTime(
+                                                SpendTimeType.Revision,
+                                                listId!!.id
+                                            )
+                                        }
                                     }
-                                }
 
+
+                                    else -> {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            calendarViewModel.insertSpendTime(
+                                                SpendTimeType.Learning,
+                                                listId!!.id
+                                            )
+                                        }
+                                    }
+
+                                }
                             }
                         }
 
@@ -227,6 +224,9 @@ class MainActivity : ComponentActivity() {
                         syncData(dataSettings.email, BACKUP_WORDS, this@MainActivity)
                         syncData(dataSettings.email, BACKUP_LISTS, this@MainActivity)
                         syncMedia(dataSettings.email, this@MainActivity)
+                        if (dataSettings.isPurchased){
+                            syncData(dataSettings.email, BACKUP_TIMES, this@MainActivity)
+                        }
                     })
 
                 }
@@ -319,15 +319,13 @@ class MainActivity : ComponentActivity() {
                 notificationPermission.launchPermissionRequest()
             })
 
-            OnLifecycleEvent{owner, event ->
-                if (event == Lifecycle.Event.ON_PAUSE){
-                    if (listId != null) {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            calendarViewModel.stopLastTime()
-                        }
-                    }
-                }
-            }
+//            OnLifecycleEvent{owner, event ->
+//                if (event == Lifecycle.Event.ON_PAUSE){
+//                    if (listId != null) {
+//                            calendarViewModel.stopLastTime()
+//                    }
+//                }
+//            }
         }
 
 
@@ -380,14 +378,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-//    override fun onPause() {
-//        super.onPause()
-//        if (listId != null) {
-//            CoroutineScope(Dispatchers.IO).launch {
-//                calendarViewModel.stopLastTime()
-//            }
-//        }
-//    }
+    override fun onPause() {
+        super.onPause()
+        if (listId != null) {
+                calendarViewModel.stopLastTime()
+        }
+    }
 
 }
 

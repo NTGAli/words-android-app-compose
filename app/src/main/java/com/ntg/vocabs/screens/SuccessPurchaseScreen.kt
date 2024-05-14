@@ -19,6 +19,7 @@ import com.ntg.vocabs.vm.LoginViewModel
 @Composable
 fun SuccessPurchaseScreen(
     navController: NavController,
+    loginViewModel: LoginViewModel,
     type: String
 ){
 
@@ -28,6 +29,7 @@ fun SuccessPurchaseScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp).padding(bottom = 32.dp),
                 text = stringResource(id = R.string.continue_str), size = ButtonSize.XL){
                 navController.navigate(Screens.VocabularyListScreen.name){
+                    loginViewModel.continueFree()
                     popUpTo(0)
                 }
             }

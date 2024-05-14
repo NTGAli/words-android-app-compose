@@ -11,10 +11,9 @@ import com.ntg.vocabs.model.CalendarDataSource
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.components.CalendarUiModel
 import com.ntg.vocabs.model.db.TimeSpent
-import com.ntg.vocabs.util.timber
+import com.ntg.vocabs.util.generateUniqueFiveDigitId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -38,21 +37,24 @@ class CalendarViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun insertSpendTime(type: SpendTimeType, listId: Int) {
-        viewModelScope.launch {
-            stopLastTime()
-        }
-        removeNullTime()
+
+//            removeNullTime()
         viewModelScope.launch {
             val spendTime = TimeSpent(
-                id = 0,
+                id = generateUniqueFiveDigitId(),
                 listId = listId,
                 date = LocalDate.now().toString(),
                 startUnix = System.currentTimeMillis(),
                 endUnix = null,
                 type = type.ordinal
             )
-            timeSpentDao.insert(spendTime)
+
+            stopLastTimeOffset(
+                timeSpentDao.insert(spendTime).toInt()
+            )
         }
+
+
     }
 
 
@@ -71,14 +73,16 @@ class CalendarViewModel @Inject constructor(
 
     fun removeNullTime() = viewModelScope.launch { timeSpentDao.removeNullTime() }
 
-    suspend fun stopLastTime() {
+    private fun stopLastTimeOffset(insertedId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                timeSpentDao.stopTime(System.currentTimeMillis())
-            } catch (e: Exception) {
-                timber("Database ::: Error stopping time :: ${e.message}")
-            }
-        }.join()
+            timeSpentDao.stopTime(System.currentTimeMillis(), insertedId)
+        }
+    }
+
+    fun stopLastTime() {
+        viewModelScope.launch(Dispatchers.IO) {
+            timeSpentDao.stopLast(System.currentTimeMillis())
+        }
     }
 
     fun selectDate(date: CalendarUiModel.Date) {
@@ -109,7 +113,6 @@ class CalendarViewModel @Inject constructor(
         }
         return allValidLearningTimeSpent
     }
-
 
 
 }

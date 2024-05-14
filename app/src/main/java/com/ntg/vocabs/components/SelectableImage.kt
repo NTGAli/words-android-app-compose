@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import java.io.File
 
 @Composable
 fun SelectableImage(
@@ -21,13 +22,16 @@ fun SelectableImage(
     onClick:(String) -> Unit
 ){
 
-    val imageBitmap = loadImageFromFile(filePath = path)
-    Box(modifier = modifier.aspectRatio(1f).clip(RoundedCornerShape(8.dp)).clickable {
-                                                                                     onClick.invoke(path)
-    }, contentAlignment = Alignment.Center){
-        Image(modifier = Modifier.fillMaxSize(),
-            bitmap = imageBitmap!!.asImageBitmap()
-            , contentDescription = "Selected image", contentScale = ContentScale.Crop)
+    if (File(path).exists()){
+        val imageBitmap = loadImageFromFile(filePath = path)
+        Box(modifier = modifier.aspectRatio(1f).clip(RoundedCornerShape(8.dp)).clickable {
+            onClick.invoke(path)
+        }, contentAlignment = Alignment.Center){
+            Image(modifier = Modifier.fillMaxSize(),
+                bitmap = imageBitmap!!.asImageBitmap()
+                , contentDescription = "Selected image", contentScale = ContentScale.Crop)
+        }
     }
+
 
 }

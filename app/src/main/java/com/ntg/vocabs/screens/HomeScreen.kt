@@ -194,17 +194,24 @@ fun HomeScreen(
     LaunchedEffect(key1 = Unit, block = {
         messageBoxViewModel.loadFullScreenAd()
     })
+
+
+    var adObserved by remember {
+        mutableStateOf(false)
+    }
     messageBoxViewModel.fullScreenAd.observeAsState(initial = null).value.let {
         if (it != null) {
             if (it.preview.orFalse()) return@let
             messageBoxViewModel.isUserAlreadySeen(it.id.orEmpty()).observe(observer) {
-                if (it == null) {
+                if (it == null && !adObserved) {
+                    adObserved = true
                     navController.navigate(Screens.FullScreenAdScreen.name)
                 }
             }
 
         }
     }
+
 
 
 }
@@ -572,15 +579,15 @@ fun PhoneScreenMode(
                     .weight(1f)
                     .padding(vertical = 4.dp)
                     .padding(start = 4.dp),
-                title = if (true) totalTime.formatTime() else "--:--",
+                title = if (isPurchased) totalTime.formatTime() else "--:--",
                 subTitle = stringResource(R.string.time_spent),
                 painter = painterResource(
-                    id = if (true) R.drawable.calendar_check else R.drawable.icons8_clock_1_1
+                    id = if (isPurchased) R.drawable.calendar_check else R.drawable.icons8_clock_1_1
                 ),
                 imageTint = Secondary500,
                 imageBackground = Secondary100
             ) {
-                if (true) {
+                if (isPurchased) {
                     navController.navigate(Screens.TimeScreen.name)
                 } else {
                     openDialog = true

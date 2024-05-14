@@ -21,6 +21,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
@@ -33,8 +34,10 @@ import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toPronunciation
+import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,14 +47,17 @@ import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WordDetailScreen(navController: NavController, wordViewModel: WordViewModel, wordId: Int?) {
+fun WordDetailScreen(
+    navController: NavController,
+    wordViewModel: WordViewModel,
+    loginViewModel: LoginViewModel,
+    wordId: Int?
+) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val word = wordViewModel.findWord(wordId)?.observeAsState()
-
-//    if (word == null)
-//        navController.popBackStack()
+    val count = wordViewModel.getSizeOfWords().observeAsState(initial = null).value
 
     Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -65,7 +71,7 @@ fun WordDetailScreen(navController: NavController, wordViewModel: WordViewModel,
             )
         },
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, word?.value,navController)
+            Content(paddingValues = innerPadding, word?.value, loginViewModel, navController, count)
         }
     )
 }
@@ -134,14 +140,18 @@ private fun SetupAppbar(
             Column(
                 Modifier
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = 24.dp)) {
+                    .padding(bottom = 24.dp)
+            ) {
                 Text(
                     text = "Are you sure you want to delete this word?", style = fontMedium14(
                         MaterialTheme.colorScheme.onBackground
                     )
                 )
 
-                Row(modifier = Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.padding(top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     CustomButton(
                         modifier = Modifier
                             .weight(1f)
@@ -159,13 +169,10 @@ private fun SetupAppbar(
                         text = "yes",
                         type = ButtonType.Danger
                     ) {
-                        timber("DDDDDDDDDDDDDDDD :::: $word")
-                        if (word != null){
-                            timber("DDDDDDDDDDDDDDDD :::: 111")
-                            if (word.fid != null){
-                                timber("DDDDDDDDDDDDDDDD :::: 222 ---- ${word.id}")
+                        if (word != null) {
+                            if (word.fid != null) {
                                 wordViewModel.deleteWord(word.id)
-                            }else{
+                            } else {
                                 wordViewModel.deleteWord(word)
                             }
                         }
@@ -182,7 +189,13 @@ private fun SetupAppbar(
 }
 
 @Composable
-private fun Content(paddingValues: PaddingValues, word: Word?,navController: NavController) {
+private fun Content(
+    paddingValues: PaddingValues,
+    word: Word?,
+    loginViewModel: LoginViewModel,
+    navController: NavController,
+    count: Int? = null
+) {
 
     val ctx = LocalContext.current
     val player by lazy {
@@ -192,6 +205,22 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
 
     var visible by remember {
         mutableStateOf(false)
+    }
+
+
+    var isLogged by remember {
+        mutableStateOf(false)
+    }
+
+    var isPurchased by remember {
+        mutableStateOf(false)
+    }
+
+    loginViewModel.getUserData().collectAsState(initial = null).value.let {
+        if (it != null) {
+            isLogged = it.email.isNotEmpty()
+            isPurchased = it.isPurchased
+        }
     }
 
     LazyColumn(
@@ -284,7 +313,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
                     modifier = Modifier.padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (word.voice.orEmpty().isNotEmpty()){
+                    if (word.voice.orEmpty().isNotEmpty()) {
                         IconButton(onClick = {
                             val audioFile = File(word.voice!!)
                             if (player.isPlaying()) return@IconButton
@@ -300,7 +329,7 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
                     }
 
 
-                    if (word.sound.orEmpty().isNotEmpty()){
+                    if (word.sound.orEmpty().isNotEmpty()) {
                         IconButton(onClick = {
                             val mp = MediaPlayer()
                             try {
@@ -325,7 +354,9 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
                         }
                     }
                     Text(
-                        modifier = Modifier.padding(start = 16.dp).padding(bottom = 8.dp),
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .padding(bottom = 8.dp),
                         text = word.pronunciation.toPronunciation(),
                         style = fontMedium14(
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -335,19 +366,22 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
             }
         }
 
-        item{
-            if (word?.images.orEmpty().isNotEmpty()){
+        item {
+            if (word?.images.orEmpty().isNotEmpty()) {
                 Row {
-                    SelectableImage(modifier = Modifier.weight(1f),path = word?.images!!.first(), onClick = {
-                        navController.navigate(Screens.FullScreenImageScreen.name+"?path=$it")
-                    })
+                    SelectableImage(
+                        modifier = Modifier.weight(1f),
+                        path = word?.images!!.first(),
+                        onClick = {
+                            navController.navigate(Screens.FullScreenImageScreen.name + "?path=$it")
+                        })
 
                     Spacer(modifier = Modifier.weight(4f))
                 }
             }
         }
 
-        if (word?.definition.orEmpty().isNotEmpty()){
+        if (word?.definition.orEmpty().isNotEmpty()) {
             item {
                 Text(
                     modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
@@ -360,15 +394,29 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
             }
         }
 
-        if (word?.synonyms.orEmpty().isNotEmpty()){
+        if (word?.synonyms.orEmpty().isNotEmpty()) {
             item {
-                Text(modifier = Modifier.padding(top = 8.dp), text = stringResource(id = R.string.synonyms_format, word?.synonyms.toString().drop(1).dropLast(1)), style = fontRegular14(MaterialTheme.colorScheme.onBackground))
+                Text(
+                    modifier = Modifier.padding(top = 8.dp),
+                    text = stringResource(
+                        id = R.string.synonyms_format,
+                        word?.synonyms.toString().drop(1).dropLast(1)
+                    ),
+                    style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+                )
             }
         }
 
-        if (word?.antonyms.orEmpty().isNotEmpty()){
+        if (word?.antonyms.orEmpty().isNotEmpty()) {
             item {
-                Text(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),text = stringResource(id = R.string.antonyms_format, word?.antonyms.toString().drop(1).dropLast(1)),style = fontRegular14(MaterialTheme.colorScheme.onBackground))
+                Text(
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                    text = stringResource(
+                        id = R.string.antonyms_format,
+                        word?.antonyms.toString().drop(1).dropLast(1)
+                    ),
+                    style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+                )
             }
         }
 
@@ -378,6 +426,35 @@ private fun Content(paddingValues: PaddingValues, word: Word?,navController: Nav
                 text = it,
                 style = fontRegular14(MaterialTheme.colorScheme.onBackground)
             )
+        }
+
+        item {
+            if (word?.synced.orFalse()){
+                if (!isLogged || (!isPurchased && count.orZero() > 50)) {
+                    Row(
+                        modifier = Modifier
+                            .background(color = Warning300, shape = RoundedCornerShape(8.dp))
+                            .padding(8.dp),
+                    ) {
+
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(id = R.drawable.unavailable_cloud),
+                            contentDescription = null,
+                            tint = Warning800
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text = stringResource(
+                                if (!isLogged) R.string.login_to_backup
+                                else R.string.upgrade_backup
+                            ),
+                            style = fontRegular14(Warning900)
+                        )
+                    }
+
+                }
+            }
         }
 
     }

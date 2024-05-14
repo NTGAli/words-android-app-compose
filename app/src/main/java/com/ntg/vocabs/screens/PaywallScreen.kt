@@ -2,9 +2,13 @@ package com.ntg.vocabs.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import com.ntg.vocabs.R
 import com.ntg.vocabs.components.LoadingView
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.LoginViewModel
 import com.revenuecat.purchases.CustomerInfo
 import com.revenuecat.purchases.models.StoreTransaction
@@ -23,6 +27,7 @@ fun PaywallScreen(
 
     LoadingView()
 
+    val ctx = LocalContext.current
     PaywallDialog(
         PaywallDialogOptions.Builder()
             .setRequiredEntitlementIdentifier("VocabsMaster Plus")
@@ -33,8 +38,13 @@ fun PaywallScreen(
                         navController.navigate(Screens.SuccessPurchaseScreen.name + "?type=Purchase")
                     }
                     override fun onRestoreCompleted(customerInfo: CustomerInfo) {
-                        loginViewModel.setPurchase(true)
-                        navController.navigate(Screens.SuccessPurchaseScreen.name + "?type=Restored")
+                        ctx.toast("${customerInfo.allPurchasedProductIds}")
+                        if (customerInfo.allPurchasedProductIds.isNotEmpty()){
+                            loginViewModel.setPurchase(true)
+                            navController.navigate(Screens.SuccessPurchaseScreen.name + "?type=Restored")
+                        }else{
+                            ctx.toast(R.string.err_restoration)
+                        }
                     }
 
                     override fun onPurchaseCancelled() {

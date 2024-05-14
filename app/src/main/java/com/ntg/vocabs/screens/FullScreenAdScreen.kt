@@ -1,5 +1,6 @@
 package com.ntg.vocabs.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -36,6 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -50,6 +52,7 @@ import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.response.FullScreenAd
 import com.ntg.vocabs.ui.theme.fontMedium14
+import com.ntg.vocabs.util.OnLifecycleEvent
 import com.ntg.vocabs.util.openInBrowser
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.vm.MessageBoxViewModel
@@ -91,13 +94,22 @@ fun FullScreenAdScreen(
                     context.openInBrowser(ad?.link.orEmpty())
                     navController.popBackStack()
                 }
-                CustomButton(modifier = Modifier.padding(horizontal = 32.dp).fillMaxWidth().padding(top = 4.dp),text = "skip", style = ButtonStyle.TextOnly, size = ButtonSize.LG){
+                CustomButton(modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),text = "skip", style = ButtonStyle.TextOnly, size = ButtonSize.LG){
                     messageBoxViewModel.seenAd(ad?.id.orEmpty(), true)
                     navController.popBackStack()
                 }
             }
         }
     )
+
+    OnLifecycleEvent(onEvent = { owner, event ->
+        if (event == Lifecycle.Event.ON_PAUSE){
+            messageBoxViewModel.seenAd(ad?.id.orEmpty(), true)
+        }
+    })
 }
 
 @Composable

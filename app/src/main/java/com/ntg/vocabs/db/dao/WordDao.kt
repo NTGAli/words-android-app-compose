@@ -32,7 +32,7 @@ interface WordDao {
     @Query("SELECT * FROM Word WHERE isDeleted=0 ORDER BY id DESC")
     fun getAllWords(): LiveData<List<Word>>
 
-    @Query("SELECT * FROM Word WHERE listId=:listId AND isDeleted=0 ORDER BY id DESC")
+    @Query("SELECT * FROM Word WHERE listId=:listId AND isDeleted=0 ORDER BY dateCreated DESC")
     fun getWordBaseListId(listId: Int): LiveData<List<Word>>
 
     @Query("SELECT * FROM Word WHERE id =:id AND isDeleted=0")

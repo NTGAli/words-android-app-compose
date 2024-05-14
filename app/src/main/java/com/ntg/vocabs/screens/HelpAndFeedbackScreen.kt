@@ -65,10 +65,10 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
             "            <p><strong>Choose Your Destination:</strong> Depending on your preference, you have two options:</p>\n" +
             "            <ul>\n" +
             "                <li>\n" +
-            "                    <p><strong>Google Drive Backup:</strong> If you wish to backup your data on your Google Drive, you'll need to log in to your Google account.</p>\n" +
-            "                </li>\n" +
-            "                <li>\n" +
             "                    <p><strong>Phone Backup:</strong> To keep a backup on your device, select 'on phone storage'. Your backup will be saved in the 'Documents' folder.</p>\n" +
+            "                </li>\n" +
+            "                    <p><strong>Share Backup:</strong> You can share your backup with anyone you want.</p>\n" +
+            "                <li>\n" +
             "                </li>\n" +
             "            </ul>\n" +
             "        </li>\n" +
@@ -87,7 +87,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
             "            <p><strong>Choose Your Source:</strong></p>\n" +
             "            <ul>\n" +
             "                <li>\n" +
-            "                    <p><strong>From Your Google Drive:</strong> If you previously backed up your data on the Google Drive, select the \"On Google Drive\" option to restore it.</p>\n" +
+            "                    <p><strong>From Server:</strong> While you log in, all your vocabulary is restored from the server. If your data didn't restore, try logging in again. Ensure that your country is not on the list of embargoed countries.</p>\n" +
             "                </li>\n" +
             "                <li>\n" +
             "                    <p><strong>From Local Storage:</strong> If you saved your backup on your device or elsewhere, use the \"Import\" option to restore it.</p>\n" +
@@ -97,7 +97,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
             "    </ol>"
 
     val fq3Desc =
-        "<p>If you grant access to your Google Drive, you can select a backup period for your data. Otherwise, there is currently no automatic backup option available.</p>"
+        "<p>Yes, the app automatically backs up your data. If you're on the free plan, the first 50 words will be backed up. If you have VocabsMaster Plus, all of your vocabulary will be backed up on the server.</p>"
 
 
     val fQuestions: List<Pair<String, String>> = listOf(

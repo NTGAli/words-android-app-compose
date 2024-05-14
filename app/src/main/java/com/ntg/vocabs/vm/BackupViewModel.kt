@@ -30,6 +30,7 @@ import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
 import com.ntg.vocabs.util.backup.IMAGES
@@ -419,6 +420,7 @@ class BackupViewModel @Inject constructor(
         val db = mFirestore
         val wordsRef = db.collection(BACKUP_WORDS)
         val listRef = db.collection(BACKUP_LISTS)
+        val timesRef = db.collection(BACKUP_TIMES)
         wordsRef.whereEqualTo("email", email)
             .get()
             .addOnSuccessListener { documents ->
@@ -455,6 +457,23 @@ class BackupViewModel @Inject constructor(
             }
             .addOnFailureListener { exception ->
                 onSuccess.invoke(false)
+            }
+
+
+        timesRef.whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val vocabTime = document.toObject(TimeSpent::class.java)
+                    vocabTime.synced = true
+                    viewModelScope.launch {
+                        timeSpentDao.insert(vocabTime)
+                    }
+                }
+                onSuccess.invoke(true)
+            }
+            .addOnFailureListener { exception ->
+//                onSuccess.invoke(false)
             }
     }
 

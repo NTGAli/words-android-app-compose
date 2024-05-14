@@ -6,7 +6,7 @@ import com.ntg.vocabs.util.orFalse
 
 @Entity
 data class VocabItemList (
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val id: Int=0,
     val fid: String?= null,
     var title: String="",

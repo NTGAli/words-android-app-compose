@@ -54,7 +54,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -192,6 +194,14 @@ fun getSecBetweenTimestamps(startTimeStamp: Long, endTimeStamp: Long): Int {
     val differenceMillis = endDate.time - startDate.time
 
     return TimeUnit.MILLISECONDS.toSeconds(differenceMillis).toInt()
+}
+
+fun generateUniqueFiveDigitId(): Int {
+    val timestamp = System.currentTimeMillis()
+    val input = "$timestamp".toByteArray()
+    val digest = MessageDigest.getInstance("SHA-256").digest(input)
+    val hash = digest.fold(0) { acc, byte -> (acc shl 8) + byte.toInt() }
+    return hash and 0x7FFFFFFF % 90000 + 10000 // Ensures 5-digit ID
 }
 
 @Composable

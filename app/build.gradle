@@ -8,7 +8,14 @@ plugins {
 }
 
 android {
-
+    signingConfigs {
+        release {
+            keyAlias KEY_ALIAS
+            storePassword STORE_PASSWORD
+            keyPassword KEY_PASSWORD
+            storeFile file(KEY_PATH)
+        }
+    }
     namespace 'com.ntg.vocabs'
     compileSdk 34
 
@@ -16,7 +23,7 @@ android {
         applicationId "com.ntg.vocabs"
         minSdk 25
         targetSdk 33
-        versionCode 5
+        versionCode 9
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -33,7 +40,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.relase
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

@@ -397,6 +397,7 @@ fun AppNavHost(
             WordDetailScreen(
                 navController = navController,
                 wordViewModel = wordViewModel,
+                loginViewModel,
                 backStackEntry.arguments?.getInt("wordId")
             )
         }
@@ -449,6 +450,7 @@ fun AppNavHost(
         ) { backStackEntry ->
             SuccessPurchaseScreen(
                 navController = navController,
+                loginViewModel,
                 backStackEntry.arguments?.getString("type").orEmpty()
             )
         }

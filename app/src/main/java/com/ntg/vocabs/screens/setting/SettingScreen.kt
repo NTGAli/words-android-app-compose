@@ -230,8 +230,6 @@ private fun Content(
             }
 
             SettingTitle(title = stringResource(id = R.string.account))
-
-            SettingTitle(title = stringResource(id = R.string.account))
             if (isUserLogged.value.orFalse()) {
                 ItemOption(text = stringResource(id = R.string.name)) {
                     navController.navigate(Screens.NameScreen.name)
@@ -257,10 +255,17 @@ private fun Content(
 
             SettingTitle(title = stringResource(id = R.string.support_us))
             ItemOption(text = stringResource(id = R.string.share_vocab)) {
-
+//                ctx.openInBrowser("https://play.google.com/store/apps/details?id=com.ntg.vocabs")
+                val shareIntent = Intent()
+                shareIntent.action = Intent.ACTION_SEND
+                shareIntent.type="text/plain"
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "With Vocabs, you can effortlessly create lists, add new words, and review them anytime, anywhere! \uD83D\uDCDD\uD83D\uDD0D" +
+                        "Download now:\n" +
+                        "https://play.google.com/store/apps/details?id=com.ntg.vocabs");
+                ctx.startActivity(Intent.createChooser(shareIntent,ctx.getString(R.string.share_vocab)))
             }
             ItemOption(text = stringResource(id = R.string.leave_us_review), divider = false) {
-
+                ctx.openInBrowser("https://play.google.com/store/apps/details?id=com.ntg.vocabs")
             }
 
             SettingTitle(title = stringResource(id = R.string.other))
