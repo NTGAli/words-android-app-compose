@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmark
@@ -27,7 +28,11 @@ import androidx.navigation.NavController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.CustomButton
+import com.ntg.vocabs.components.DividerLine
+import com.ntg.vocabs.components.EmptyWidget
+import com.ntg.vocabs.components.ExampleComponent
 import com.ntg.vocabs.components.SelectableImage
+import com.ntg.vocabs.components.TextDividerAlign
 import com.ntg.vocabs.model.components.*
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.nav.Screens
@@ -258,62 +263,12 @@ private fun Content(
         }
 
         item {
-            if (word?.verbForms?.pastSimple.orEmpty().isNotEmpty() &&
-                word?.verbForms?.pastParticiple.orEmpty().isNotEmpty()
-            ) {
-
-                Column(
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .clickable {
-                            visible = !visible
-                        }
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .padding(start = 8.dp),
-                        text = stringResource(id = R.string.verb_forms),
-                        style = fontMedium14(
-                            MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-
-                    AnimatedVisibility(visible = visible) {
-
-                        Column(modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) {
-                            if (word?.verbForms?.pastSimple != null) {
-                                TextWithContext(
-                                    title = stringResource(id = R.string.past_simple),
-                                    description = word.verbForms.pastSimple
-                                )
-                            }
-
-                            if (word?.verbForms?.pastParticiple != null) {
-                                TextWithContext(
-                                    modifier = Modifier.padding(top = 8.dp),
-                                    title = stringResource(id = R.string.past_participle),
-                                    description = word.verbForms.pastParticiple
-                                )
-                            }
-                        }
-
-                    }
-
-                }
-            }
-        }
-
-        item {
             if (word?.pronunciation != null) {
                 Row(
                     modifier = Modifier.padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (word.voice.orEmpty().isNotEmpty()) {
+                    if (word.voice.orEmpty().isNotEmpty() && File(word.voice.orEmpty()).exists()) {
                         IconButton(onClick = {
                             val audioFile = File(word.voice!!)
                             if (player.isPlaying()) return@IconButton
@@ -367,6 +322,58 @@ private fun Content(
         }
 
         item {
+            if (word?.verbForms?.pastSimple.orEmpty().isNotEmpty() &&
+                word?.verbForms?.pastParticiple.orEmpty().isNotEmpty()
+            ) {
+
+                Column(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable {
+                            visible = !visible
+                        }
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .padding(start = 8.dp),
+                        text = stringResource(id = R.string.verb_forms),
+                        style = fontMedium14(
+                            MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+
+                    AnimatedVisibility(visible = visible) {
+
+                        Column(modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) {
+                            if (word?.verbForms?.pastSimple != null) {
+                                TextWithContext(
+                                    title = stringResource(id = R.string.past_simple),
+                                    description = word.verbForms.pastSimple
+                                )
+                            }
+
+                            if (word?.verbForms?.pastParticiple != null) {
+                                TextWithContext(
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    title = stringResource(id = R.string.past_participle),
+                                    description = word.verbForms.pastParticiple
+                                )
+                            }
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+
+
+        item {
             if (word?.images.orEmpty().isNotEmpty()) {
                 Row {
                     SelectableImage(
@@ -384,9 +391,9 @@ private fun Content(
         if (word?.definition.orEmpty().isNotEmpty()) {
             item {
                 Text(
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                    modifier = Modifier.padding(top = 24.dp, bottom = 16.dp),
                     text = word?.definition.orEmpty(),
-                    style = fontRegular14(
+                    style = fontRegular16(
                         MaterialTheme.colorScheme.onBackground
                     )
                 )
@@ -394,45 +401,79 @@ private fun Content(
             }
         }
 
-        if (word?.synonyms.orEmpty().isNotEmpty()) {
-            item {
-                Text(
-                    modifier = Modifier.padding(top = 8.dp),
-                    text = stringResource(
-                        id = R.string.synonyms_format,
-                        word?.synonyms.toString().drop(1).dropLast(1)
-                    ),
-                    style = fontRegular14(MaterialTheme.colorScheme.onBackground)
-                )
-            }
-        }
 
-        if (word?.antonyms.orEmpty().isNotEmpty()) {
-            item {
-                Text(
-                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-                    text = stringResource(
-                        id = R.string.antonyms_format,
-                        word?.antonyms.toString().drop(1).dropLast(1)
-                    ),
-                    style = fontRegular14(MaterialTheme.colorScheme.onBackground)
-                )
-            }
-        }
-
-        items(word?.example.orEmpty()) {
-            Text(
-                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp),
-                text = it,
-                style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+        item {
+            DividerLine(
+                modifier = Modifier.padding(bottom = 24.dp),
+                title = stringResource(id = R.string.examples),
+                align = TextDividerAlign.START
             )
         }
 
+        if (word?.example.orEmpty().isEmpty()){
+            item { 
+                EmptyWidget(title = stringResource(id = R.string.no_example_added))
+            }
+        }else{
+            itemsIndexed(word?.example.orEmpty()) {index,example ->
+                ExampleComponent(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    count = index+1, example = example)
+
+            }
+        }
+
+
+        if (word?.synonyms.orEmpty().isNotEmpty()){
+            item {
+                DividerLine(
+                    modifier = Modifier.padding(top = 24.dp),
+                    title = stringResource(id = R.string.synonyms),
+                    align = TextDividerAlign.START
+                )
+            }
+
+            if (word?.synonyms.orEmpty().isNotEmpty()) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(top = 8.dp),
+                        text = word?.synonyms.toString().drop(1).dropLast(1),
+                        style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+                    )
+                }
+            }
+        }
+
+
+        if (word?.antonyms.orEmpty().isNotEmpty()){
+            item {
+                DividerLine(
+                    modifier = Modifier.padding(top = 24.dp),
+                    title = stringResource(id = R.string.antonyms),
+                    align = TextDividerAlign.START
+                )
+            }
+
+            if (word?.synonyms.orEmpty().isNotEmpty()) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(top = 8.dp),
+                        text = word?.antonyms.toString().drop(1).dropLast(1),
+                        style = fontRegular14(MaterialTheme.colorScheme.onBackground)
+                    )
+                }
+            }
+        }
+
+
+
+
         item {
-            if (word?.synced.orFalse()){
+            if (!word?.synced.orFalse()){
                 if (!isLogged || (!isPurchased && count.orZero() > 50)) {
                     Row(
                         modifier = Modifier
+                            .padding(top = 24.dp)
                             .background(color = Warning300, shape = RoundedCornerShape(8.dp))
                             .padding(8.dp),
                     ) {

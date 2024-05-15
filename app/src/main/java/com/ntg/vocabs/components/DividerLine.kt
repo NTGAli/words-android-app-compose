@@ -15,16 +15,25 @@ import com.ntg.vocabs.ui.theme.fontMedium14
 @Composable
 fun DividerLine(
     modifier: Modifier = Modifier,
-    title: String
+    title: String,
+    align: TextDividerAlign = TextDividerAlign.CENTER
 ){
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
 
         Divider(color = MaterialTheme.colorScheme.outlineVariant)
-        Text(modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(horizontal = 8.dp), text = title, style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant))
+        Text(modifier = Modifier
+            .padding(start = if (align == TextDividerAlign.START) 16.dp else 0.dp)
+            .align(if (align == TextDividerAlign.CENTER) Alignment.Center else Alignment.CenterStart)
+            .background(MaterialTheme.colorScheme.background).padding(horizontal = 8.dp), text = title, style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant))
 
 
     }
 
 
+}
+
+enum class TextDividerAlign{
+    START,
+    CENTER
 }
