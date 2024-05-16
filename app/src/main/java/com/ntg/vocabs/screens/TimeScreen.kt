@@ -85,13 +85,13 @@ private fun Content(
             )
         }
 
-        item {
-            TimeContentItem(
-                calendarViewModel = calendarViewModel,
-                spendTimeType = SpendTimeType.Revision.ordinal,
-                wordViewModel
-            )
-        }
+//        item {
+//            TimeContentItem(
+//                calendarViewModel = calendarViewModel,
+//                spendTimeType = SpendTimeType.Revision.ordinal,
+//                wordViewModel
+//            )
+//        }
 
 
     }

@@ -36,7 +36,7 @@ class CalendarViewModel @Inject constructor(
     var currentScreen: String? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun insertSpendTime(type: SpendTimeType, listId: Int) {
+    fun insertSpendTime(type: SpendTimeType, listId: Int, start: Long) {
 
 //            removeNullTime()
         viewModelScope.launch {
@@ -44,14 +44,16 @@ class CalendarViewModel @Inject constructor(
                 id = generateUniqueFiveDigitId(),
                 listId = listId,
                 date = LocalDate.now().toString(),
-                startUnix = System.currentTimeMillis(),
-                endUnix = null,
+                startUnix = start,
+                endUnix = System.currentTimeMillis(),
                 type = type.ordinal
             )
 
-            stopLastTimeOffset(
-                timeSpentDao.insert(spendTime).toInt()
-            )
+            timeSpentDao.insert(spendTime)
+
+//            stopLastTimeOffset(
+//                timeSpentDao.insert(spendTime).toInt()
+//            )
         }
 
 

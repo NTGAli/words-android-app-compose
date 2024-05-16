@@ -20,6 +20,8 @@ interface TimeSpentDao {
     @Query("UPDATE TimeSpent SET isDeleted=1 WHERE  listId =:listId")
     suspend fun deleteTimeOfList(listId: Int)
 
+//    @Query("INSERT INTO TimeSpent() VALUES (); UPDATE TimeSpent SET endUnix =:end WHERE id = ( SELECT id FROM TimeSpent ORDER BY 1 DESC LIMIT 1) ")
+
     @Query("DELETE FROM TimeSpent")
     suspend fun clear()
 

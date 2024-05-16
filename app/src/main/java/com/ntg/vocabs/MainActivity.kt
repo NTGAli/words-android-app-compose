@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
 
     private var currentScreen = Screens.HomeScreen.name
     var listId: VocabItemList? = null
+    private var revisionState = false
 
 
     @OptIn(ExperimentalPermissionsApi::class)
@@ -147,39 +148,57 @@ class MainActivity : ComponentActivity() {
 
                         if (listId != null) {
 
-                            with(navDestination.route.orEmpty()){
+                            with(navDestination.route.orEmpty()) {
 
                                 timber("CCCCCCCCCCCCCCCC ::::: $this ------ ${this.contains(Screens.RevisionScreen.name)}")
-                                when  {
+                                when {
                                     contains(Screens.LoginWithPasswordScreen.name) ||
-                                    contains(Screens.GoogleLoginScreen.name) ||
-                                    contains(Screens.CodeScreen.name) ||
-                                    contains(Screens.FinishScreen.name) ||
-                                    contains(Screens.SplashScreen.name) ||
-                                    contains(Screens.SplashScreen.name)
+                                            contains(Screens.GoogleLoginScreen.name) ||
+                                            contains(Screens.CodeScreen.name) ||
+                                            contains(Screens.FinishScreen.name) ||
+                                            contains(Screens.SplashScreen.name) ||
+                                            contains(Screens.SplashScreen.name)
                                     -> {
                                         timber("LoginPages")
                                     }
 
                                     contains(Screens.RevisionScreen.name) ||
-                                    contains(Screens.WritingScreen.name)
+                                            contains(Screens.WritingScreen.name)
                                     -> {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                            calendarViewModel.insertSpendTime(
-                                                SpendTimeType.Revision,
-                                                listId!!.id
-                                            )
-                                        }
-                                    }
-
-
-                                    else -> {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && startTime != 0L) {
                                             calendarViewModel.insertSpendTime(
                                                 SpendTimeType.Learning,
-                                                listId!!.id
+                                                listId!!.id,
+                                                startTime
                                             )
                                         }
+                                        startTime = System.currentTimeMillis()
+                                        revisionState = true
+                                    }
+
+                                    else -> {
+
+                                        if (startTime != 0L){
+                                            if (revisionState){
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                    calendarViewModel.insertSpendTime(
+                                                        SpendTimeType.Revision,
+                                                        listId!!.id,
+                                                        startTime
+                                                    )
+                                                }
+                                                revisionState = false
+                                            }else{
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                    calendarViewModel.insertSpendTime(
+                                                        SpendTimeType.Learning,
+                                                        listId!!.id,
+                                                        startTime
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        startTime = System.currentTimeMillis()
                                     }
 
                                 }
@@ -224,7 +243,7 @@ class MainActivity : ComponentActivity() {
                         syncData(dataSettings.email, BACKUP_WORDS, this@MainActivity)
                         syncData(dataSettings.email, BACKUP_LISTS, this@MainActivity)
                         syncMedia(dataSettings.email, this@MainActivity)
-                        if (dataSettings.isPurchased){
+                        if (dataSettings.isPurchased) {
                             syncData(dataSettings.email, BACKUP_TIMES, this@MainActivity)
                         }
                     })
@@ -356,23 +375,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private var startTime = 0L
+
     override fun onResume() {
         super.onResume()
         timber("calendarViewModellll :::: res")
         if (calendarViewModel.currentScreen != null && listId != null) {
+
+            startTime = System.currentTimeMillis()
+
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                calendarViewModel.insertSpendTime(SpendTimeType.Learning, listId!!.id)
+//            }
+
             when (calendarViewModel.currentScreen) {
                 Screens.RevisionScreen.name,
                 Screens.WritingScreen.name,
                 -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        calendarViewModel.insertSpendTime(SpendTimeType.Revision, listId!!.id)
-                    }
+//                    startTime = System.currentTimeMillis()
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        calendarViewModel.insertSpendTime(SpendTimeType.Revision, listId!!.id)
+//                    }
                 }
 
                 else -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        calendarViewModel.insertSpendTime(SpendTimeType.Learning, listId!!.id)
-                    }
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        calendarViewModel.insertSpendTime(SpendTimeType.Learning, listId!!.id)
+//                    }
                 }
             }
         }
@@ -380,8 +409,37 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (listId != null) {
-                calendarViewModel.stopLastTime()
+//        if (listId != null) {
+//                calendarViewModel.stopLastTime()
+//        }
+
+        if (calendarViewModel.currentScreen != null && listId != null && startTime != 0L && startTime < System.currentTimeMillis()) {
+
+
+            when (calendarViewModel.currentScreen) {
+                Screens.RevisionScreen.name,
+                Screens.WritingScreen.name,
+                -> {
+                    startTime = System.currentTimeMillis()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        calendarViewModel.insertSpendTime(
+                            SpendTimeType.Revision,
+                            listId!!.id,
+                            startTime
+                        )
+                    }
+                }
+
+                else -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        calendarViewModel.insertSpendTime(
+                            SpendTimeType.Learning,
+                            listId!!.id,
+                            startTime
+                        )
+                    }
+                }
+            }
         }
     }
 

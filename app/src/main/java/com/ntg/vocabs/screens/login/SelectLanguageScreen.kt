@@ -21,19 +21,23 @@ import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.CustomButton
+import com.ntg.vocabs.components.DescriptionType
 import com.ntg.vocabs.components.EditText
 import com.ntg.vocabs.components.ItemSelectable
+import com.ntg.vocabs.components.NeedProDialog
 import com.ntg.vocabs.components.TypewriterText
 import com.ntg.vocabs.model.Failure
 import com.ntg.vocabs.model.Success
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.then
+import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.syncData
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.generateUniqueFiveDigitId
 import com.ntg.vocabs.util.notEmptyOrNull
+import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
@@ -51,7 +55,7 @@ fun SelectLanguageScreen(navController: NavController, wordViewModel: WordViewMo
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
             val listData = wordViewModel.findList(listId)?.observeAsState()
-            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value,email, submitList)
+            Content(paddingValues = innerPadding, navController, wordViewModel, listData?.value, loginViewModel, email, submitList)
         },
         bottomBar = {
             BottomBar(submitList, listId != -1)
@@ -67,6 +71,7 @@ private fun Content(
     navController: NavController,
     wordViewModel: WordViewModel,
     listForEdit: VocabItemList?,
+    loginViewModel: LoginViewModel,
     email: String?,
     submitList: MutableState<Boolean> = remember { mutableStateOf(false) }
 ) {
@@ -89,6 +94,15 @@ private fun Content(
     var isApplied by remember {
         mutableStateOf(false)
     }
+
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+
+    val listCount = wordViewModel.getListWithCount()
+        .observeAsState().value?.sortedByDescending { it.isSelected }.orEmpty().size
+    val isPurchased = loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
 
 
     if (listForEdit != null && !isApplied) {
@@ -122,22 +136,30 @@ private fun Content(
             } else if (isExist) {
                 ctx.toast(ctx.getString(R.string.this_list_already_exist))
             } else {
-                wordViewModel.addNewVocabList(
-                    VocabItemList(
-                        generateUniqueFiveDigitId(),
-                        title = name.value,
-                        language = language,
-                        isSelected = false
-                    )
-                ){
-                    wordViewModel.selectList(it.toInt())
-                    navController.popBackStack()
-                }
+
+                if (listCount <= 2 || isPurchased){
+                    LaunchedEffect(key1 = Unit, block = {
+                        wordViewModel.addNewVocabList(
+                            VocabItemList(
+                                generateUniqueFiveDigitId(),
+                                title = name.value,
+                                language = language,
+                                isSelected = false
+                            )
+                        ){
+                            wordViewModel.selectList(it.toInt())
+                            navController.popBackStack()
+                        }
+                    })
 
 
-                if (email != null){
-                    syncData(email, BACKUP_LISTS, ctx)
+                    if (email != null){
+                        syncData(email, BACKUP_LISTS, ctx)
+                    }
+                }else{
+                    openDialog = true
                 }
+
 
             }
         }else if (result is Failure){
@@ -237,6 +259,20 @@ private fun Content(
                     language = it
                 }
             }
+        }
+    }
+
+    if (openDialog){
+        NeedProDialog(
+            type = DescriptionType.LIST,
+            onClick = {
+                if (email.orEmpty().isNotEmpty()){
+                    navController.navigate(Screens.PaywallScreen.name)
+                }else{
+                    navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
+                }
+            }) {
+            openDialog = false
         }
     }
 }
