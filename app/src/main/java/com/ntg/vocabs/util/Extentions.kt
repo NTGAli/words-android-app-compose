@@ -413,11 +413,11 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Int {
         0 -> {
             when (diffTime) {
 
-                in 0..1 -> {
+                0 -> {
                     1
                 }
 
-                2 -> {
+                in 1..2 -> {
                     2
                 }
 
