@@ -85,13 +85,13 @@ private fun Content(
             )
         }
 
-//        item {
-//            TimeContentItem(
-//                calendarViewModel = calendarViewModel,
-//                spendTimeType = SpendTimeType.Revision.ordinal,
-//                wordViewModel
-//            )
-//        }
+        item {
+            TimeContentItem(
+                calendarViewModel = calendarViewModel,
+                spendTimeType = SpendTimeType.Revision.ordinal,
+                wordViewModel
+            )
+        }
 
 
     }
@@ -109,7 +109,7 @@ private fun TimeContentItem(
     var list :Map<String?, List<TimeSpent>> = mapOf()
     val listId = wordViewModel.currentList().observeAsState(initial = null).value?.id
     if (listId != null){
-        list = calendarViewModel.getValidTimesSpentBaseType(spendTimeType, listId).observeAsState().value.orEmpty().groupBy { it.date }
+        list = calendarViewModel.getValidTimesSpentBaseType(spendTimeType, listId).observeAsState().value.orEmpty().sortedByDescending { it.date }.groupBy { it.date }
     }
 
     val dateTime = remember {
