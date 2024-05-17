@@ -95,8 +95,6 @@ import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.MessageBoxViewModel
 import com.ntg.vocabs.vm.WordViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -289,17 +287,16 @@ private fun Content(
         initialFirstVisibleItemIndex = wordViewModel.scrollPos
     )
 
-    LaunchedEffect(lazyListState) {
-        snapshotFlow {
-            lazyListState.firstVisibleItemIndex
+    LaunchedEffect(key1 = wordsList, block = {
+        if (wordViewModel.scrollPos != 0){
+            lazyListState.scrollToItem(if (wordViewModel.scrollPos == 1) 0 else wordViewModel.scrollPos)
         }
-            .debounce(500L)
-            .collectLatest { index ->
-                if (index != 0) {
-                    wordViewModel.scrollPos = index
-                }
-            }
+    })
+
+    if (lazyListState.firstVisibleItemIndex != 0){
+        wordViewModel.scrollPos = lazyListState.firstVisibleItemIndex
     }
+
 
     LazyColumn(
         modifier = Modifier
