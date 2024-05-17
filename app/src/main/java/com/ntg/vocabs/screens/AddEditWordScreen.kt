@@ -126,10 +126,10 @@ fun AddEditWordScreen(
                 ?.observeAsState()?.value
 
             BottomBarContent(wordId != -1) {
-                if (example !in wordData.example.orEmpty() && example.isNotEmpty()) {
-                    val ex: MutableList<String> = wordData.example as MutableList<String>
-                    ex.add(example)
-                    wordData.example = ex.toList()
+                if (example !in wordData.example.orEmpty() && example.trim().isNotEmpty()) {
+                        val ex: MutableList<String> = wordData.example as MutableList<String>
+                        ex.add(example)
+                        wordData.example = ex.toList()
                 }
                 if (isExist?.isEmpty().orTrue() || wordId != null) {
                     submitWord(wordData, wordViewModel, context, wordId != -1, email, navController)
@@ -199,16 +199,14 @@ private fun submitWord(
                 wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
 
-                if (email != null) {
-                    if (wordData.imageSynced != null || wordData.voiceSynced != null) {
-                        syncMedia(email, context)
-                    }
-                }
+//                if (email != null) {
+//                    syncData(email, BACKUP_WORDS, context)
+//                }
             }
 
-            if (email != null) {
-                syncData(email, BACKUP_WORDS, context)
-            }
+//            if (email != null) {
+//                syncData(email, BACKUP_WORDS, context)
+//            }
 
             navController.popBackStack()
         }
@@ -437,7 +435,9 @@ private fun Content(
         pastParticiple.value = wordEdit.verbForms?.pastParticiple.orEmpty()
         definition.value = wordEdit.definition.orEmpty()
         wordEdit.example?.forEach {
-            exampleList.add(it)
+            if (it.trim().isNotEmpty()){
+                exampleList.add(it)
+            }
         }
         if (wordEdit.synonyms.orEmpty().isNotEmpty()) {
             synonym.value = wordEdit.synonyms.toString().drop(1).dropLast(1)
@@ -723,12 +723,10 @@ private fun Content(
 
                             when (it) {
                                 is NetworkResult.Error -> {
-                                    timber("getDataWordFromFreeDictionary ::: ER ${it.message}")
+                                    fetchDataWord.value = false
                                 }
 
                                 is NetworkResult.Loading -> {
-                                    timber("getDataWordFromFreeDictionary ::: LD")
-
                                 }
 
                                 is NetworkResult.Success -> {
@@ -891,7 +889,7 @@ private fun Content(
                     wordViewModel.getWord(word.value, type.value).observe(lifecycleOwner) {
                         when (it) {
                             is NetworkResult.Error -> {
-
+                                fetchDataWord.value = false
                             }
 
                             is NetworkResult.Loading -> {
@@ -1347,8 +1345,10 @@ private fun Content(
                 leadingIconOnClick = {
                     if (it.isNotEmpty()) {
                         timber("LIST_DATA ::: add :: $it")
-                        exampleList.add(it)
-                        example.value = ""
+                        if (it.trim().isNotEmpty()){
+                            exampleList.add(it)
+                            example.value = ""
+                        }
 
                     }
                 },

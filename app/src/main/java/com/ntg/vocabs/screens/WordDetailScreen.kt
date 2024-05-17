@@ -410,7 +410,7 @@ private fun Content(
             )
         }
 
-        if (word?.example.orEmpty().isEmpty()){
+        if (word?.example.orEmpty().none { it.trim().isNotEmpty() }){
             item { 
                 EmptyWidget(title = stringResource(id = R.string.no_example_added))
             }

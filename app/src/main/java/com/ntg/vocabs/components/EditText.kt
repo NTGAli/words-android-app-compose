@@ -57,10 +57,14 @@ fun EditText(
     OutlinedTextField(
         modifier = modifier
             .width(2.dp)
-            .clickable {
-                onClick.invoke()
-            }
-            .focusRequester(focusRequester), value = text.value,
+            .clickable(
+                enabled = true,
+                onClick = { onClick.invoke() },
+                indication = null,
+                interactionSource = MutableInteractionSource()
+            )
+            .focusRequester(focusRequester),
+        value = text.value,
         onValueChange = {
             text.value = it
             onChange.invoke(it)
@@ -114,7 +118,8 @@ fun EditText(
                         }
                     }
                 }
-            }, isError = setError.value,
+            },
+        isError = setError.value,
         supportingText = if (supportText.isNotEmpty()) {
             {
 
@@ -150,7 +155,7 @@ fun EditText(
             imeAction = ImeAction.Done
         ),
 
-    )
+        )
 
     LaunchedEffect(Unit) {
         if (searchMode) {
