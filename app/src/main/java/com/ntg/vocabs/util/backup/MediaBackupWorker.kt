@@ -8,6 +8,8 @@ import androidx.work.WorkerParameters
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.ktx.storage
+import com.google.firebase.storage.storageMetadata
+import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.db.AppDB
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.timber
@@ -36,41 +38,50 @@ class MediaBackupWorker(
             .fallbackToDestructiveMigration()
             .build()
 
-        val email =  inputData.getString("email")
+        val email = inputData.getString("email")
 
         File(appContext.getExternalFilesDir(""), IMAGES).deleteRecursively()
         File(appContext.getExternalFilesDir(""), Voices).deleteRecursively()
 
-        appDB.wordDao().getUnSyncedMedia().let {list ->
-            timber("getUnSyncedMedia ::::: ${list.map { it.word }}")
-           if (list.isNotEmpty()){
-               val imagesFile = copyFilesToFolder(appContext, list.filter { it.imageSynced != null && it.images.orEmpty().isNotEmpty() }.map { it.images.orEmpty()[0] }, IMAGES)
-               val voicesFile = copyFilesToFolder(appContext, list.filter { it.voiceSynced != null && it.voice.orEmpty().isNotEmpty() }.map { it.voice.orEmpty() }, Voices)
-               val zipFile = zipFolders(appContext, listOf(IMAGES, Voices), "MEDIA_BACKUP")
-               backupToServer(appContext,email,zipFile){isSuccess ->
-                   if (isSuccess){
-                       list.forEach { word ->
-                           if (word.voiceSynced != null) appDB.wordDao().voiceSynced(word.id)
-                           if (word.imageSynced != null) appDB.wordDao().imageSynced(word.id)
-                       }
-                   }
-                   imagesFile.deleteRecursively()
-                   voicesFile.deleteRecursively()
-                   zipFile.delete()
-               }
-           }
+        appDB.wordDao().getUnSyncedMedia().let { list ->
+            if (list.isNotEmpty()) {
+                val imagesFile = copyFilesToFolder(
+                    appContext,
+                    list.filter { it.imageSynced != null && it.images.orEmpty().isNotEmpty() }
+                        .map { it.images.orEmpty()[0] },
+                    IMAGES
+                )
+                val voicesFile = copyFilesToFolder(
+                    appContext,
+                    list.filter { it.voiceSynced != null && it.voice.orEmpty().isNotEmpty() }
+                        .map { it.voice.orEmpty() },
+                    Voices
+                )
+                val zipFile = zipFolders(appContext, listOf(IMAGES, Voices), "MEDIA_BACKUP")
+                backupToServer(appContext, email, zipFile) { isSuccess ->
+                    if (isSuccess) {
+                        list.forEach { word ->
+                            if (word.voiceSynced != null) appDB.wordDao().voiceSynced(word.id)
+                            if (word.imageSynced != null) appDB.wordDao().imageSynced(word.id)
+                        }
+                    }
+                    imagesFile.deleteRecursively()
+                    voicesFile.deleteRecursively()
+                    zipFile.delete()
+                }
+            }
         }
 
-//        backupToServer(appContext,email){
-//            appDB.getDriveBackup()
-//                .insert(DriveBackup(0, it, System.currentTimeMillis().toString(), "---"))
-//        }
 
         return Result.success()
     }
 
 
-    private fun copyFilesToFolder(context: Context, sourcePaths: List<String>, destinationPath: String): File {
+    private fun copyFilesToFolder(
+        context: Context,
+        sourcePaths: List<String>,
+        destinationPath: String
+    ): File {
         val destinationDir = File(context.getExternalFilesDir(""), destinationPath)
 
         // Create destination directory if it doesn't exist
@@ -96,7 +107,6 @@ class MediaBackupWorker(
             folders.forEach { folderPath ->
                 val folder = File(context.getExternalFilesDir(""), folderPath)
                 folder.listFiles()?.forEach { file ->
-                    timber("getUnSyncedMedia ---> $file")
                     val entry = ZipEntry("$folderPath/${file.name}")
                     zipOutputStream.putNextEntry(entry)
                     FileInputStream(file).use { input ->
@@ -114,33 +124,35 @@ class MediaBackupWorker(
         email: String?,
         zipFile: File,
         onSuccess: suspend (Boolean) -> Unit
-    ){
+    ) {
         val storage = Firebase.storage
 
-        if (email != null){
+        if (email != null) {
             try {
 
 //                val isBackupFileExist = File(appContext.getExternalFilesDir("backups"), "backup").exists()
                 val isBackupFileExist = zipFile.exists()
-                if (isBackupFileExist){
-                    val storageRef = storage.reference.child("${email}/backup${System.currentTimeMillis()}.zip")
+                if (isBackupFileExist) {
+                    val storageRef =
+                        storage.reference.child("${email}/backup${System.currentTimeMillis()}.zip")
 
                     val fileUri = Uri.fromFile(zipFile)
 
-                    val metadata = StorageMetadata.Builder()
-                        .setContentType("application/zip")
-                        .build()
+                    val metadata = storageMetadata {
+                        contentType = "application/zip"
+                        setCustomMetadata("appToken", BuildConfig.VOCAB_API_KEY)
+                    }
 
                     storageRef.putFile(fileUri, metadata)
                         .addOnSuccessListener {
                             CoroutineScope(Dispatchers.IO).launch {
-                                timber("SERVER_BACKUP_ERR :::: SSSS")
+                                timber("SERVER_BACKUP_MEDIA :::: SUCCESS")
                                 onSuccess.invoke(true)
 //                                zipFile.delete()
                             }
                         }
                         .addOnFailureListener { exception ->
-                            timber("SERVER_BACKUP_ERR :::: ${exception.message}")
+                            timber("SERVER_BACKUP :: ERR :::: ${exception.message}")
                             CoroutineScope(Dispatchers.IO).launch {
                                 onSuccess.invoke(false)
 //                                zipFile.delete()
@@ -175,22 +187,21 @@ class MediaBackupWorker(
 //                    }
 
 
-
                 }
 
 
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 timber("SERVER_BACKUP_ERR :::: ${e.message}")
                 onSuccess.invoke(false)
             }
-        }else{
+        } else {
             timber("SERVER_BACKUP_ERR :::: ")
             onSuccess.invoke(false)
         }
     }
 
     private fun deleteRecursive(fileOrDirectory: File) {
-        if (fileOrDirectory.listFiles() != null){
+        if (fileOrDirectory.listFiles() != null) {
             if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteRecursive(
                 child
             )
