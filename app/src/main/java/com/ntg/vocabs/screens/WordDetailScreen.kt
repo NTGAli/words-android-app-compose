@@ -270,10 +270,11 @@ private fun Content(
                 ) {
                     if (word.voice.orEmpty().isNotEmpty() && File(word.voice.orEmpty()).exists()) {
                         IconButton(onClick = {
-                            val audioFile = File(word.voice!!)
-                            if (player.isPlaying()) return@IconButton
-                            player.playFile(audioFile ?: return@IconButton)
-//                            timber("voice-file-path ${audioFile?.absoluteFile}")
+                            if (File(word.voice!!).exists()){
+                                val audioFile = File(word.voice!!)
+                                if (player.isPlaying()) return@IconButton
+                                player.playFile(audioFile)
+                            }
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.icons8_speaker_1),

@@ -35,8 +35,8 @@ import com.ntg.vocabs.util.Constant.BACKUPS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
-import com.ntg.vocabs.util.backup.FirebaseBackupWorker
-import com.ntg.vocabs.util.backup.MediaBackupWorker
+import com.ntg.vocabs.util.worker.FirebaseBackupWorker
+import com.ntg.vocabs.util.worker.MediaBackupWorker
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.CalendarViewModel
 import com.ntg.vocabs.vm.DataViewModel

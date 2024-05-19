@@ -1,4 +1,4 @@
-package com.ntg.vocabs.util.backup
+package com.ntg.vocabs.util.worker
 
 import android.content.Context
 import androidx.room.Room
@@ -19,7 +19,6 @@ import com.ntg.vocabs.model.DriveBackup
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.getCurrentDate
 import com.ntg.vocabs.util.isInternetAvailable
-import com.ntg.vocabs.util.timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream

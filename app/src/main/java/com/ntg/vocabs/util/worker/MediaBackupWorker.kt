@@ -1,4 +1,4 @@
-package com.ntg.vocabs.util.backup
+package com.ntg.vocabs.util.worker
 
 import android.content.Context
 import android.net.Uri
@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.ktx.storage
 import com.google.firebase.storage.storageMetadata
 import com.ntg.vocabs.BuildConfig

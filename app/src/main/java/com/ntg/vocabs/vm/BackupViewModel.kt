@@ -33,8 +33,8 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
-import com.ntg.vocabs.util.backup.IMAGES
-import com.ntg.vocabs.util.backup.Voices
+import com.ntg.vocabs.util.worker.IMAGES
+import com.ntg.vocabs.util.worker.Voices
 import com.ntg.vocabs.util.getCurrentDate
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
@@ -485,12 +485,10 @@ class BackupViewModel @Inject constructor(
         val storageRef = storage.reference.child(email)
 
 
-        storageRef.listAll()
+        storageRef
+            .listAll()
             .addOnSuccessListener {
                 it.items.forEach { backupZip ->
-                    timber("OOOOOOOOOOOOOOO ${backupZip.name}")
-
-
                     val islandRef = storageRef.child(backupZip.name)
                     val localFile = File.createTempFile(backupZip.name, "zip")
 

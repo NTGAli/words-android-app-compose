@@ -153,7 +153,11 @@ private fun Content(
         logoutBottomSheet(openBottomSheet) {
             getGoogleSignInClient(ctx).signOut().addOnCompleteListener {
                 CoroutineScope(Dispatchers.IO).launch {
-                    googleAuthUiClient.signOut()
+                    try {
+                        googleAuthUiClient.signOut()
+                    }catch (e:Exception){
+                        e.printStackTrace()
+                    }
                 }
                 wordViewModel.clearWordsTable()
                 wordViewModel.clearVocabListsTable()

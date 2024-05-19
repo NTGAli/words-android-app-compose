@@ -1146,9 +1146,9 @@ private fun Content(
                 ButtonIcon(modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp),
-                    icon = if (micStart) R.drawable.stop else if (audioFile != null) R.drawable.play else R.drawable.microphone,
+                    icon = if (micStart) R.drawable.stop else if (audioFile?.exists().orFalse()) R.drawable.play else R.drawable.microphone,
                     subText = if (micStart) "recording" else null,
-                    removeBtn = audioFile != null && !micStart,
+                    removeBtn = audioFile != null && !micStart && audioFile?.exists().orFalse(),
                     removeOnClick = {
                         audioFile?.delete()
                         audioFile = null
@@ -1162,7 +1162,7 @@ private fun Content(
                         //stop recording
                         recorder!!.stop()
                         micStart = false
-                    } else if (audioFile != null) {
+                    } else if (audioFile != null && audioFile?.exists().orFalse()) {
                         // play voice
                         if (player.isPlaying()) return@ButtonIcon
                         player.playFile(audioFile ?: return@ButtonIcon)

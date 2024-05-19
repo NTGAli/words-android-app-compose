@@ -228,7 +228,7 @@ fun logoutBottomSheet(
                 )
             )
 
-            Row(modifier = Modifier.padding(top = 16.dp)) {
+            Row(modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)) {
                 CustomButton(
                     modifier = Modifier
                         .weight(1f)
