@@ -1,6 +1,7 @@
 package com.ntg.vocabs.vm
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -33,6 +34,7 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
+import com.ntg.vocabs.util.generateUniqueFiveDigitId
 import com.ntg.vocabs.util.worker.IMAGES
 import com.ntg.vocabs.util.worker.Voices
 import com.ntg.vocabs.util.getCurrentDate
@@ -465,6 +467,9 @@ class BackupViewModel @Inject constructor(
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     val vocabTime = document.toObject(TimeSpent::class.java)
+                    if (vocabTime.id == 0){
+                        vocabTime.id = generateUniqueFiveDigitId()
+                    }
                     vocabTime.synced = true
                     viewModelScope.launch {
                         timeSpentDao.insert(vocabTime)
@@ -473,7 +478,7 @@ class BackupViewModel @Inject constructor(
                 onSuccess.invoke(true)
             }
             .addOnFailureListener { exception ->
-//                onSuccess.invoke(false)
+                onSuccess.invoke(false)
             }
     }
 

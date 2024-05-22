@@ -131,6 +131,10 @@ private fun TimeContentItem(
             .toMutableStateList()
 
     timeSpent.forEach {
+        timber("TTTTTTAWJWAHFK ::::::::: $it")
+    }
+
+    timeSpent.forEach {
         if (it.startUnix != null && it.endUnix != null) {
             totalTime += getSecBetweenTimestamps(it.startUnix.orDefault(), it.endUnix.orDefault())
         }

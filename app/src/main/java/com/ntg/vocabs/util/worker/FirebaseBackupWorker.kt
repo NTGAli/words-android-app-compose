@@ -136,7 +136,7 @@ class FirebaseBackupWorker(
 
                                     if (spendTime.isDeleted.orFalse()){
                                         if (spendTime.fid != null){
-                                            deleteOnFirestore(spendTime.fid.orEmpty(), type) {
+                                            deleteOnFirestore(spendTime.fid, type) {
                                                 if (it) {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         appDB.timeSpentDao().delete(spendTime)

@@ -8,7 +8,7 @@ import java.time.LocalDate
 @Dao
 interface TimeSpentDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(timeSpent: TimeSpent): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

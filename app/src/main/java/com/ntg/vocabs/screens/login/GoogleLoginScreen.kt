@@ -47,6 +47,7 @@ import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.GoogleAuthUiClient
+import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
 import com.ntg.vocabs.util.validEmail
 import com.ntg.vocabs.vm.BackupViewModel
@@ -174,6 +175,8 @@ private fun Content(
         } else if (googleSignInState.error != null) {
             loadingToSignGoogle = false
         }
+
+        timber("ERRRRRRRRRRRRRRRRRR :::: ${googleSignInState.error}")
     })
 
 

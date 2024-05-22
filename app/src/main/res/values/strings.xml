@@ -252,6 +252,7 @@
     <string name="time_plus_description">To track the time spent on inserting vocabulary and reviewing, you need to upgrade to VocabsMaster Plus from your free plan.</string>
     <string name="list_plus_description">To add more than 3 list , you need to upgrade to VocabsMaster Plus from your free plan.</string>
     <string name="dictionary_plus_description">To use this dictionary , you need to upgrade to VocabsMaster Plus from your free plan.</string>
+    <string name="review_plus_description">To use this review type , you need to upgrade to VocabsMaster Plus from your free plan.</string>
     <string name="thanks_purchase">🎉 Thank you for upgrading to VocabsMaster Plus! \nWe appreciate your support. Enjoy your enhanced features and improved experience!\nyou can access all features forever! 🚀</string>
     <string name="success_restore">🎉 Welcome back to VocabsMaster Plus!\nYour account has been successfully restored.\nEnjoy unlimited access to all features and continue mastering your vocabulary with ease! 🚀</string>
     <string name="continue_str">Continue</string>
@@ -261,5 +262,8 @@
     <string name="left_format">%s left</string>
     <string name="examples">examples</string>
     <string name="no_example_added">No examples added.</string>
+    <string name="lets_review_format">Let\'s review: \'%s\'</string>
+    <string name="notification_permission_off">Notifications are off. You will miss your review time. Please enable notifications.</string>
+    <string name="grant_permission">Grant\nPermission</string>
 
 </resources>

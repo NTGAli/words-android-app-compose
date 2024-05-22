@@ -32,6 +32,10 @@ fun NeedProDialog(
             stringResource(id = R.string.dictionary_plus_description)
         }
 
+        DescriptionType.REVIEW -> {
+            stringResource(id = R.string.review_plus_description)
+        }
+
         else -> {
             stringResource(id = R.string.vocabs_master_plus_description)
         }
@@ -73,5 +77,6 @@ enum class DescriptionType{
     TIME,
     DICTIONARY,
     BACKUP,
-    LIST
+    LIST,
+    REVIEW
 }

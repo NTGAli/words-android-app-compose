@@ -126,13 +126,13 @@ fun CustomButton(
                 }
                 ButtonStyle.Outline -> {
                     background = Color.Transparent
-                    borderColor = Warning500
-                    textColor = Warning500
+                    borderColor = Warning800
+                    textColor = Warning800
                 }
                 ButtonStyle.TextOnly -> {
                     background = Color.Transparent
                     borderColor = Color.Transparent
-                    textColor = Warning500
+                    textColor = Warning800
                 }
             }
         }
