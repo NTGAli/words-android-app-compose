@@ -38,12 +38,17 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.model.Failure
 import com.ntg.vocabs.model.Result
 import com.ntg.vocabs.model.Success
 import com.ntg.vocabs.util.Constant.MAX_SIZE_IMAGE
+import com.ntg.vocabs.util.worker.ReviewWorker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
@@ -173,7 +178,7 @@ fun formatDate(inputDate: String): String {
         val dayOfMonth = date.dayOfMonth
 
         "$year $month $dayOfMonth"
-    }catch (e: Exception){
+    } catch (e: Exception) {
         "Do you want to restore it?"
     }
 }
@@ -449,11 +454,11 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Int {
         2 -> {
             when (diffTime) {
 
-                in 0..10 -> {
+                in 0..11 -> {
                     1
                 }
 
-                in 10..15 -> {
+                in 12..15 -> {
                     2
                 }
 
@@ -485,6 +490,49 @@ fun getStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Int {
     }
 }
 
+fun nextRevisionDay(revisionCount: Int): Int{
+
+    return when (revisionCount) {
+
+        0 -> {
+            1
+        }
+
+        1 -> {
+            6
+        }
+
+        2 -> {
+            12
+        }
+
+        else -> {
+            (revisionCount * 7)
+        }
+    }
+}
+
+fun setReviewNotification(
+    context: Context,
+    word: String, dayStart: Int
+) {
+    val data = Data.Builder()
+        .putString("word", word)
+        .build()
+
+    val workRequest = OneTimeWorkRequest.Builder(ReviewWorker::class.java)
+        .setInputData(data)
+        .setInitialDelay(dayStart.toLong(), TimeUnit.DAYS)
+        .build()
+
+
+    WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+            "reviewWorker_$word",
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            workRequest
+        )
+}
 
 fun Int.getUnixTimeNDaysAgo(): Long {
     val calendar = Calendar.getInstance()
@@ -571,7 +619,7 @@ fun isInternetAvailable(context: Context): Boolean {
 fun Bitmap.compressBitmap(fos: FileOutputStream): Bitmap? {
     var quality = 100
     timber("SIIIIIIIIIIIIIIIIII ${this.rowBytes * this.height}")
-    while (this.rowBytes * this.height > MAX_SIZE_IMAGE * 1024 && quality > 0){
+    while (this.rowBytes * this.height > MAX_SIZE_IMAGE * 1024 && quality > 0) {
         this.compress(Bitmap.CompressFormat.JPEG, quality, fos)
         quality -= 5
     }

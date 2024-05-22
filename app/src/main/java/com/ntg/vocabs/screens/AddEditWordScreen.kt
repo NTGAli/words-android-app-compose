@@ -198,15 +198,8 @@ private fun submitWord(
             } else {
                 wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
-
-//                if (email != null) {
-//                    syncData(email, BACKUP_WORDS, context)
-//                }
+                setReviewNotification(context, wordData.word.orEmpty(),  1)
             }
-
-//            if (email != null) {
-//                syncData(email, BACKUP_WORDS, context)
-//            }
 
             navController.popBackStack()
         }
@@ -1165,7 +1158,11 @@ private fun Content(
                     } else if (audioFile != null && audioFile?.exists().orFalse()) {
                         // play voice
                         if (player.isPlaying()) return@ButtonIcon
-                        player.playFile(audioFile ?: return@ButtonIcon)
+                        try {
+                            player.playFile(audioFile ?: return@ButtonIcon)
+                        }catch (e: Exception){
+                            e.printStackTrace()
+                        }
                         timber("voice-file-path ${audioFile?.absoluteFile}")
                     } else {
                         //recording

@@ -459,8 +459,8 @@ fun syncData(email: String, type: String, context: Context) {
 
     WorkManager.getInstance(context)
         .enqueueUniqueWork(
-            "backupWork_$type", // Unique name for this work
-            ExistingWorkPolicy.APPEND_OR_REPLACE, // Append or replace existing work with new one
+            "backupWork_$type",
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
             backupWorkRequest
         )
 }

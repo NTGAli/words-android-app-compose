@@ -31,8 +31,10 @@ import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.getStateRevision
+import com.ntg.vocabs.util.nextRevisionDay
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
+import com.ntg.vocabs.util.setReviewNotification
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toPronunciation
 import com.ntg.vocabs.vm.CalendarViewModel
@@ -173,6 +175,7 @@ private fun Content(
                         word!!.lastRevisionTime = System.currentTimeMillis()
                         word!!.synced = false
                         wordViewModel.editWord(word!!.id, word!!)
+                        setReviewNotification(ctx, word!!.word.orEmpty(),  nextRevisionDay(word!!.revisionCount))
                     }
                     rejectedList.add(word!!)
                 } else {
@@ -298,6 +301,7 @@ private fun Content(
                                     word!!.lastRevisionTime = System.currentTimeMillis()
                                     word!!.synced = false
                                     wordViewModel.editWord(word!!.id, word!!)
+                                    setReviewNotification(ctx, word!!.word.orEmpty(),  nextRevisionDay(word!!.revisionCount))
                                 }
                                 rejectedList.add(word!!)
                                 isCorrect = true
