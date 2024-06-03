@@ -9,15 +9,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -51,6 +55,10 @@ import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.record.AndroidAudioRecorder
 import com.ntg.vocabs.syncData
 import com.ntg.vocabs.syncMedia
+import com.ntg.vocabs.ui.theme.Secondary900
+import com.ntg.vocabs.ui.theme.Warning100
+import com.ntg.vocabs.ui.theme.Warning300
+import com.ntg.vocabs.ui.theme.Warning500
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.*
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
@@ -118,24 +126,15 @@ fun AddEditWordScreen(
             )
 
         }, bottomBar = {
-            val isExist = wordViewModel.findWordWithDef(
-                wordData.word.orEmpty(),
-                wordData.type.orEmpty(),
-                wordData.definition.orEmpty()
-            )
-                ?.observeAsState()?.value
 
             BottomBarContent(wordId != -1) {
                 if (example !in wordData.example.orEmpty() && example.trim().isNotEmpty()) {
-                        val ex: MutableList<String> = wordData.example as MutableList<String>
-                        ex.add(example)
-                        wordData.example = ex.toList()
+                    val ex: MutableList<String> = wordData.example as MutableList<String>
+                    ex.add(example)
+                    wordData.example = ex.toList()
                 }
-                if (isExist?.isEmpty().orTrue() || wordId != null) {
-                    submitWord(wordData, wordViewModel, context, wordId != -1, email, navController)
-                } else {
-                    context.toast(context.getString(R.string.err_word_already_exist))
-                }
+                submitWord(wordData, wordViewModel, context, wordId != -1, email, navController)
+
             }
         }
     )
@@ -179,15 +178,6 @@ private fun submitWord(
                 context.getString(R.string.err_example_required)
             )
         }
-        .then {
-            notFalse(
-                !wordViewModel.checkIfExist(
-                    wordData.word.orEmpty(),
-                    wordData.type.orEmpty(),
-                    wordData.definition.orEmpty()
-                ) || isEdit, context.getString(R.string.err_word_already_exist)
-            )
-        }
 
 
     when (result) {
@@ -198,7 +188,9 @@ private fun submitWord(
             } else {
                 wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
-                setReviewNotification(context, wordData.word.orEmpty(),  1)
+
+
+                setReviewNotification(context, wordData.word.orEmpty(), 1)
             }
 
             navController.popBackStack()
@@ -377,6 +369,10 @@ private fun Content(
         mutableStateOf<ArrayList<Definition>>(arrayListOf())
     }
 
+    val similarWords = rememberSaveable {
+        mutableStateOf<List<Word>>(listOf())
+    }
+
     if (definitionListData.value.size > definitionList.size && definitionList.isEmpty()) {
         definitionList.addAll(definitionListData.value)
     } else {
@@ -391,7 +387,11 @@ private fun Content(
     val lifecycleOwner = LocalLifecycleOwner.current
     val listId = wordViewModel.currentList().observeAsState().value?.id
 
-    val isPurchased = loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
+    val isPurchased =
+        loginViewModel.getUserData().collectAsState(initial = null).value?.isPurchased.orFalse()
+
+    val isAllowThirdDictionary =
+        loginViewModel.getUserData().collectAsState(initial = null).value?.allowThirdDictionary.orTrue()
 
     timber("LIST_ID_SELECTED :::: $listId")
 
@@ -428,7 +428,7 @@ private fun Content(
         pastParticiple.value = wordEdit.verbForms?.pastParticiple.orEmpty()
         definition.value = wordEdit.definition.orEmpty()
         wordEdit.example?.forEach {
-            if (it.trim().isNotEmpty()){
+            if (it.trim().isNotEmpty()) {
                 exampleList.add(it)
             }
         }
@@ -453,6 +453,11 @@ private fun Content(
         }
 
         applyEdit.value = true
+    }
+
+    if (wordEdit == null) {
+        similarWords.value = wordViewModel.findWord(word.value, type.value)
+            ?.observeAsState(initial = listOf())?.value.orEmpty().toList()
     }
 
     wordData(
@@ -909,6 +914,8 @@ private fun Content(
                                         pastParticiple.value =
                                             it.data.data?.wordForms?.pastParticiple.orEmpty()
                                     }
+
+                                    soundUrl.value = it.data.data?.pronunciations?.first { it.accent == "am" }?.mp3.orEmpty()
                                 } else {
                                     context.toast(context.getString(R.string.not_exist))
                                 }
@@ -972,6 +979,38 @@ private fun Content(
                 }
             )
 
+
+            if (similarWords.value.orEmpty().isNotEmpty()){
+                Column(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .border(width = 2.dp, shape = RoundedCornerShape(8.dp), color = Warning300)
+                        .padding(bottom = 16.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.padding(16.dp),
+                        text = stringResource(R.string.already_added),
+                        style = fontMedium14(MaterialTheme.colorScheme.onSurface)
+                    )
+
+                    repeat(similarWords.value.size) { index ->
+
+                        SampleItem(
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            title = similarWords.value[index].word.orEmpty(),
+                            secondaryText = similarWords.value[index].type.orEmpty(),
+                            endString = getFormattedTimestamp(
+                                similarWords.value[index].dateCreated.orDefault()),
+                            id = similarWords.value[index].id,
+                            onClick = {_, id, _ ->
+                                navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
+
+                            })
+                    }
+                }
+            }
+
             if (word.value.isNotEmpty() && type.value.isNotEmpty() &&
                 language == "English"
             ) {
@@ -1001,10 +1040,10 @@ private fun Content(
                         iconStart = if (!isPurchased) painterResource(id = R.drawable.icons8_clock_1_1) else null
                     ) {
 
-                        if (isPurchased){
+                        if (isPurchased) {
                             fetchDataWord.value = true
                             dictionaryApi.intValue = 2
-                        }else{
+                        } else {
                             descriptionType = DescriptionType.DICTIONARY
                             openDialog = true
                         }
@@ -1012,33 +1051,29 @@ private fun Content(
                     }
                 }
 
-                CustomButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    text = stringResource(id = R.string.auto_fill_from_third),
-                    size = ButtonSize.LG,
-                    type = ButtonType.Secondary,
-                    style = ButtonStyle.Contained
-                ) {
-                    fetchDataWord.value = true
-                    dictionaryApi.intValue = 3
+                if (isAllowThirdDictionary){
+                    CustomButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        text = stringResource(id = R.string.auto_fill_from_third),
+                        size = ButtonSize.LG,
+                        type = ButtonType.Secondary,
+                        style = ButtonStyle.Contained,
+                        iconStart = if (!isPurchased) painterResource(id = R.drawable.icons8_clock_1_1) else null
+                    ) {
+                        if (isPurchased) {
+                            fetchDataWord.value = true
+                            dictionaryApi.intValue = 3
+                        } else {
+                            descriptionType = DescriptionType.DICTIONARY
+                            openDialog = true
+                        }
+                    }
                 }
 
             }
 
-//            if (language == "German") {
-//                CustomButton(
-//                    modifier = Modifier
-//                        .fillMaxWidth(),
-//                    text = stringResource(id = R.string.download_auto_fill),
-//                    size = ButtonSize.LG,
-//                    type = ButtonType.Secondary,
-//                    style = ButtonStyle.Contained
-//                ) {
-//                    navController.navigate(Screens.DownloadScreen.name)
-//                }
-//            }
 
             EditText(
                 Modifier
@@ -1139,7 +1174,9 @@ private fun Content(
                 ButtonIcon(modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp),
-                    icon = if (micStart) R.drawable.stop else if (audioFile?.exists().orFalse()) R.drawable.play else R.drawable.microphone,
+                    icon = if (micStart) R.drawable.stop else if (audioFile?.exists()
+                            .orFalse()
+                    ) R.drawable.play else R.drawable.microphone,
                     subText = if (micStart) "recording" else null,
                     removeBtn = audioFile != null && !micStart && audioFile?.exists().orFalse(),
                     removeOnClick = {
@@ -1160,7 +1197,7 @@ private fun Content(
                         if (player.isPlaying()) return@ButtonIcon
                         try {
                             player.playFile(audioFile ?: return@ButtonIcon)
-                        }catch (e: Exception){
+                        } catch (e: Exception) {
                             e.printStackTrace()
                         }
                         timber("voice-file-path ${audioFile?.absoluteFile}")
@@ -1189,7 +1226,11 @@ private fun Content(
                         scope.launch {
                             mp.setDataSource(soundUrl.value)
                             CoroutineScope(Dispatchers.IO).launch {
-                                mp.prepare()
+                                try {
+                                    mp.prepare()
+                                }catch (e: Exception){
+                                    e.printStackTrace()
+                                }
                             }
                             mp.setOnPreparedListener {
                                 mp.start()
@@ -1207,7 +1248,7 @@ private fun Content(
                 imagePath = imagePath
             ) {
 
-                if (isPurchased){
+                if (isPurchased) {
                     if (imagePath == null) {
                         mediaPicker
                             .launch(
@@ -1221,7 +1262,7 @@ private fun Content(
                         imageUri = null
                         bitmap = null
                     }
-                }else{
+                } else {
                     descriptionType = DescriptionType.IMAGE
                     openDialog = true
                 }
@@ -1342,7 +1383,7 @@ private fun Content(
                 leadingIconOnClick = {
                     if (it.isNotEmpty()) {
                         timber("LIST_DATA ::: add :: $it")
-                        if (it.trim().isNotEmpty()){
+                        if (it.trim().isNotEmpty()) {
                             exampleList.add(it)
                             example.value = ""
                         }
@@ -1411,16 +1452,16 @@ private fun Content(
     }
 
 
-    if (openDialog){
+    if (openDialog) {
         NeedProDialog(
             type = descriptionType,
             onClick = {
-                if (email.orEmpty().isNotEmpty()){
+                if (email.orEmpty().isNotEmpty()) {
                     navController.navigate(Screens.PaywallScreen.name)
-                }else{
+                } else {
                     navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
                 }
-        }) {
+            }) {
             openDialog = false
         }
     }

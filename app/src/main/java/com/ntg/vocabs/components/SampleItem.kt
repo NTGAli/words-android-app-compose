@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ntg.vocabs.R
@@ -28,6 +29,7 @@ fun SampleItem(
     id: Int? = null,
     title: String,
     secondaryText: String? = null,
+    endString: String?=  null,
     painter: Painter? = null,
     isBookmarked: Boolean = false,
     enableRadioButton: Boolean = false,
@@ -108,6 +110,16 @@ fun SampleItem(
             }
 
             Spacer(modifier = Modifier.weight(1f))
+
+            if (endString != null){
+                Text(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .padding(end = 8.dp),
+                    text = endString,
+                    style = fontRegular14(MaterialTheme.colorScheme.onSurfaceVariant).copy(fontStyle = FontStyle.Italic)
+                )
+            }
 
 
             if (unavailableBackup){

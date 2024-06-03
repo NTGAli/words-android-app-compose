@@ -1,10 +1,16 @@
 package com.ntg.vocabs.util
 
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.ALARM_SERVICE
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Typeface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -30,6 +36,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -54,14 +62,12 @@ import kotlinx.coroutines.delay
 import retrofit2.HttpException
 import retrofit2.Response
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -329,11 +335,11 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
         0 -> {
             when (diffTime) {
 
-                in 0..1 -> {
+                0 -> {
                     painterResource(id = R.drawable.full_pie)
                 }
 
-                2 -> {
+                in 1..2 -> {
                     painterResource(id = R.drawable.medium_pie)
                 }
 
@@ -365,11 +371,11 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
         2 -> {
             when (diffTime) {
 
-                in 0..10 -> {
+                in 0..11 -> {
                     painterResource(id = R.drawable.full_pie)
                 }
 
-                in 10..15 -> {
+                in 12..15 -> {
                     painterResource(id = R.drawable.medium_pie)
                 }
 
@@ -516,23 +522,74 @@ fun setReviewNotification(
     context: Context,
     word: String, dayStart: Int
 ) {
-    val data = Data.Builder()
-        .putString("word", word)
-        .build()
-
-    val workRequest = OneTimeWorkRequest.Builder(ReviewWorker::class.java)
-        .setInputData(data)
-        .setInitialDelay(dayStart.toLong(), TimeUnit.DAYS)
-        .build()
 
 
-    WorkManager.getInstance(context)
-        .enqueueUniqueWork(
-            "reviewWorker_$word",
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
-            workRequest
-        )
+//    val data = Data.Builder()
+//        .putString("word", word)
+//        .putInt("id", generateUniqueFiveDigitId())
+//        .build()
+//
+//    val workRequest = OneTimeWorkRequest.Builder(ReviewWorker::class.java)
+//        .setInputData(data)
+//        .setInitialDelay(16, TimeUnit.MINUTES)
+//        .addTag(word)
+//        .build()
+
+
+//    WorkManager.getInstance(context)
+//        .enqueueUniqueWork(
+//            "reviewWorker_$word",
+//            ExistingWorkPolicy.APPEND_OR_REPLACE,
+//            workRequest
+//        )
+
+//    WorkManager.getInstance(context).enqueue(workRequest)
 }
+
+@RequiresApi(api = Build.VERSION_CODES.O)
+fun createNotificationChannel(context: Context) {
+    val id = "channelID"
+    val name = "Daily Alerts"
+    val des = "Channel Description A Brief"
+    val importance = NotificationManager.IMPORTANCE_DEFAULT
+    val channel = NotificationChannel(id, name, importance)
+    channel.description = des
+    val manager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
+    manager!!.createNotificationChannel(channel)
+}
+
+fun scheduleotification(calendar: Calendar, context: Context) {
+    val intent: Intent = Intent(context.getApplicationContext(), Notification::class.java)
+    intent.putExtra("titleExtra", "Dynamic Title")
+    intent.putExtra("textExtra", "Dynamic Text Body")
+    val pendingIntent = PendingIntent.getBroadcast(
+        context.applicationContext,
+        1,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+    val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager?
+    alarmManager!!.setExactAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP,
+        calendar.timeInMillis,
+        pendingIntent
+    )
+    Toast.makeText(context.getApplicationContext(), "Scheduled ", Toast.LENGTH_LONG).show()
+}
+
+class Notification : BroadcastReceiver()
+{
+    override fun onReceive(context: Context, intent: Intent) {
+        val message = intent.getStringExtra("textExtra").toString()
+        val title = intent.getStringExtra("titleExtra").toString()
+        val notification =
+            NotificationCompat.Builder(context, "21321").setSmallIcon(R.drawable.vocabs)
+                .setContentText(message).setContentTitle(title).build()
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(789798798, notification)
+    }
+}
+
 
 fun Int.getUnixTimeNDaysAgo(): Long {
     val calendar = Calendar.getInstance()
@@ -583,6 +640,11 @@ fun Long.unixTimeToReadable(): String {
     return dateFormat.format(date)
 }
 
+fun getFormattedTimestamp(timestamp: Long): String {
+    val date = Date(timestamp)
+    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    return dateFormat.format(date)
+}
 
 fun Long.unixTimeToClock(): String {
     val date = Date(this)
