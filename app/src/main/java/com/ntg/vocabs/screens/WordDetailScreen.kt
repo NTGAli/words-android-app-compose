@@ -2,12 +2,15 @@ package com.ntg.vocabs.screens
 
 import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmark
@@ -50,33 +53,40 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun WordDetailScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
     loginViewModel: LoginViewModel,
-    wordId: Int?
+    index: Int?
 ) {
+
+    val count = wordViewModel.getSizeOfWords().observeAsState(initial = null).value
+
+    val pagerState = rememberPagerState(pageCount = {
+        count.orZero()
+    }, initialPage = index.orZero())
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    val word = wordViewModel.findWord(wordId)?.observeAsState()
-    val count = wordViewModel.getSizeOfWords().observeAsState(initial = null).value
+    val word = wordViewModel.getWordsBaseListId(1).observeAsState().value?.get(pagerState.currentPage)
 
     Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             SetupAppbar(
                 navController = navController,
-                title = word?.value?.word.orEmpty(),
+                title = word?.word.orEmpty(),
                 scrollBehavior,
-                wordId ?: -1,
+                word?.id ?: -1,
                 wordViewModel,
-                word?.value
+                word
             )
         },
         content = { innerPadding ->
-            Content(paddingValues = innerPadding, word?.value, loginViewModel, navController, count)
+            HorizontalPager(state = pagerState) {
+                Content(paddingValues = innerPadding, word, loginViewModel, navController, count)
+            }
         }
     )
 }
@@ -230,6 +240,7 @@ private fun Content(
 
     LazyColumn(
         modifier = Modifier
+            .fillMaxSize()
             .padding(paddingValues)
             .padding(horizontal = 24.dp)
     ) {

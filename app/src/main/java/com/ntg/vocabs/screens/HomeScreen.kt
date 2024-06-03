@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,7 +36,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -347,7 +346,7 @@ private fun Content(
         }
 
 
-        items(wordsList) { word ->
+        itemsIndexed(wordsList) { index, word ->
 
             val painter = getIconStateRevision(word.revisionCount, word.lastRevisionTime)
 
@@ -358,8 +357,8 @@ private fun Content(
                 painter = painter,
                 isBookmarked = word.bookmarked.orFalse(),
                 unavailableBackup = if (!isPurchased && wordsList.filter { !it.synced.orFalse() }.size < 50) !word.synced.orFalse() else false
-            ) { _, id, _ ->
-                navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
+            ) { _, _, _ ->
+                navController.navigate(Screens.WordDetailScreen.name + "?wordId=$index")
             }
         }
 
