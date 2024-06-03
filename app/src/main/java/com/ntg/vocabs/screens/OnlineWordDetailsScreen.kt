@@ -75,7 +75,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-private val listOfDictionary = listOf(
+private val listOfDictionary = arrayListOf(
     "Dictionary number one",
     "Dictionary number two",
     "Dictionary number three",
@@ -101,6 +101,10 @@ fun OnlineWordDetailsScreen(
     var onlineWord by remember {
         mutableStateOf<Word?>(null)
     }
+
+    val isAllowThirdDictionary =
+        loginViewModel.getUserData()
+            .collectAsState(initial = null).value?.allowThirdDictionary.orTrue()
 
     var openBottomSheet by remember {
         mutableStateOf(false)
@@ -169,7 +173,9 @@ fun OnlineWordDetailsScreen(
                     } else if (isExist.orTrue()) {
                         context.toast(context.getString(R.string.err_word_already_exist))
                     } else if (onlineWord != null) {
-                        wordViewModel.addNewWord(onlineWord!!.apply { id = generateUniqueFiveDigitId() })
+                        wordViewModel.addNewWord(onlineWord!!.apply {
+                            id = generateUniqueFiveDigitId()
+                        })
                         navController.popBackStack()
                     }
                 }
@@ -202,16 +208,17 @@ fun OnlineWordDetailsScreen(
                         )
                     }
 
-                    itemsIndexed(listOfDictionary) {index, it ->
+                    itemsIndexed(listOfDictionary) { index, it ->
+                        if (it == "Dictionary number three" && !isAllowThirdDictionary) return@itemsIndexed
                         SampleItem(
                             title = it,
                             enableRadioButton = true,
                             radioSelect = mutableStateOf(selectedDictionary == it),
                             onClick = { text, _, isSelect ->
-                                if (isPurchased || index == 0){
+                                if (isPurchased || index == 0) {
                                     selectedDictionary = text
                                     openBottomSheet = false
-                                }else{
+                                } else {
                                     openDialog = true
                                 }
                             })
@@ -228,11 +235,11 @@ fun OnlineWordDetailsScreen(
         }
     }
 
-    if (openDialog){
+    if (openDialog) {
         NeedProDialog(type = DescriptionType.DICTIONARY, onClick = {
-            if (email.orEmpty().isNotEmpty()){
+            if (email.orEmpty().isNotEmpty()) {
                 navController.navigate(Screens.PaywallScreen.name)
-            }else{
+            } else {
                 navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
             }
         }) {
@@ -566,7 +573,7 @@ private fun Content(
                                     CoroutineScope(Dispatchers.IO).launch {
                                         mp.prepare()
                                     }
-                                }catch (e: Exception){
+                                } catch (e: Exception) {
                                     e.printStackTrace()
                                 }
                                 mp.setOnPreparedListener {
@@ -617,7 +624,7 @@ private fun Content(
 
     }
 
-    if (loading){
+    if (loading) {
         LoadingView()
     }
 }

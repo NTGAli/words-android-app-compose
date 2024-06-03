@@ -13,4 +13,5 @@ message UserDataAndSetting {
     string backupWay = 7;
     bool checkBackup = 8;
     bool isPurchased = 9;
+    bool allowThirdDictionary = 10;
 }

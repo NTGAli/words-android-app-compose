@@ -12,6 +12,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.actionCodeSettings
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.UserDataAndSetting
@@ -20,6 +25,7 @@ import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.api.auth.AuthRepository
 import com.ntg.vocabs.di.DataRepository
 import com.ntg.vocabs.model.GoogleSignInState
+import com.ntg.vocabs.model.response.RecentMessage
 import com.ntg.vocabs.model.response.ResponseBody
 import com.ntg.vocabs.model.response.VerifyUserRes
 import com.ntg.vocabs.model.sign.SignInState
@@ -46,6 +52,7 @@ class LoginViewModel @Inject constructor(
     private val mFirestore: FirebaseFirestore
 ) : ViewModel() {
 
+    private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
     private var verifyUser: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyCode: MutableLiveData<NetworkResult<String>> = MutableLiveData()
     private var verifyPass: MutableLiveData<NetworkResult<ResponseBody<VerifyUserRes>>> =
@@ -59,7 +66,7 @@ class LoginViewModel @Inject constructor(
     private lateinit var userDataSettings: Flow<UserDataAndSetting>
     private var verifyByEmail: MutableLiveData<NetworkResult<ResponseBody<Nothing>>> =
         MutableLiveData()
-
+    var allowDictionary: MutableLiveData<Boolean?> = MutableLiveData(null)
 
     fun sendCode(
         email: String
@@ -220,6 +227,10 @@ class LoginViewModel @Inject constructor(
 
     fun setPurchase(isSuccess: Boolean) = viewModelScope.launch {
         dataRepository.isUserPurchased(isSuccess)
+    }
+
+    fun setAllowDictionary(allow: Boolean) = viewModelScope.launch {
+        dataRepository.isAllowThirdDictionary(allow)
     }
 
     fun setUsername(name: String) = viewModelScope.launch {
@@ -399,6 +410,50 @@ class LoginViewModel @Inject constructor(
             }
     }
 
+    fun allowThirdDictionary() {
+        val messagesRef = database.child("allowThirdDictionary")
+        messagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                allowDictionary.value = snapshot.getValue(Boolean::class.java) ?: false
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Failed to read value: ${error.toException()}")
+            }
+        })
+    }
+
+
+    fun createUserDocument(email: String){
+        val docRef = mFirestore.collection(BuildConfig.VOCAB_PATH_DB).document(email)
+
+
+        docRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val document = task.result
+                if (document != null && document.exists()) {
+                    // Document exists
+                    println("Document already exists.")
+                } else {
+                    // Document does not exist, create it
+                    val userData = hashMapOf(
+                        "email" to email,
+                        "timeCreated" to System.currentTimeMillis(),
+                        "versionApp" to BuildConfig.VERSION_CODE,
+                        "versionName" to BuildConfig.VERSION_NAME
+                    )
+                    docRef.set(userData).addOnSuccessListener {
+                        println("Document successfully created.")
+                    }.addOnFailureListener { e ->
+                        println("Error creating document: $e")
+                    }
+                }
+            } else {
+                println("Failed to check document: ${task.exception}")
+            }
+        }
+
+    }
 
 }
 

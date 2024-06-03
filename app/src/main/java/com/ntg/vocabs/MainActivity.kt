@@ -9,10 +9,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
@@ -30,11 +35,15 @@ import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.AppNavHost
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.AppTheme
-import com.ntg.vocabs.util.*
+import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.Constant.BACKUPS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
+import com.ntg.vocabs.util.checkInternet
+import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.orTrue
+import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.worker.FirebaseBackupWorker
 import com.ntg.vocabs.util.worker.MediaBackupWorker
 import com.ntg.vocabs.vm.BackupViewModel
@@ -231,10 +240,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-//            var backupUserData by remember {
-//                mutableStateOf<BackupUserData?>(null)
-//            }
-
             dataSettings.value.let { dataSettings ->
                 timber("getUnSyncedWords ----> ${dataSettings?.email}")
                 if (dataSettings?.email != null) {
@@ -249,82 +254,7 @@ class MainActivity : ComponentActivity() {
                     })
 
                 }
-//
-//                    UserBackup(wordViewModel) {
-//                        if (it != backupUserData) {
-//                            backupUserData = it
-//                        }
-//                    }
-//
-//                    if (dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty() != "Only when i tap ‘backup’"
-//                        && dataSettings?.backupWay.orEmpty() != "no"
-//                        && dataSettings?.email.orEmpty().isNotEmpty()
-//                        && listId != null
-//                    ) {
-//                        LaunchedEffect(key1 = Unit, block = {
-//                            val constraints = Constraints.Builder()
-//                                .setRequiredNetworkType(NetworkType.CONNECTED)
-//                                .build()
-//                            if (dataSettings?.backupWay == "drive") {
-//                                val repeatTime = when (dataSettings?.backupOption) {
-//                                    "Daily" -> 1L
-//                                    "Weekly" -> 7L
-//                                    "Monthly" -> 30L
-//                                    else -> -1L
-//                                }
-//
-//                                if (repeatTime != -1L) {
-//                                    val backupWorkRequest =
-//                                        PeriodicWorkRequestBuilder<BackupWorker>(
-//                                            repeatInterval = repeatTime,
-//                                            repeatIntervalTimeUnit = TimeUnit.DAYS
-//                                        )
-//                                            .setConstraints(constraints)
-//                                            .build()
-//
-//                                    WorkManager.getInstance(this@MainActivity)
-//                                        .enqueueUniquePeriodicWork(
-//                                            "BackupOnDrive",
-//                                            ExistingPeriodicWorkPolicy.KEEP, backupWorkRequest
-//                                        )
-//                                }
-//                            } else {
-//                                val data = Data.Builder()
-//                                data.putString("email", dataSettings?.email)
-//
-//                                val backupWorkRequest =
-//                                    PeriodicWorkRequestBuilder<ServerBackupWorker>(
-//                                        repeatInterval = 7,
-//                                        repeatIntervalTimeUnit = TimeUnit.DAYS
-//                                    ).setInputData(data.build())
-//
-//                                        .setConstraints(constraints)
-//                                        .build()
-//
-//
-//
-//
-//                                WorkManager.getInstance(this@MainActivity)
-//                                    .enqueueUniquePeriodicWork(
-//                                        "BackupOnServer",
-//                                        ExistingPeriodicWorkPolicy.KEEP, backupWorkRequest
-//                                    )
-//                            }
-//
-//                        })
-//                    }
-//
-//
-//                }
             }
-
-//            LaunchedEffect(key1 = backupUserData?.words, block = {
-//                timber("UserBackupUserBackupUserBackupUserBackup ::::")
-//                if (backupUserData?.words.orEmpty().isNotEmpty()) {
-//                    saveBackupFile(backupUserData)
-//                }
-//
-//            })
             var notificationStatusPermission by remember {
                 mutableStateOf(false)
             }
@@ -338,15 +268,15 @@ class MainActivity : ComponentActivity() {
                 notificationPermission.launchPermissionRequest()
             })
 
-//            OnLifecycleEvent{owner, event ->
-//                if (event == Lifecycle.Event.ON_PAUSE){
-//                    if (listId != null) {
-//                            calendarViewModel.stopLastTime()
-//                    }
-//                }
-//            }
         }
 
+        loginViewModel.allowThirdDictionary()
+        loginViewModel.allowDictionary.observe(this){
+            if (it != null){
+                timber("allowDictionary ::::: $it")
+                loginViewModel.setAllowDictionary(it)
+            }
+        }
 
     }
 
@@ -379,43 +309,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        timber("calendarViewModellll :::: res")
         if (calendarViewModel.currentScreen != null && listId != null) {
-
             startTime = System.currentTimeMillis()
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                calendarViewModel.insertSpendTime(SpendTimeType.Learning, listId!!.id)
-//            }
-
-            when (calendarViewModel.currentScreen) {
-                Screens.RevisionScreen.name,
-                Screens.WritingScreen.name,
-                -> {
-//                    startTime = System.currentTimeMillis()
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        calendarViewModel.insertSpendTime(SpendTimeType.Revision, listId!!.id)
-//                    }
-                }
-
-                else -> {
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        calendarViewModel.insertSpendTime(SpendTimeType.Learning, listId!!.id)
-//                    }
-                }
-            }
         }
     }
 
     override fun onPause() {
         super.onPause()
-//        if (listId != null) {
-//                calendarViewModel.stopLastTime()
-//        }
-
         if (calendarViewModel.currentScreen != null && listId != null && startTime != 0L && startTime < System.currentTimeMillis()) {
-
-
             when (calendarViewModel.currentScreen) {
                 Screens.RevisionScreen.name,
                 Screens.WritingScreen.name,

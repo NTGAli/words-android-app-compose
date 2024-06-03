@@ -1,5 +1,6 @@
 package com.ntg.vocabs.api
 
+import com.ntg.vocabs.BuildConfig.VOCAB_API_KEY
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.model.response.DataRes
 import com.ntg.vocabs.model.response.RecentMessage
@@ -116,10 +117,12 @@ interface ApiService {
         @Field("password") password: String,
     ): Response<ResponseBody<Nothing>>
 
-    @GET("DictionaryFiles/word.php")
+    @FormUrlEncoded
+    @POST("DictionaryFiles/word.php")
     suspend fun getWord(
         @Query("word") word: String,
         @Query("type") type: String,
+        @Field("token") token: String = VOCAB_API_KEY,
     ): Response<ResponseBody<WordVocab?>>
 
     @GET("MessageBox/recentMessages.php")

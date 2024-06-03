@@ -75,4 +75,10 @@ class DefaultDataRepository @Inject constructor(
             it.toBuilder().setIsPurchased(isPurchased).build()
         }
     }
+
+    override suspend fun isAllowThirdDictionary(allow: Boolean) {
+        recentLocationsDataStore.updateData {
+            it.toBuilder().setAllowThirdDictionary(allow).build()
+        }
+    }
 }

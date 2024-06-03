@@ -16,5 +16,6 @@ interface DataRepository {
     suspend fun isSubscriptionSkipped(skipped: Boolean)
     suspend fun clearAllUserData()
     suspend fun isUserPurchased(isPurchased: Boolean)
+    suspend fun isAllowThirdDictionary(allow: Boolean)
 
 }

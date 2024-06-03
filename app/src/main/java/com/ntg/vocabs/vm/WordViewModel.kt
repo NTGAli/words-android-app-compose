@@ -11,6 +11,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.UserDataAndSetting
@@ -41,10 +47,15 @@ import com.ntg.vocabs.model.response.DictionaryResItem
 import com.ntg.vocabs.model.response.ResponseBody
 import com.ntg.vocabs.model.response.WordDataItem
 import com.ntg.vocabs.model.response.WordVocab
+import com.ntg.vocabs.util.Constant
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.getUnixTimeNDaysAgo
 import com.ntg.vocabs.util.safeApiCall
 import com.ntg.vocabs.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -675,5 +686,45 @@ class WordViewModel @Inject constructor(
             englishVerbDao.insertAll(verbs)
         }
         timber("ENGLISH_WORD ::: END")
+    }
+
+
+    private fun setDataToNew(
+        id: String,
+        data: Any,
+        type: String,
+        email: String,
+        isSuccess: (Any) -> Unit
+    ) {
+        val firestore = Firebase.firestore
+
+        val docRef = firestore
+            .collection(BuildConfig.VOCAB_PATH_DB).document(email)
+            .collection(type).document(id).set(data)
+            .addOnSuccessListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    isSuccess.invoke(data)
+                }
+            }
+    }
+
+    fun transferOldToNew(
+        email: String
+    ){
+        val db = Firebase.firestore
+        val wordsRef = db.collection(Constant.BackTypes.BACKUP_TIMES)
+        wordsRef.whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    viewModelScope.launch {
+                        setDataToNew(document.id, document.toObject(TimeSpent::class.java), BACKUP_TIMES, email){
+                        }
+                    }
+
+                }
+            }
+            .addOnFailureListener { exception ->
+            }
     }
 }
