@@ -18,6 +18,7 @@ import com.google.api.services.drive.DriveScopes
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
+import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.R
 import com.ntg.vocabs.db.dao.DriveBackupDao
 import com.ntg.vocabs.db.dao.TimeSpentDao
@@ -420,9 +421,9 @@ class BackupViewModel @Inject constructor(
 
     fun restoreVocabularies(email: String, onSuccess: (Boolean) -> Unit) {
         val db = mFirestore
-        val wordsRef = db.collection(BACKUP_WORDS)
-        val listRef = db.collection(BACKUP_LISTS)
-        val timesRef = db.collection(BACKUP_TIMES)
+        val wordsRef = db.collection(BuildConfig.VOCAB_PATH_DB).document(email).collection(BACKUP_WORDS)
+        val listRef = db.collection(BuildConfig.VOCAB_PATH_DB).document(email).collection(BACKUP_LISTS)
+        val timesRef = db.collection(BuildConfig.VOCAB_PATH_DB).document(email).collection(BACKUP_TIMES)
         wordsRef.whereEqualTo("email", email)
             .get()
             .addOnSuccessListener { documents ->
@@ -444,8 +445,7 @@ class BackupViewModel @Inject constructor(
             }
 
 
-        listRef.whereEqualTo("email", email)
-            .get()
+        listRef.get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     val vocabList = document.toObject(VocabItemList::class.java)
@@ -467,10 +467,9 @@ class BackupViewModel @Inject constructor(
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     val vocabTime = document.toObject(TimeSpent::class.java)
-                    if (vocabTime.id == 0){
-                        vocabTime.id = generateUniqueFiveDigitId()
-                    }
+                    vocabTime.id = generateUniqueFiveDigitId()
                     vocabTime.synced = true
+                    vocabTime.fid = document.id
                     viewModelScope.launch {
                         timeSpentDao.insert(vocabTime)
                     }

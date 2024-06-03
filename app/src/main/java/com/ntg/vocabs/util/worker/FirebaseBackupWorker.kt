@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.ntg.vocabs.BuildConfig
 import com.ntg.vocabs.db.AppDB
 import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.toMap
@@ -29,7 +30,6 @@ class FirebaseBackupWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
 
-
     override suspend fun doWork(): Result {
         val appDB = Room.databaseBuilder(
             context = appContext, AppDB::class.java, Constant.DATABASE_NAME
@@ -38,7 +38,7 @@ class FirebaseBackupWorker(
         val email = inputData.getString("email")
 
 
-        if (email.orEmpty().isNotEmpty()){
+        if (email.orEmpty().isNotEmpty()) {
             when (val type = inputData.getString("type")) {
 
                 BACKUP_WORDS -> {
@@ -47,22 +47,22 @@ class FirebaseBackupWorker(
                         it.forEach { word ->
                             if (word.isDeleted.orFalse()) {
 
-                                if (word.fid != null){
-                                    deleteOnFirestore(word.fid.orEmpty(), type) {
+                                if (word.fid != null) {
+                                    deleteOnFirestore(word.fid.orEmpty(), type, email!!) {
                                         if (it) {
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 appDB.wordDao().delete(word)
                                             }
                                         }
                                     }
-                                }else{
+                                } else {
                                     appDB.wordDao().delete(word)
                                 }
                             } else if (word.fid == null) {
                                 backupOnFirestore(word.apply {
                                     this.email = email
                                     this.synced = true
-                                }, type) {
+                                }, type, email!!) {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         appDB.wordDao().synced(word.id, it.id)
                                     }
@@ -71,7 +71,7 @@ class FirebaseBackupWorker(
                                 updateBackupOnFirestore(word.apply {
                                     this.email = email
                                     this.synced = true
-                                }.toMap(), word.fid.orEmpty(), type) { isSuccesed ->
+                                }.toMap(), word.fid.orEmpty(), type, email!!) { isSuccesed ->
                                     CoroutineScope(Dispatchers.IO).launch {
                                         if (isSuccesed) {
                                             appDB.wordDao().synced(word.id)
@@ -89,22 +89,22 @@ class FirebaseBackupWorker(
                     appDB.vocabListDao().getUnSyncedLists().let {
                         it.forEach { list ->
                             if (list.isDeleted.orFalse()) {
-                                if (list.fid != null){
-                                    deleteOnFirestore(list.fid, type) {
+                                if (list.fid != null) {
+                                    deleteOnFirestore(list.fid, type, email!!) {
                                         if (it) {
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 appDB.vocabListDao().delete(list)
                                             }
                                         }
                                     }
-                                }else{
+                                } else {
                                     appDB.vocabListDao().delete(list)
                                 }
-                            }else if (list.fid == null) {
+                            } else if (list.fid == null) {
                                 backupOnFirestore(list.apply {
                                     this.email = email
                                     this.synced = true
-                                }, type) {
+                                }, type, email!!) {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         appDB.vocabListDao().synced(list.id, it.id)
                                     }
@@ -113,7 +113,7 @@ class FirebaseBackupWorker(
                                 updateBackupOnFirestore(list.apply {
                                     this.email = email
                                     this.synced = true
-                                }.toMap(),list.fid, type) {
+                                }.toMap(), list.fid, type, email!!) {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         appDB.vocabListDao().synced(list.id)
                                     }
@@ -126,64 +126,65 @@ class FirebaseBackupWorker(
                 BACKUP_TIMES -> {
                     val dataOfToday = LocalDate.now().toString()
                     var totalMill = 0L
-                    appDB.timeSpentDao().getUnSyncedTime(dataOfToday).groupBy { it.date }.forEach { time ->
+                    appDB.timeSpentDao().getUnSyncedTime(dataOfToday).groupBy { it.date }
+                        .forEach { time ->
 
-                        time.value.groupBy { it.listId }.forEach {spendInList ->
+                            time.value.groupBy { it.listId }.forEach { spendInList ->
 
-                            spendInList.value.groupBy { it.type }.forEach {spendInType ->
+                                spendInList.value.groupBy { it.type }.forEach { spendInType ->
 
-                                spendInType.value.forEach { spendTime ->
+                                    spendInType.value.forEach { spendTime ->
 
-                                    if (spendTime.isDeleted.orFalse()){
-                                        if (spendTime.fid != null){
-                                            deleteOnFirestore(spendTime.fid, type) {
-                                                if (it) {
-                                                    CoroutineScope(Dispatchers.IO).launch {
-                                                        appDB.timeSpentDao().delete(spendTime)
+                                        if (spendTime.isDeleted.orFalse()) {
+                                            if (spendTime.fid != null) {
+                                                deleteOnFirestore(spendTime.fid.orEmpty(), type, email!!) {
+                                                    if (it) {
+                                                        CoroutineScope(Dispatchers.IO).launch {
+                                                            appDB.timeSpentDao().delete(spendTime)
+                                                        }
                                                     }
                                                 }
+                                            } else {
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    appDB.timeSpentDao().delete(spendTime)
+                                                }
                                             }
-                                        }else{
+                                        } else {
+                                            if (spendTime.endUnix != null && spendTime.startUnix != null) {
+                                                totalMill += (spendTime.endUnix.orDefault() - spendTime.startUnix.orDefault())
+                                            }
+                                        }
+
+
+                                    }
+
+                                    val finalMill = totalMill
+                                    backupOnFirestore(
+                                        TimeSpent(
+                                            listId = spendInList.key,
+                                            synced = true,
+                                            email = email,
+                                            date = time.key!!,
+                                            id = 0,
+                                            startUnix = 0,
+                                            endUnix = finalMill,
+                                            type = spendInType.key
+                                        ), type, email!!
+                                    ) { ref ->
+
+                                        spendInList.value.forEach {
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appDB.timeSpentDao().delete(spendTime)
+                                                appDB.timeSpentDao().synced(it.id, ref.id)
                                             }
                                         }
-                                    }else{
-                                        if (spendTime.endUnix != null && spendTime.startUnix != null){
-                                            totalMill += (spendTime.endUnix.orDefault() - spendTime.startUnix.orDefault())
-                                        }
                                     }
-
+                                    totalMill = 0
 
                                 }
-
-                                val finalMill = totalMill
-                                backupOnFirestore(
-                                    TimeSpent(
-                                        listId = spendInList.key,
-                                        synced = true,
-                                        email = email,
-                                        date = time.key!!,
-                                        id = 0,
-                                        startUnix = 0,
-                                        endUnix = finalMill,
-                                        type = spendInType.key
-                                    )
-                                    , type) {ref ->
-
-                                    spendInList.value.forEach {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            appDB.timeSpentDao().synced(it.id, ref.id)
-                                        }
-                                    }
-                                }
-                                totalMill = 0
 
                             }
 
                         }
-
-                    }
                 }
 
                 BACKUP_MEDIA -> {
@@ -194,20 +195,19 @@ class FirebaseBackupWorker(
         }
 
 
-
-
         return Result.success()
     }
 
     private suspend fun backupOnFirestore(
         data: Any,
         type: String,
+        email: String,
         isSuccess: (DocumentReference) -> Unit
     ) {
         val firestore = Firebase.firestore
 
         firestore
-            .collection(type).add(data)
+            .collection(BuildConfig.VOCAB_PATH_DB).document(email).collection(type).add(data)
             .addOnSuccessListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     isSuccess.invoke(it)
@@ -222,10 +222,12 @@ class FirebaseBackupWorker(
         data: Map<String, Any>,
         fid: String,
         type: String,
+        email: String,
         isSuccess: (Boolean) -> Unit
     ) {
         val firestore = Firebase.firestore
-        firestore.collection(type).document(fid)
+        firestore.collection(BuildConfig.VOCAB_PATH_DB).document(email)
+            .collection(type).document(fid)
             .update(data)
             .addOnCompleteListener {
                 isSuccess.invoke(true)
@@ -236,13 +238,21 @@ class FirebaseBackupWorker(
     }
 
 
-    private fun deleteOnFirestore(fid: String, type: String, isSuccess: (Boolean) -> Unit) {
+    private fun deleteOnFirestore(
+        fid: String,
+        type: String,
+        email: String,
+        isSuccess: (Boolean) -> Unit
+    ) {
         val firestore = Firebase.firestore
-        firestore.collection(type).document(fid)
+        firestore.collection(BuildConfig.VOCAB_PATH_DB).document(email)
+            .collection(type).document(fid)
             .delete()
             .addOnSuccessListener {
-                isSuccess.invoke(true) }
+                isSuccess.invoke(true)
+            }
             .addOnFailureListener { e ->
-                isSuccess.invoke(false) }
+                isSuccess.invoke(false)
+            }
     }
 }

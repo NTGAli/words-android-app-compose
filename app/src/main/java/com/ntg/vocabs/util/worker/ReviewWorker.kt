@@ -4,10 +4,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.ntg.vocabs.R
+import com.ntg.vocabs.util.generateUniqueFiveDigitId
+import com.ntg.vocabs.util.timber
 
 class ReviewWorker (
     private val appContext: Context,
@@ -15,15 +18,17 @@ class ReviewWorker (
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
         val word = inputData.getString("word")
+        val id = inputData.getInt("id",1)
+        timber("notificationId ::: $id")
         return if (word != null){
-            showNotification(word)
+            showNotification(word, id)
             Result.success()
         }else{
             Result.failure()
         }
     }
 
-    private fun showNotification(word: String) {
+    private fun showNotification(word: String, notificationId: Int) {
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -42,7 +47,7 @@ class ReviewWorker (
             .setSmallIcon(R.drawable.vocabs)
             .build()
 
-        val notificationId = System.currentTimeMillis().toInt()
+
         notificationManager.notify(notificationId, notification)
     }
 }

@@ -10,7 +10,7 @@ import com.ntg.vocabs.util.orZero
 data class TimeSpent(
     @PrimaryKey(autoGenerate = false)
     var id: Int=0,
-    val fid: String? = null,
+    var fid: String? = null,
     val listId: Int? = null,
     val date: String? = null,
     val startUnix: Long? = null,
@@ -25,7 +25,7 @@ data class TimeSpent(
 fun TimeSpent.toMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
     map["id"] = id
-    if (fid != null) map["fid"] = fid
+    if (fid != null) map["fid"] = fid.orEmpty()
     if (fid != null) map["listId"] = listId.orZero()
     if (fid != null) map["date"] = date.orEmpty()
     if (fid != null) map["startUnix"] = startUnix.orDefault()

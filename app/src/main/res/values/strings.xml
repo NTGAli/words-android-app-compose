@@ -18,7 +18,7 @@
     <string name="err_word_required">word required.</string>
     <string name="err_type_required">select a type.</string>
     <string name="err_example_required">add at least a example.</string>
-    <string name="err_word_already_exist">this word alreay exist</string>
+    <string name="err_word_already_exist">this word already exist</string>
     <string name="translation">translation</string>
     <string name="revision">revision</string>
     <string name="do_you_remeber_this_word">Do you remember this word?</string>
@@ -265,5 +265,6 @@
     <string name="lets_review_format">Let\'s review: \'%s\'</string>
     <string name="notification_permission_off">Notifications are off. You will miss your review time. Please enable notifications.</string>
     <string name="grant_permission">Grant\nPermission</string>
+    <string name="already_added">This word has already been added.</string>
 
 </resources>

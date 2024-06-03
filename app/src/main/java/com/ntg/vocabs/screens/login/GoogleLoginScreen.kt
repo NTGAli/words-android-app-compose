@@ -164,6 +164,7 @@ private fun Content(
 
             backupViewModel.restoreVocabularies(userData?.email.orEmpty()){
                 loginViewModel.checkBackup(it)
+                loginViewModel.createUserDocument(userData?.email.orEmpty())
                 loginViewModel.setUsername(userData?.username.orEmpty())
                 loginViewModel.setUserEmail(userData?.email.orEmpty())
                 loading.value = false
@@ -176,7 +177,6 @@ private fun Content(
             loadingToSignGoogle = false
         }
 
-        timber("ERRRRRRRRRRRRRRRRRR :::: ${googleSignInState.error}")
     })
 
 
