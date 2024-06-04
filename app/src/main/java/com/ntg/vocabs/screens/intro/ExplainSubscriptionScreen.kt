@@ -47,8 +47,7 @@ fun ExplainSubscriptionScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = { innerPadding ->
             Content(
-                paddingValues = innerPadding,
-                navController = navController)
+                paddingValues = innerPadding)
         },
         bottomBar = {
             Column(
@@ -63,7 +62,7 @@ fun ExplainSubscriptionScreen(
                     text = stringResource(id = R.string.upgrade_to_pro)
                 ) {
                     if (email.orEmpty().isNotEmpty()){
-                        navController.navigate(Screens.SubscriptionsScreen.name)
+                        navController.navigate(Screens.PaywallScreen.name)
                     }else{
                         navController.navigate(Screens.GoogleLoginScreen.name + "?skip=${false}")
                     }
@@ -88,7 +87,6 @@ fun ExplainSubscriptionScreen(
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
-    navController: NavController,
 ){
     var showSecondText by remember {
         mutableStateOf(false)

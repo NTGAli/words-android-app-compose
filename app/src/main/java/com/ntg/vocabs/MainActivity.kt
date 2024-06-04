@@ -31,6 +31,7 @@ import com.google.gson.Gson
 import com.ntg.vocabs.db.AutoInsertWorker
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.db.VocabItemList
+import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.AppNavHost
 import com.ntg.vocabs.nav.Screens
@@ -41,8 +42,14 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.checkInternet
+import com.ntg.vocabs.util.generateUniqueFiveDigitId
+import com.ntg.vocabs.util.getEndOfWeek
+import com.ntg.vocabs.util.getFirstDayOfWeek
+import com.ntg.vocabs.util.getStartOfWeek
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orTrue
+import com.ntg.vocabs.util.orZero
+import com.ntg.vocabs.util.ordinal
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.worker.FirebaseBackupWorker
 import com.ntg.vocabs.util.worker.MediaBackupWorker
@@ -82,6 +89,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val dataSettings = loginViewModel.getUserData().collectAsState(initial = null)
+            listId = wordViewModel.currentList().observeAsState().value
+
 
             AppTheme {
 
@@ -92,7 +101,6 @@ class MainActivity : ComponentActivity() {
                 val currentDes = remember {
                     mutableStateOf("")
                 }
-                listId = wordViewModel.currentList().observeAsState().value
                 dataSettings.let { userData ->
                     if (userData.value != null) {
                         val userDataValue = userData.value

@@ -107,8 +107,6 @@ fun HomeScreen(
     messageBoxViewModel: MessageBoxViewModel
 ) {
 
-    val backupOption =
-        loginViewModel.getUserData().asLiveData().observeAsState(null).value?.backupOption.orEmpty()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -119,8 +117,7 @@ fun HomeScreen(
 
             HomeAppbar(
                 title = userData.value?.name,
-                isBackupEnabled = dataSettings?.backupOption.orEmpty() != "Never" && dataSettings?.backupOption.orEmpty()
-                    .isNotEmpty(),
+                scrollBehavior = scrollBehavior,
                 profileCallback = {
                     navController.navigate(Screens.ProfileScreen.name)
                 },
@@ -144,7 +141,7 @@ fun HomeScreen(
 //                }
 
                 subscription = {
-                    navController.navigate(Screens.SubscriptionsScreen.name)
+                    navController.navigate(Screens.ExplainSubscriptionScreen.name)
                 }
             )
         },
@@ -214,7 +211,6 @@ fun HomeScreen(
 }
 
 
-@OptIn(FlowPreview::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -245,7 +241,7 @@ private fun Content(
         mutableIntStateOf(0)
     }
     recentWordCount.intValue =
-        wordViewModel.recentWords(7, listId.orZero()).observeAsState().value.orZero()
+        wordViewModel.numberOfThisWeek(listId.orZero()).observeAsState().value.orZero()
     numberOfAllWords.intValue =
         wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
     val needToReviewCount = remember {
@@ -511,8 +507,8 @@ fun PhoneScreenMode(
                     .weight(1f)
                     .padding(vertical = 4.dp)
                     .padding(end = 4.dp),
-                title = "${recentWordCount.value} words",
-                subTitle = "last 7d ago",
+                title = "${recentWordCount.intValue} words",
+                subTitle = "this week",
                 painter = painterResource(
                     id = R.drawable.ic_new
                 ),
@@ -629,7 +625,7 @@ fun TabletMode(
                 .padding(vertical = 4.dp)
                 .padding(end = 4.dp),
             title = "${recentWordCount.value} words",
-            subTitle = "last 7d ago",
+            subTitle = "this week",
             painter = painterResource(
                 id = R.drawable.ic_new
             ),

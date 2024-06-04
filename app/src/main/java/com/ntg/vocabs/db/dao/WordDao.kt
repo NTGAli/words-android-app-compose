@@ -2,6 +2,7 @@ package com.ntg.vocabs.db.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.ntg.vocabs.model.WeeklyWordCount
 import com.ntg.vocabs.model.db.Word
 
 @Dao
@@ -85,4 +86,22 @@ interface WordDao {
 
     @Query("UPDATE Word SET voiceSynced=1 WHERE id=:id")
     suspend fun voiceSynced(id: Int)
+
+    @Query("""
+        SELECT strftime('%W', datetime(dateCreated / 1000, 'unixepoch')) AS weekNumber, 
+               COUNT(*) AS wordCount
+        FROM Word
+        WHERE listId=:listId AND isDeleted=0
+        GROUP BY weekNumber
+    """)
+    fun getWordCountPerWeek(listId: Int): LiveData<List<WeeklyWordCount>>
+
+
+    @Query("""
+        SELECT COUNT(*) 
+        FROM Word 
+        WHERE dateCreated >= strftime('%s', date('now', 'weekday 0', '-7 days')) * 1000 
+        AND dateCreated < strftime('%s', date('now', 'weekday 0')) * 1000
+    """)
+    fun getWordCountForCurrentWeek(): LiveData<Int>
 }

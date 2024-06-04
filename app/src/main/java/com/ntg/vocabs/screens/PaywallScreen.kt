@@ -38,7 +38,6 @@ fun PaywallScreen(
                         navController.navigate(Screens.SuccessPurchaseScreen.name + "?type=Purchase")
                     }
                     override fun onRestoreCompleted(customerInfo: CustomerInfo) {
-                        ctx.toast("${customerInfo.allPurchasedProductIds}")
                         if (customerInfo.allPurchasedProductIds.isNotEmpty()){
                             loginViewModel.setPurchase(true)
                             navController.navigate(Screens.SuccessPurchaseScreen.name + "?type=Restored")

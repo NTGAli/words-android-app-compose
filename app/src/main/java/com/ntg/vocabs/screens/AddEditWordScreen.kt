@@ -510,6 +510,7 @@ private fun Content(
             example = exampleList,
             dateCreated = wordEdit?.dateCreated ?: System.currentTimeMillis(),
             lastRevisionTime = wordEdit?.lastRevisionTime ?: System.currentTimeMillis(),
+            revisionCount = wordEdit?.revisionCount ?: 0,
             article = article.value,
             plural = plural.value,
             voice = audioFile?.path,

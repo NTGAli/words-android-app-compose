@@ -660,6 +660,66 @@ fun Long.secondsToClock(): String {
     return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }
 
+fun getFirstDayOfWeek(): Int {
+    val locale = Locale.getDefault() // Get the user's default locale
+    val calendar = Calendar.getInstance(locale) // Create a Calendar instance with the user's locale
+    return calendar.firstDayOfWeek // Return the first day of the week
+}
+
+// Function to convert number to ordinal string
+fun ordinal(number: Int): String {
+    return when (number % 100) {
+        11, 12, 13 -> "${number}th"
+        else -> when (number % 10) {
+            1 -> "${number}st"
+            2 -> "${number}nd"
+            3 -> "${number}rd"
+            else -> "${number}th"
+        }
+    }
+}
+
+fun getStartOfWeek(): Long {
+    val locale = Locale.getDefault() // Get the user's default locale
+
+    val calendar = Calendar.getInstance(locale)
+    // Set to the start of the week based on locale
+    calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+    return calendar.timeInMillis
+}
+
+fun getEndOfWeek(): Long {
+    val calendar = Calendar.getInstance()
+    // Set to the start of the week based on locale
+    calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+    // Add 7 days to get to the end of the week
+    calendar.add(Calendar.DAY_OF_WEEK, 7)
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+    return calendar.timeInMillis
+}
+
+fun dayToName(firstDayOfWeek: Int): String {
+//    val firstDayOfWeek = getFirstDayOfWeek()
+    return when (firstDayOfWeek) {
+        Calendar.SUNDAY -> "Sunday"
+        Calendar.MONDAY -> "Monday"
+        Calendar.TUESDAY -> "Tuesday"
+        Calendar.WEDNESDAY -> "Wednesday"
+        Calendar.THURSDAY -> "Thursday"
+        Calendar.FRIDAY -> "Friday"
+        Calendar.SATURDAY -> "Saturday"
+        else -> "Unknown"
+    }
+//    println("First day of the week: $dayName")
+}
+
 
 fun isInternetAvailable(context: Context): Boolean {
     val connectivityManager =
@@ -680,7 +740,6 @@ fun isInternetAvailable(context: Context): Boolean {
 
 fun Bitmap.compressBitmap(fos: FileOutputStream): Bitmap? {
     var quality = 100
-    timber("SIIIIIIIIIIIIIIIIII ${this.rowBytes * this.height}")
     while (this.rowBytes * this.height > MAX_SIZE_IMAGE * 1024 && quality > 0) {
         this.compress(Bitmap.CompressFormat.JPEG, quality, fos)
         quality -= 5

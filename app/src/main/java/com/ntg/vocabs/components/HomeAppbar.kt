@@ -22,18 +22,18 @@ import com.ntg.vocabs.R
 import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.util.ifNotNull
+import com.ntg.vocabs.util.orZero
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeAppbar(
     title: String?,
-    isBackupEnabled: Boolean,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
     searchCallback: () -> Unit,
     notificationCallback: () -> Unit,
     profileCallback: () -> Unit,
     voiceSearch: (String) -> Unit,
-//    backupOnClick: () -> Unit = {},
     subscription: () -> Unit = {},
 ) {
 
@@ -49,37 +49,38 @@ fun HomeAppbar(
         openVoiceSearch = false
     }
 
-    TopAppBar(
-        title = {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable {
-                        searchCallback.invoke()
-                    },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
+    Column {
+        TopAppBar(
+            title = {
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 12.dp)
-                        .padding(start = 16.dp),
-                    text = "search words",
-                    style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-
-                IconButton(onClick = {
-                    openVoiceSearch = true
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.microphone_02),
-                        contentDescription = "mic"
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable {
+                            searchCallback.invoke()
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 12.dp)
+                            .padding(start = 16.dp),
+                        text = "search words",
+                        style = fontRegular12(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
+
+                    IconButton(onClick = {
+                        openVoiceSearch = true
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.microphone_02),
+                            contentDescription = "mic"
+                        )
+                    }
                 }
-            }
-        },
-        actions = {
+            },
+            actions = {
 
 //            IconButton(
 //                modifier = Modifier.padding(start = 8.dp),
@@ -105,43 +106,48 @@ fun HomeAppbar(
 //            }
 
 
-            IconButton(
-                modifier = Modifier.padding(end = 4.dp),
-                onClick = {
-                    notificationCallback.invoke()
-                }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.bell_02),
-                    contentDescription = "notifications"
-                )
+                IconButton(
+                    modifier = Modifier.padding(end = 4.dp),
+                    onClick = {
+                        notificationCallback.invoke()
+                    }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.bell_02),
+                        contentDescription = "notifications"
+                    )
+                }
+
+
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable {
+                            profileCallback.invoke()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier,
+                        text = try {
+                            title?.first().ifNotNull() ?: ":)"
+                        } catch (e: Exception) {
+                            ":)"
+                        },
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = fontMedium12(MaterialTheme.colorScheme.onPrimary)
+                    )
+                }
+                Spacer(modifier = Modifier.padding(8.dp))
             }
+        )
 
-
-
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .clickable {
-                        profileCallback.invoke()
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    modifier = Modifier,
-                    text = try {
-                        title?.first().ifNotNull() ?: ":)"
-                    } catch (e: Exception) {
-                        ":)"
-                    },
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = fontMedium12(MaterialTheme.colorScheme.onPrimary)
-                )
-            }
-            Spacer(modifier = Modifier.padding(8.dp))
+        if (scrollBehavior?.state?.contentOffset.orZero() < -25f) {
+            Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.surfaceVariant)
         }
-    )
+    }
 }
 
 @Composable

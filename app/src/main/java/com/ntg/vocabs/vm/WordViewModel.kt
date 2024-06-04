@@ -33,6 +33,7 @@ import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
 import com.ntg.vocabs.di.DataRepository
+import com.ntg.vocabs.model.WeeklyWordCount
 import com.ntg.vocabs.model.data.GermanDataVerb
 import com.ntg.vocabs.model.db.EnglishVerbs
 import com.ntg.vocabs.model.db.EnglishWords
@@ -51,6 +52,8 @@ import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
+import com.ntg.vocabs.util.getEndOfWeek
+import com.ntg.vocabs.util.getStartOfWeek
 import com.ntg.vocabs.util.getUnixTimeNDaysAgo
 import com.ntg.vocabs.util.safeApiCall
 import com.ntg.vocabs.util.timber
@@ -88,6 +91,8 @@ class WordViewModel @Inject constructor(
     private var isExist = false
     private var myWords: LiveData<List<Word>> = MutableLiveData()
     private var allWords: LiveData<List<Word>> = MutableLiveData()
+    private var wordBaseWeek: LiveData<List<WeeklyWordCount>> = MutableLiveData()
+    private var numberOfThisWeek: LiveData<Int> = MutableLiveData()
     private var sizeOfAllWords: LiveData<Int> = MutableLiveData()
     private var recentWordsCount: LiveData<Int> = MutableLiveData()
     private var word: LiveData<Word> = MutableLiveData()
@@ -276,6 +281,21 @@ class WordViewModel @Inject constructor(
         return allWords
     }
 
+
+    fun getWordPeerWeek(listId: Int): LiveData<List<WeeklyWordCount>> {
+        viewModelScope.launch {
+            wordBaseWeek = wordDao.getWordCountPerWeek(listId)
+        }
+        return wordBaseWeek
+    }
+
+    fun getNumberOfWordsThisWeek(listId: Int): LiveData<Int> {
+        viewModelScope.launch {
+            numberOfThisWeek = wordDao.getWordCountForCurrentWeek()
+        }
+        return numberOfThisWeek
+    }
+
     fun getSizeOfWords(): LiveData<Int> {
         viewModelScope.launch {
             sizeOfAllWords = wordDao.size()
@@ -285,6 +305,9 @@ class WordViewModel @Inject constructor(
 
     fun recentWords(daysAgo: Int, listId: Int) =
         wordDao.recentWordsCount(daysAgo.getUnixTimeNDaysAgo(), System.currentTimeMillis(), listId)
+
+    fun numberOfThisWeek(listId: Int) =
+        wordDao.recentWordsCount(start = getStartOfWeek(), end = System.currentTimeMillis(), listId)
 
     fun randomWords(listId: Int) =
         wordDao.randomWords(listId)
