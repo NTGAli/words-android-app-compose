@@ -187,7 +187,7 @@ private fun Content(
             }
 
             backupViewModel.restoreVocabularies(userData?.email.orEmpty()){
-                loginViewModel.checkBackup(it)
+                loginViewModel.checkBackup(true)
                 loginViewModel.setUsername(userData?.username.orEmpty())
                 loginViewModel.setUserEmail(userData?.email.orEmpty())
                 loading.value = false
@@ -369,7 +369,7 @@ private fun Content(
                                             }
 
                                             backupViewModel.restoreVocabularies(email.value){
-                                                loginViewModel.checkBackup(it)
+                                                loginViewModel.checkBackup(true)
                                                 loginViewModel.setUserEmail(email.value)
                                                 loading.value = false
                                             }

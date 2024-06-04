@@ -387,18 +387,26 @@ fun AppNavHost(
         }
 
         composable(
-            Screens.WordDetailScreen.name + "?wordId={wordId}",
-            arguments = listOf(navArgument("wordId")
+            Screens.WordDetailScreen.name + "?wordId={wordId}&index={index}",
+            arguments = listOf(
+                navArgument("wordId")
             {
                 type = NavType.IntType
                 defaultValue = -1
-            })
+            },
+                navArgument("index")
+                {
+                    type = NavType.IntType
+                    defaultValue = -1
+                }
+            )
         ) { backStackEntry ->
             WordDetailScreen(
                 navController = navController,
                 wordViewModel = wordViewModel,
                 loginViewModel,
-                backStackEntry.arguments?.getInt("wordId")
+                backStackEntry.arguments?.getInt("wordId"),
+                backStackEntry.arguments?.getInt("index"),
             )
         }
 

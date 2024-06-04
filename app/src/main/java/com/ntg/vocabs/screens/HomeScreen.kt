@@ -358,7 +358,7 @@ private fun Content(
                 isBookmarked = word.bookmarked.orFalse(),
                 unavailableBackup = if (!isPurchased && wordsList.filter { !it.synced.orFalse() }.size < 50) !word.synced.orFalse() else false
             ) { _, _, _ ->
-                navController.navigate(Screens.WordDetailScreen.name + "?wordId=$index")
+                navController.navigate(Screens.WordDetailScreen.name + "?index=$index")
             }
         }
 

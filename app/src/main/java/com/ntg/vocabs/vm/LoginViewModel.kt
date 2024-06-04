@@ -25,7 +25,6 @@ import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.api.auth.AuthRepository
 import com.ntg.vocabs.di.DataRepository
 import com.ntg.vocabs.model.GoogleSignInState
-import com.ntg.vocabs.model.response.RecentMessage
 import com.ntg.vocabs.model.response.ResponseBody
 import com.ntg.vocabs.model.response.VerifyUserRes
 import com.ntg.vocabs.model.sign.SignInState

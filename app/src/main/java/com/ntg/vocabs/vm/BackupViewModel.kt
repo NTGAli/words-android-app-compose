@@ -1,7 +1,6 @@
 package com.ntg.vocabs.vm
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,12 +35,12 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.Constant.VOCAB_FOLDER_NAME_DRIVE
 import com.ntg.vocabs.util.generateUniqueFiveDigitId
-import com.ntg.vocabs.util.worker.IMAGES
-import com.ntg.vocabs.util.worker.Voices
 import com.ntg.vocabs.util.getCurrentDate
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.unzip
+import com.ntg.vocabs.util.worker.IMAGES
+import com.ntg.vocabs.util.worker.Voices
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -419,7 +418,7 @@ class BackupViewModel @Inject constructor(
 
     }
 
-    fun restoreVocabularies(email: String, onSuccess: (Boolean) -> Unit) {
+    fun restoreVocabularies(email: String, onSuccess: (String?) -> Unit) {
         val db = mFirestore
         val wordsRef = db.collection(BuildConfig.VOCAB_PATH_DB).document(email).collection(BACKUP_WORDS)
         val listRef = db.collection(BuildConfig.VOCAB_PATH_DB).document(email).collection(BACKUP_LISTS)
@@ -438,10 +437,10 @@ class BackupViewModel @Inject constructor(
                     }
 
                 }
-                onSuccess.invoke(true)
+                onSuccess.invoke(BACKUP_WORDS)
             }
             .addOnFailureListener { exception ->
-                onSuccess.invoke(false)
+                onSuccess.invoke(null)
             }
 
 
@@ -455,10 +454,10 @@ class BackupViewModel @Inject constructor(
                         vocabListDao.insert(vocabList)
                     }
                 }
-                onSuccess.invoke(true)
+                onSuccess.invoke(BACKUP_LISTS)
             }
             .addOnFailureListener { exception ->
-                onSuccess.invoke(false)
+                onSuccess.invoke(null)
             }
 
 
@@ -471,13 +470,14 @@ class BackupViewModel @Inject constructor(
                     vocabTime.synced = true
                     vocabTime.fid = document.id
                     viewModelScope.launch {
+                        timber("timeSpentDaoINSERT ::::::: ${vocabTime.id} --------- $vocabTime")
                         timeSpentDao.insert(vocabTime)
                     }
                 }
-                onSuccess.invoke(true)
+                onSuccess.invoke(BACKUP_TIMES)
             }
             .addOnFailureListener { exception ->
-                onSuccess.invoke(false)
+                onSuccess.invoke(null)
             }
     }
 

@@ -5,9 +5,15 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -15,9 +21,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +46,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
@@ -36,11 +56,22 @@ import com.ntg.vocabs.components.EmptyWidget
 import com.ntg.vocabs.components.ExampleComponent
 import com.ntg.vocabs.components.SelectableImage
 import com.ntg.vocabs.components.TextDividerAlign
-import com.ntg.vocabs.model.components.*
+import com.ntg.vocabs.model.components.AppbarItem
+import com.ntg.vocabs.model.components.ButtonStyle
+import com.ntg.vocabs.model.components.ButtonType
+import com.ntg.vocabs.model.components.PopupItem
+import com.ntg.vocabs.model.components.TextWithContext
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.playback.AndroidAudioPlayer
-import com.ntg.vocabs.ui.theme.*
+import com.ntg.vocabs.ui.theme.Warning300
+import com.ntg.vocabs.ui.theme.Warning800
+import com.ntg.vocabs.ui.theme.Warning900
+import com.ntg.vocabs.ui.theme.fontMedium14
+import com.ntg.vocabs.ui.theme.fontMedium16
+import com.ntg.vocabs.ui.theme.fontMedium24
+import com.ntg.vocabs.ui.theme.fontRegular14
+import com.ntg.vocabs.ui.theme.fontRegular16
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.timber
@@ -59,36 +90,42 @@ fun WordDetailScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
     loginViewModel: LoginViewModel,
-    index: Int?
+    wordId: Int?,
+    index: Int?,
 ) {
 
     val count = wordViewModel.getSizeOfWords().observeAsState(initial = null).value
+    val listId = wordViewModel.currentList().observeAsState(initial = null).value?.id
 
-    val pagerState = rememberPagerState(pageCount = {
-        count.orZero()
-    }, initialPage = index.orZero())
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    if (listId != null){
+        val pagerState = rememberPagerState(pageCount = {
+            if (index != null && index != -1) count.orZero() else 1
+        }, initialPage = if (index != null && index != -1) index.orZero() else 1)
 
-    val word = wordViewModel.getWordsBaseListId(1).observeAsState().value?.get(pagerState.currentPage)
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            SetupAppbar(
-                navController = navController,
-                title = word?.word.orEmpty(),
-                scrollBehavior,
-                word?.id ?: -1,
-                wordViewModel,
-                word
-            )
-        },
-        content = { innerPadding ->
-            HorizontalPager(state = pagerState) {
-                Content(paddingValues = innerPadding, word, loginViewModel, navController, count)
+        val word = if (index != null && index != -1) wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value?.get(pagerState.currentPage)
+        else wordViewModel.findWord(wordId)?.observeAsState()?.value
+
+        Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                SetupAppbar(
+                    navController = navController,
+                    title = word?.word.orEmpty(),
+                    scrollBehavior,
+                    word?.id ?: -1,
+                    wordViewModel,
+                    word
+                )
+            },
+            content = { innerPadding ->
+                HorizontalPager(state = pagerState) {
+                    Content(paddingValues = innerPadding, word, loginViewModel, navController, count)
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

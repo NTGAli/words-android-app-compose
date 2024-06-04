@@ -42,9 +42,9 @@ fun RestoringBackupOnServerScreen(
             context.toast(R.string.sth_wrong)
         }
 
-        backupViewModel.restoreVocabularies(email){
-            loginViewModel.checkBackup(it)
-        }
+//        backupViewModel.restoreVocabularies(email){
+//            loginViewModel.checkBackup(true)
+//        }
     })
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

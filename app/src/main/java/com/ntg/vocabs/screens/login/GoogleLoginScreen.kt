@@ -46,6 +46,9 @@ import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.ButtonType
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.ui.theme.fontMedium14
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
+import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.GoogleAuthUiClient
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
@@ -53,6 +56,11 @@ import com.ntg.vocabs.util.validEmail
 import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.SignInViewModel
+
+
+private var wordRestored = false
+private var listRestored = false
+private var timeRestored = false
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,25 +159,38 @@ private fun Content(
     val googleSignInState = loginViewModel.googleState.value
 
     LaunchedEffect(key1 = googleSignInState, block = {
+        timber("restoreVocabularies :::: $googleSignInState")
         if (googleSignInState.success != null) {
+
             loadingScreen = true
             val userData = googleAuthUiClient.getSingInUser()
-
-
-
             backupViewModel.restoreBackupFromServer(context, userData?.email.orEmpty()){
                 context.toast(R.string.sth_wrong)
                 loading.value = false
             }
 
+            loginViewModel.createUserDocument(userData?.email.orEmpty())
+
             backupViewModel.restoreVocabularies(userData?.email.orEmpty()){
-                loginViewModel.checkBackup(it)
-                loginViewModel.createUserDocument(userData?.email.orEmpty())
-                loginViewModel.setUsername(userData?.username.orEmpty())
-                loginViewModel.setUserEmail(userData?.email.orEmpty())
-                loading.value = false
-                if (!skipBtn){
-                    navController.navigate(Screens.PaywallScreen.name)
+
+                timber("restoreVocabularies :::: $it")
+
+                if (it == BACKUP_WORDS){
+                    wordRestored = true
+                }else if (it == BACKUP_LISTS){
+                    listRestored = true
+                }else if (it == BACKUP_TIMES){
+                    timeRestored = true
+                }
+
+                if (wordRestored && listRestored && timeRestored){
+                    loginViewModel.checkBackup(true)
+                    loginViewModel.setUsername(userData?.username.orEmpty())
+                    loginViewModel.setUserEmail(userData?.email.orEmpty())
+                    loading.value = false
+                    if (!skipBtn){
+                        navController.navigate(Screens.PaywallScreen.name)
+                    }
                 }
             }
 
