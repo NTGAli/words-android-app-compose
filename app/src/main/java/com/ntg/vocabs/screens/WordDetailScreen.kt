@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -72,6 +73,7 @@ import com.ntg.vocabs.ui.theme.fontMedium16
 import com.ntg.vocabs.ui.theme.fontMedium24
 import com.ntg.vocabs.ui.theme.fontRegular14
 import com.ntg.vocabs.ui.theme.fontRegular16
+import com.ntg.vocabs.util.getColorRevision
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.timber
@@ -179,7 +181,14 @@ private fun SetupAppbar(
                 0,
                 if (word?.bookmarked.orFalse()) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder
             )
-        )
+        ),
+        titleState = {
+            Box(modifier =
+            Modifier.padding(start = 8.dp)
+                .then(getColorRevision(word?.revisionCount.orZero(), word?.lastRevisionTime))
+            )
+
+        }
     )
 
 

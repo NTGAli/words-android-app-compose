@@ -2,13 +2,19 @@ package com.ntg.vocabs
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.asLiveData
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
 import androidx.work.Data
@@ -28,13 +35,15 @@ import androidx.work.WorkManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.gson.Gson
+import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.db.AutoInsertWorker
 import com.ntg.vocabs.model.SpendTimeType
 import com.ntg.vocabs.model.db.VocabItemList
-import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.AppNavHost
 import com.ntg.vocabs.nav.Screens
+import com.ntg.vocabs.services.AlarmReceiver
+import com.ntg.vocabs.services.ReminderService
 import com.ntg.vocabs.ui.theme.AppTheme
 import com.ntg.vocabs.util.Constant
 import com.ntg.vocabs.util.Constant.BACKUPS
@@ -42,14 +51,11 @@ import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
 import com.ntg.vocabs.util.checkInternet
-import com.ntg.vocabs.util.generateUniqueFiveDigitId
-import com.ntg.vocabs.util.getEndOfWeek
-import com.ntg.vocabs.util.getFirstDayOfWeek
-import com.ntg.vocabs.util.getStartOfWeek
+import com.ntg.vocabs.util.getFormattedDateInString
+import com.ntg.vocabs.util.nextTenMinutes
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orTrue
-import com.ntg.vocabs.util.orZero
-import com.ntg.vocabs.util.ordinal
+import com.ntg.vocabs.util.showToastMessage
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.worker.FirebaseBackupWorker
 import com.ntg.vocabs.util.worker.MediaBackupWorker
@@ -64,6 +70,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.util.Calendar
 
 
 @AndroidEntryPoint
@@ -80,6 +87,9 @@ class MainActivity : ComponentActivity() {
     private var currentScreen = Screens.HomeScreen.name
     var listId: VocabItemList? = null
     private var revisionState = false
+    private var isChecked = false
+    private lateinit var alarmManager: AlarmManager
+    private val myCalendar = Calendar.getInstance()
 
 
     @OptIn(ExperimentalPermissionsApi::class)
@@ -134,94 +144,99 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.background(MaterialTheme.colorScheme.background)
                 ) {
-                    AppNavHost(
-                        wordViewModel = wordViewModel,
-                        navController = navController,
-                        calendarViewModel = calendarViewModel,
-                        loginViewModel = loginViewModel,
-                        signInViewModel = signInViewModel,
-                        messageBoxViewModel = messageBoxViewModel,
-                        dataViewModel = dataViewModel,
-                        backupViewModel = backupViewModel,
-                        startDestination = startDes.value
-                    ) { _, navDestination, _ ->
+                    Column {
+//                        CustomButton(text = "test"){
+//                            setRemainderAlarm("sample23", "test23", 1214,this@MainActivity)
+//                        }
+                        AppNavHost(
+                            wordViewModel = wordViewModel,
+                            navController = navController,
+                            calendarViewModel = calendarViewModel,
+                            loginViewModel = loginViewModel,
+                            signInViewModel = signInViewModel,
+                            messageBoxViewModel = messageBoxViewModel,
+                            dataViewModel = dataViewModel,
+                            backupViewModel = backupViewModel,
+                            startDestination = startDes.value
+                        ) { _, navDestination, _ ->
 
 
-                        if (navDestination.route.orEmpty() == currentDes.value) return@AppNavHost
+                            if (navDestination.route.orEmpty() == currentDes.value) return@AppNavHost
 
-                        timber("onDestinationChangeListener ${navDestination.route}")
-                        calendarViewModel.currentScreen = navDestination.route
-                        currentDes.value = navDestination.route.orEmpty()
-                        currentScreen = navDestination.route.orEmpty()
+                            timber("onDestinationChangeListener ${navDestination.route}")
+                            calendarViewModel.currentScreen = navDestination.route
+                            currentDes.value = navDestination.route.orEmpty()
+                            currentScreen = navDestination.route.orEmpty()
 
-                        when (navDestination.route) {
-                            Screens.MessagesBoxScreen.name -> {
-                                if (!checkInternet()) {
-                                    navController.navigate(Screens.NoInternetConnection.name + "?screen=${navDestination.route}")
+                            when (navDestination.route) {
+                                Screens.MessagesBoxScreen.name -> {
+                                    if (!checkInternet()) {
+                                        navController.navigate(Screens.NoInternetConnection.name + "?screen=${navDestination.route}")
+                                    }
                                 }
+
                             }
 
-                        }
+                            if (listId != null) {
 
-                        if (listId != null) {
+                                with(navDestination.route.orEmpty()) {
 
-                            with(navDestination.route.orEmpty()) {
-
-                                timber("CCCCCCCCCCCCCCCC ::::: $this ------ ${this.contains(Screens.RevisionScreen.name)}")
-                                when {
-                                    contains(Screens.LoginWithPasswordScreen.name) ||
-                                            contains(Screens.GoogleLoginScreen.name) ||
-                                            contains(Screens.CodeScreen.name) ||
-                                            contains(Screens.FinishScreen.name) ||
-                                            contains(Screens.SplashScreen.name) ||
-                                            contains(Screens.SplashScreen.name)
-                                    -> {
-                                        timber("LoginPages")
-                                    }
-
-                                    contains(Screens.RevisionScreen.name) ||
-                                            contains(Screens.WritingScreen.name)
-                                    -> {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && startTime != 0L) {
-                                            calendarViewModel.insertSpendTime(
-                                                SpendTimeType.Learning,
-                                                listId!!.id,
-                                                startTime
-                                            )
+                                    timber("CCCCCCCCCCCCCCCC ::::: $this ------ ${this.contains(Screens.RevisionScreen.name)}")
+                                    when {
+                                        contains(Screens.LoginWithPasswordScreen.name) ||
+                                                contains(Screens.GoogleLoginScreen.name) ||
+                                                contains(Screens.CodeScreen.name) ||
+                                                contains(Screens.FinishScreen.name) ||
+                                                contains(Screens.SplashScreen.name) ||
+                                                contains(Screens.SplashScreen.name)
+                                        -> {
+                                            timber("LoginPages")
                                         }
-                                        startTime = System.currentTimeMillis()
-                                        revisionState = true
-                                    }
 
-                                    else -> {
+                                        contains(Screens.RevisionScreen.name) ||
+                                                contains(Screens.WritingScreen.name)
+                                        -> {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && startTime != 0L) {
+                                                calendarViewModel.insertSpendTime(
+                                                    SpendTimeType.Learning,
+                                                    listId!!.id,
+                                                    startTime
+                                                )
+                                            }
+                                            startTime = System.currentTimeMillis()
+                                            revisionState = true
+                                        }
 
-                                        if (startTime != 0L){
-                                            if (revisionState){
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                    calendarViewModel.insertSpendTime(
-                                                        SpendTimeType.Revision,
-                                                        listId!!.id,
-                                                        startTime
-                                                    )
-                                                }
-                                                revisionState = false
-                                            }else{
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                    calendarViewModel.insertSpendTime(
-                                                        SpendTimeType.Learning,
-                                                        listId!!.id,
-                                                        startTime
-                                                    )
+                                        else -> {
+
+                                            if (startTime != 0L){
+                                                if (revisionState){
+                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                        calendarViewModel.insertSpendTime(
+                                                            SpendTimeType.Revision,
+                                                            listId!!.id,
+                                                            startTime
+                                                        )
+                                                    }
+                                                    revisionState = false
+                                                }else{
+                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                        calendarViewModel.insertSpendTime(
+                                                            SpendTimeType.Learning,
+                                                            listId!!.id,
+                                                            startTime
+                                                        )
+                                                    }
                                                 }
                                             }
+                                            startTime = System.currentTimeMillis()
                                         }
-                                        startTime = System.currentTimeMillis()
-                                    }
 
+                                    }
                                 }
                             }
-                        }
 
+                        }
                     }
                 }
 
@@ -278,12 +293,10 @@ class MainActivity : ComponentActivity() {
 
         }
 
-        loginViewModel.allowThirdDictionary()
-        loginViewModel.allowDictionary.observe(this){
-            if (it != null){
-                timber("allowDictionary ::::: $it")
-                loginViewModel.setAllowDictionary(it)
-            }
+        loginViewModel.getUserData().asLiveData().observe(this) {
+            if (it == null && isChecked) return@observe
+            loginViewModel.checkIsVipUsers(it.email)
+            isChecked = true
         }
 
     }
@@ -350,6 +363,71 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+
+    private fun setRemainderAlarm(savedReminderId: Long) {
+        myCalendar.add(Calendar.MINUTE, 3)
+        alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val reminderService = ReminderService()
+        val reminderReceiverIntent = Intent(this, AlarmReceiver::class.java)
+
+        reminderReceiverIntent.putExtra("reminderId", savedReminderId)
+        reminderReceiverIntent.putExtra("isServiceRunning", isServiceRunning(reminderService))
+        val pendingIntent =
+            PendingIntent.getBroadcast(this, savedReminderId.toInt(), reminderReceiverIntent,
+                PendingIntent.FLAG_IMMUTABLE)
+        val formattedDate = getFormattedDateInString(myCalendar.timeInMillis, "dd/MM/YYYY HH:mm")
+        Log.d("TimeSetInMillis:", formattedDate)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, myCalendar.timeInMillis, pendingIntent
+            )
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, myCalendar.timeInMillis, pendingIntent)
+        }
+
+        showToastMessage(this, "Alarm is set at : $formattedDate")
+        finish()
+    }
+
+
+    fun setRemainderAlarm(word: String, type: String,id: Int, context: Context) {
+        myCalendar.add(Calendar.MINUTE, 3)
+//    myCalendar.set(Calendar.HOUR_OF_DAY, 10)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val reminderService = ReminderService()
+        val reminderReceiverIntent = Intent(this, AlarmReceiver::class.java)
+
+        reminderReceiverIntent.putExtra("word", word)
+        reminderReceiverIntent.putExtra("type", type)
+        reminderReceiverIntent.putExtra("id", id)
+        reminderReceiverIntent.putExtra("isServiceRunning",
+            com.ntg.vocabs.util.isServiceRunning(reminderService, this)
+        )
+        val pendingIntent =
+            PendingIntent.getBroadcast(this, id, reminderReceiverIntent,
+                PendingIntent.FLAG_IMMUTABLE)
+        val formattedDate = getFormattedDateInString(myCalendar.timeInMillis, "dd/MM/YYYY HH:mm")
+        timber("TimeSetInMillis:", "$formattedDate --- $id")
+
+        alarmManager.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP, myCalendar.timeInMillis, pendingIntent
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    private fun isServiceRunning(reminderService: ReminderService): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (reminderService.javaClass.name == service.service.className) {
+                Log.i("isMyServiceRunning?", true.toString() + "")
+                return true
+            }
+        }
+        Log.i("isMyServiceRunning?", false.toString() + "")
+        return false
     }
 
 }

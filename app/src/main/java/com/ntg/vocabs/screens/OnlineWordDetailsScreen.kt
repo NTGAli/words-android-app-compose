@@ -104,7 +104,7 @@ fun OnlineWordDetailsScreen(
 
     val isAllowThirdDictionary =
         loginViewModel.getUserData()
-            .collectAsState(initial = null).value?.allowThirdDictionary.orTrue()
+            .collectAsState(initial = null).value?.allowThirdDictionary.orFalse()
 
     var openBottomSheet by remember {
         mutableStateOf(false)

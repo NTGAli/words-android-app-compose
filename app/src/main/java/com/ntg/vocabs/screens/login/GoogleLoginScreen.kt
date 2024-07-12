@@ -143,6 +143,8 @@ private fun Content(
     }
 
 
+    //Disable third dictionary for default
+    loginViewModel.setAllowDictionary(false)
 
     val launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {

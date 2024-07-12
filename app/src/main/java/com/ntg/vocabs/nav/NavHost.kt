@@ -462,6 +462,15 @@ fun AppNavHost(
                 backStackEntry.arguments?.getString("type").orEmpty()
             )
         }
+
+        composable(
+            Screens.ReviewAiScreen.name
+        ) {
+            ReviewAiScreen(
+                navController = navController,
+                wordViewModel = wordViewModel
+            )
+        }
     }
 
 }

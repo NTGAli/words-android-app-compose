@@ -93,7 +93,6 @@ import com.ntg.vocabs.vm.BackupViewModel
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.MessageBoxViewModel
 import com.ntg.vocabs.vm.WordViewModel
-import kotlinx.coroutines.FlowPreview
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -130,16 +129,6 @@ fun HomeScreen(
                 voiceSearch = {
                     navController.navigate(Screens.AllWordsScreen.name + "?openSearch=${true}" + "&query=$it")
                 },
-//                backupOnClick = {
-//
-//                    if (backupOption.isEmpty() || backupOption == "Never" || backupOption == "Only when i tap ‘backup’") {
-//                        navController.navigate(Screens.AskBackupScreen.name)
-//                    } else {
-//                        navController.navigate(Screens.BackupScreen.name)
-//                    }
-//
-//                }
-
                 subscription = {
                     navController.navigate(Screens.ExplainSubscriptionScreen.name)
                 }
@@ -160,27 +149,6 @@ fun HomeScreen(
                 Icon(imageVector = Icons.Rounded.Add, tint = Color.Black, contentDescription = "FL")
             }
         },
-//        bottomBar = {
-//            var visible by remember {
-//                mutableStateOf(false)
-//            }
-//            Button(onClick = {
-//                visible = !visible
-//            }) {
-//                Text(text = "CLICK")
-//            }
-//
-//            AnimatedVisibility(
-//                visible = visible,
-//                enter = ExtendedFabExpandAnimation,
-//                exit = ExtendedFabCollapseAnimation,
-//            ) {
-//                Row(Modifier.clearAndSetSemantics {}.background(MaterialTheme.colorScheme.primary).fillMaxWidth()) {
-//                    Spacer(Modifier.width(ExtendedFabEndIconPadding))
-//                    Text(text = "Hiiiiiiiiiiiiiiiiiiii")
-//                }
-//            }
-//        }
     )
 
 

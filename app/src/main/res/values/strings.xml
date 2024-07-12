@@ -266,5 +266,10 @@
     <string name="notification_permission_off">Notifications are off. You will miss your review time. Please enable notifications.</string>
     <string name="grant_permission">Grant\nPermission</string>
     <string name="already_added">This word has already been added.</string>
+    <string name="review_with_ai">Review With AI (beta)</string>
+    <string name="maje_sentence_with_format">Make a sentence using \'%s\' as a %s.</string>
+    <string name="ai_generating">AI generaing</string>
+    <string name="prompt_left_format">%s prompt left</string>
+    <string name="chack">Check</string>
 
 </resources>

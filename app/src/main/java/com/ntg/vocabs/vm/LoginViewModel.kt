@@ -27,10 +27,12 @@ import com.ntg.vocabs.di.DataRepository
 import com.ntg.vocabs.model.GoogleSignInState
 import com.ntg.vocabs.model.response.ResponseBody
 import com.ntg.vocabs.model.response.VerifyUserRes
+import com.ntg.vocabs.model.response.VipUser
 import com.ntg.vocabs.model.sign.SignInState
 import com.ntg.vocabs.util.Resource
 import com.ntg.vocabs.util.UserStore
 import com.ntg.vocabs.util.generateCode
+import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.safeApiCall
 import com.ntg.vocabs.util.timber
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -225,6 +227,7 @@ class LoginViewModel @Inject constructor(
     }
 
     fun setPurchase(isSuccess: Boolean) = viewModelScope.launch {
+        timber("setPurchase :::: $isSuccess")
         dataRepository.isUserPurchased(isSuccess)
     }
 
@@ -414,6 +417,33 @@ class LoginViewModel @Inject constructor(
         messagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 allowDictionary.value = snapshot.getValue(Boolean::class.java) ?: false
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Failed to read value: ${error.toException()}")
+            }
+        })
+    }
+
+    private var isChecked = false
+    fun checkIsVipUsers(userMail: String) {
+        if (isChecked) return
+        val messagesRef = database.child("vipUser")
+        messagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                isChecked = true
+                for (messageSnapshot in snapshot.children) {
+                    val user = messageSnapshot.getValue(VipUser::class.java)
+                    if (user != null) {
+                        if (user.email != null && user.email.lowercase() == userMail.lowercase()){
+                            timber("VipUser ::: $user --- $userMail --- ${user?.email} -- ${user?.pro} $messageSnapshot")
+                            setAllowDictionary(true)
+                            if (user.pro.orFalse()){
+                                setPurchase(true)
+                            }
+                        }
+                    }
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {

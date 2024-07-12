@@ -49,6 +49,8 @@ enum class Screens {
     GoogleLoginScreen,
     TermsAndConditionsScreen,
     SuccessPurchaseScreen
+    ,
+    ReviewAiScreen
 
 
 }

@@ -1,20 +1,13 @@
 package com.ntg.vocabs.vm
 
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import androidx.paging.cachedIn
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.QueryDocumentSnapshot
-import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
@@ -44,15 +37,13 @@ import com.ntg.vocabs.model.db.TimeSpent
 import com.ntg.vocabs.model.db.VocabItemList
 import com.ntg.vocabs.model.db.Word
 import com.ntg.vocabs.model.req.BackupUserData
+import com.ntg.vocabs.model.response.AiResponse
 import com.ntg.vocabs.model.response.DictionaryResItem
 import com.ntg.vocabs.model.response.ResponseBody
 import com.ntg.vocabs.model.response.WordDataItem
 import com.ntg.vocabs.model.response.WordVocab
 import com.ntg.vocabs.util.Constant
-import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_LISTS
 import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_TIMES
-import com.ntg.vocabs.util.Constant.BackTypes.BACKUP_WORDS
-import com.ntg.vocabs.util.getEndOfWeek
 import com.ntg.vocabs.util.getStartOfWeek
 import com.ntg.vocabs.util.getUnixTimeNDaysAgo
 import com.ntg.vocabs.util.safeApiCall
@@ -107,6 +98,7 @@ class WordViewModel @Inject constructor(
     private var germanVerbs: LiveData<List<GermanVerbs>> = MutableLiveData()
     private var englishVerb: LiveData<EnglishVerbs> = MutableLiveData()
     var searchedWord: MutableLiveData<List<Word>> = MutableLiveData()
+    var aiCorrection: MutableLiveData<AiResponse> = MutableLiveData()
     var searchedWordOnBookmarked: MutableLiveData<List<Word>> = MutableLiveData()
     var searchedRecentWord: MutableLiveData<List<Word>> = MutableLiveData()
     private var allValidTimeSpentBaseListId: LiveData<List<TimeSpent>> = MutableLiveData()
@@ -749,5 +741,34 @@ class WordViewModel @Inject constructor(
             }
             .addOnFailureListener { exception ->
             }
+    }
+
+
+    fun checkUserSentenceAI(sentence: String) {
+//        val model = GenerativeModel(
+//            "gemini-1.5-flash",
+//            // Retrieve API key as an environmental variable defined in a Build Configuration
+//            // see https://github.com/google/secrets-gradle-plugin for further instructions
+//            BuildConfig.geminiApiKey,
+//            generationConfig = generationConfig {
+//                temperature = 1f
+//                topK = 64
+//                topP = 0.95f
+//                maxOutputTokens = 3000
+//                responseMimeType = "text/plain"
+//            },
+//            // safetySettings = Adjust safety settings
+//            // See https://ai.google.dev/gemini-api/docs/safety-settings
+//            systemInstruction = content { text("I give you a sentence.Correct it and respond like this:\n{\ncorrect: \"\",\nmistakes: [{type: \"\", position: [0, 0], correct: \"\"}],\nacceptable: true\n}\nIf the sentence is correct:\n{isCorrect: true}\nJust respond in the JSON format above. Score between 0 and 10. Type can be grammar, spell, punctuation. position:start and end indices of the error in the original sentence.Acceptable:The sentence is understandable despite minor errors.") },
+//        )
+//
+//        val chat = model.startChat()
+//        viewModelScope.launch {
+//            val response = chat.sendMessage(sentence)
+//            timber("AIIIIIIIIIIIIIII :::::: $response")
+//            timber("AIIIIIIIIIIIIIII 2 :::::: ${response.text}")
+//
+//        }
+//        return aiCorrection
     }
 }

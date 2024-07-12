@@ -3,6 +3,7 @@ package com.ntg.vocabs.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -35,6 +37,7 @@ fun Appbar(
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     title: String = "",
+    titleState: @Composable () -> Unit = {},
     buttonText: String? = null,
     endText: String? = null,
     titleColor: Color = Secondary900,
@@ -60,11 +63,20 @@ fun Appbar(
 
             TopAppBar(
                 title = {
-                    Text(
-                        title,
-                        maxLines = 1,
-                        style = fontBold14(MaterialTheme.colorScheme.onBackground)
-                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            title,
+                            maxLines = 1,
+                            style = fontBold14(MaterialTheme.colorScheme.onBackground)
+                        )
+
+                        titleState()
+
+                    }
+
                 },
                 navigationIcon = {
                     if (enableNavigation) {

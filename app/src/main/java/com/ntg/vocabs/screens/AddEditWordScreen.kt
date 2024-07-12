@@ -1,13 +1,19 @@
 package com.ntg.vocabs.screens
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Context.NOTIFICATION_SERVICE
+import android.content.Intent
 import android.graphics.Bitmap
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -51,6 +57,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -81,6 +89,7 @@ import com.ntg.vocabs.model.then
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.playback.AndroidAudioPlayer
 import com.ntg.vocabs.record.AndroidAudioRecorder
+import com.ntg.vocabs.services.channelID
 import com.ntg.vocabs.ui.theme.Warning300
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.util.CompressImage
@@ -92,9 +101,11 @@ import com.ntg.vocabs.util.orDefault
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.orZero
+import com.ntg.vocabs.util.setRemainderAlarm
 import com.ntg.vocabs.util.setReviewNotification
 import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.util.toast
+import com.ntg.vocabs.util.worker.NotificationWorker
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.PermissionViewModel
 import com.ntg.vocabs.vm.WordViewModel
@@ -104,7 +115,25 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-
+import java.util.concurrent.TimeUnit
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.AlertDialog
+import android.app.PendingIntent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.ntg.vocabs.services.NotificationRcv
+import com.ntg.vocabs.services.notificationID
+import com.ntg.vocabs.util.getNextNDaysUnix
+import com.ntg.vocabs.util.nextRevisionDay
+import java.util.Calendar
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,6 +195,7 @@ fun AddEditWordScreen(
                     ex.add(example)
                     wordData.example = ex.toList()
                 }
+//                setRemainderAlarm(wordData.word.orEmpty(), wordData.type.orEmpty(), generateUniqueFiveDigitId(), context)
                 submitWord(wordData, wordViewModel, context, wordId != -1, email, navController)
 
             }
@@ -221,9 +251,7 @@ private fun submitWord(
             } else {
                 wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
-
-
-                setReviewNotification(context, wordData.word.orEmpty(), 1)
+                scheduleNotification(context, 0, wordData.word.orEmpty())
             }
 
             navController.popBackStack()
@@ -925,10 +953,12 @@ private fun Content(
                             }
 
                             is NetworkResult.Loading -> {
-
+//                                soundUrl.value = ""
+//                                pronunciation.value = ""
                             }
 
                             is NetworkResult.Success -> {
+                                fetchDataWord.value = false
                                 if (it.data != null) {
                                     timber("WORD_DATA_VOCAB :: ${it.data}")
                                     listOfDefinitions.clear()
@@ -949,12 +979,11 @@ private fun Content(
                                             it.data.data?.wordForms?.pastParticiple.orEmpty()
                                     }
 
-                                    soundUrl.value = it.data.data?.pronunciations?.first { it.accent == "am" }?.mp3.orEmpty()
+                                    soundUrl.value = it.data.data?.pronunciations?.first { it.pronunciation == "am" }?.mp3.orEmpty()
                                 } else {
                                     context.toast(context.getString(R.string.not_exist))
                                 }
 
-                                fetchDataWord.value = false
                             }
                         }
                     }
@@ -1359,7 +1388,7 @@ private fun Content(
             }
 
             if (listOfDefinitions.size > 3) {
-                items(listOfDefinitions.subList(2, listOfDefinitions.size - 1)) {
+                items(listOfDefinitions.subList(3, listOfDefinitions.size - 1)) {
                     AnimatedVisibility(visible = visible) {
                         SampleItem(
                             title = it,
@@ -1520,5 +1549,29 @@ private fun saveImageInFolder(bitmap: Bitmap?, context: Context, name: String): 
     }
 
     return directory
+}
+
+@SuppressLint("ScheduleExactAlarm")
+fun scheduleNotification(applicationContext: Context, revisionCount: Int, word: String) {
+    val intent = Intent(applicationContext, NotificationRcv::class.java)
+    val title = applicationContext.getString(R.string.review)
+    val message = applicationContext.getString(R.string.lets_review_format, word)
+    intent.putExtra("titleExtra", title)
+    intent.putExtra("messageExtra", message)
+    val pendingIntent = PendingIntent.getBroadcast(
+        applicationContext,
+        notificationID,
+        intent,
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    val alarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    val time = getNextNDaysUnix(nextRevisionDay(revisionCount))
+    alarmManager.setExactAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP,
+        time,
+        pendingIntent
+    )
 }
 

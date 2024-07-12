@@ -1,5 +1,6 @@
 package com.ntg.vocabs.util
 
+import android.app.ActivityManager
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -20,12 +21,18 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -36,8 +43,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -46,17 +53,17 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.model.Failure
 import com.ntg.vocabs.model.Result
 import com.ntg.vocabs.model.Success
+import com.ntg.vocabs.services.AlarmReceiver
+import com.ntg.vocabs.services.ReminderService
+import com.ntg.vocabs.ui.theme.Danger500
+import com.ntg.vocabs.ui.theme.Success500
+import com.ntg.vocabs.ui.theme.Warning500
 import com.ntg.vocabs.util.Constant.MAX_SIZE_IMAGE
-import com.ntg.vocabs.util.worker.ReviewWorker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import retrofit2.HttpException
@@ -69,6 +76,8 @@ import java.io.IOException
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Calendar
@@ -407,6 +416,94 @@ fun getIconStateRevision(revisionCount: Int, lsatRevisionTime: Long?): Painter {
     }
 }
 
+
+@Composable
+fun getColorRevision(revisionCount: Int, lsatRevisionTime: Long?): Modifier {
+
+    val diffTime =
+        getDaysBetweenTimestamps(lsatRevisionTime.orDefault(), System.currentTimeMillis())
+
+
+
+    val color =  when(revisionCount) {
+
+        0 -> {
+            when (diffTime) {
+
+                0 -> {
+                    Success500
+                }
+
+                in 1..2 -> {
+                    Warning500
+                }
+
+                else -> {
+                    Danger500
+                }
+
+            }
+        }
+
+        1 -> {
+            when (diffTime) {
+
+                in 0..5 -> {
+                    Success500
+                }
+
+                in 6..11 -> {
+                    Warning500
+                }
+
+                else -> {
+                    Danger500
+                }
+
+            }
+        }
+
+        2 -> {
+            when (diffTime) {
+
+                in 0..11 -> {
+                    Success500
+                }
+
+                in 12..15 -> {
+                    Warning500
+                }
+
+                else -> {
+                    Danger500
+                }
+            }
+        }
+
+        else -> {
+
+            when (diffTime) {
+
+                in 0..(revisionCount * 7) -> {
+                    Success500
+                }
+
+                in (revisionCount * 7)..(revisionCount + 10) -> {
+                    Warning500
+                }
+
+                else -> {
+                    Danger500
+                }
+
+            }
+
+        }
+    }
+
+    return Modifier.size(8.dp).clip(CircleShape).background(color)
+}
+
 fun generateCode(): Int {
     val random = kotlin.random.Random
     val fiveDigitNumber = random.nextInt(10000, 100000)
@@ -546,50 +643,19 @@ fun setReviewNotification(
 //    WorkManager.getInstance(context).enqueue(workRequest)
 }
 
-@RequiresApi(api = Build.VERSION_CODES.O)
-fun createNotificationChannel(context: Context) {
-    val id = "channelID"
-    val name = "Daily Alerts"
-    val des = "Channel Description A Brief"
-    val importance = NotificationManager.IMPORTANCE_DEFAULT
-    val channel = NotificationChannel(id, name, importance)
-    channel.description = des
-    val manager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
-    manager!!.createNotificationChannel(channel)
-}
-
-fun scheduleotification(calendar: Calendar, context: Context) {
-    val intent: Intent = Intent(context.getApplicationContext(), Notification::class.java)
-    intent.putExtra("titleExtra", "Dynamic Title")
-    intent.putExtra("textExtra", "Dynamic Text Body")
-    val pendingIntent = PendingIntent.getBroadcast(
-        context.applicationContext,
-        1,
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    )
-    val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager?
-    alarmManager!!.setExactAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP,
-        calendar.timeInMillis,
-        pendingIntent
-    )
-    Toast.makeText(context.getApplicationContext(), "Scheduled ", Toast.LENGTH_LONG).show()
-}
-
-class Notification : BroadcastReceiver()
-{
-    override fun onReceive(context: Context, intent: Intent) {
-        val message = intent.getStringExtra("textExtra").toString()
-        val title = intent.getStringExtra("titleExtra").toString()
-        val notification =
-            NotificationCompat.Builder(context, "21321").setSmallIcon(R.drawable.vocabs)
-                .setContentText(message).setContentTitle(title).build()
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(789798798, notification)
+fun getNextNDaysUnix(n: Int): Long {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val now = LocalDateTime.now()
+        LocalDateTime.now()
+        val futureDate = now.plusDays(n.toLong())
+        val futureInstant = futureDate.toInstant(ZoneOffset.UTC)
+        futureInstant.epochSecond
+    } else {
+        val currentTimeMillis = System.currentTimeMillis()
+        val futureTimeMillis = currentTimeMillis + TimeUnit.DAYS.toMillis(n.toLong())
+        futureTimeMillis / 1000
     }
 }
-
 
 fun Int.getUnixTimeNDaysAgo(): Long {
     val calendar = Calendar.getInstance()
@@ -782,6 +848,19 @@ fun Spanned.toAnnotatedString(): AnnotatedString = buildAnnotatedString {
     }
 }
 
+fun showToastMessage(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+}
+
+fun getFormattedDateInString(timeInMillis: Long, format: String): String {
+    val sdf = SimpleDateFormat(format, Locale.getDefault())
+    return sdf.format(timeInMillis)
+}
+
+fun getFormattedDate(timeInString: String, format: String): Date {
+    val sdf = SimpleDateFormat(format, Locale.getDefault())
+    return sdf.parse(timeInString)
+}
 
 fun Context.sendMail(to: String, subject: String) {
     try {
@@ -795,6 +874,48 @@ fun Context.sendMail(to: String, subject: String) {
     } catch (t: Throwable) {
         this.toast(this.getString(R.string.sth_wrong))
     }
+}
+
+fun setRemainderAlarm(word: String, type: String,id: Int, context: Context) {
+    val myCalendar = nextTenMinutes()
+//    myCalendar.set(Calendar.HOUR_OF_DAY, 10)
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val reminderService = ReminderService()
+    val reminderReceiverIntent = Intent(context, AlarmReceiver::class.java)
+
+    reminderReceiverIntent.putExtra("word", word)
+    reminderReceiverIntent.putExtra("type", type)
+    reminderReceiverIntent.putExtra("id", id)
+    reminderReceiverIntent.putExtra("isServiceRunning", isServiceRunning(reminderService, context))
+    val pendingIntent =
+        PendingIntent.getBroadcast(context, id, reminderReceiverIntent,
+            PendingIntent.FLAG_IMMUTABLE)
+    val formattedDate = getFormattedDateInString(myCalendar.timeInMillis, "dd/MM/YYYY HH:mm")
+    timber("TimeSetInMillis:", "$formattedDate --- $id")
+
+    alarmManager.setAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP, myCalendar.timeInMillis, pendingIntent
+    )
+}
+
+fun nextTenMinutes(): Calendar {
+    val myCalendar = Calendar.getInstance()
+    myCalendar.add(Calendar.MINUTE, 6)
+    timber("nextTenMinutes ::::: $myCalendar")
+    return myCalendar
+}
+
+@Suppress("DEPRECATION")
+fun isServiceRunning(reminderService: ReminderService, context: Context): Boolean {
+    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+        if (reminderService.javaClass.name == service.service.className) {
+            Log.i("isMyServiceRunning?", true.toString() + "")
+            return true
+        }
+    }
+    Log.i("isMyServiceRunning?", false.toString() + "")
+    return false
 }
 
 suspend fun <T> safeApiCall(

@@ -209,6 +209,25 @@ private fun Content(
             }
         }
 
+//        item {
+//            ReviewItem(
+//                modifier = Modifier
+//                    .padding(top = 8.dp)
+//                    .padding(horizontal = 16.dp),
+//                count = -1, title = stringResource(id = R.string.review_with_ai), isPro = !isPurchased) {
+//
+//                if (isPurchased){
+//                    if (wordsCount > 2){
+//                        navController.navigate(Screens.ReviewAiScreen.name)
+//                    }else{
+//                        ctx.toast(ctx.getString(R.string.add_more_than_two_words))
+//                    }
+//                }else{
+//                    openDialog = true
+//                }
+//            }
+//        }
+
 
     }
 

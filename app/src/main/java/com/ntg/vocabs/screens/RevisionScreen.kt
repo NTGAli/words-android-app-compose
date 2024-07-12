@@ -74,10 +74,6 @@ fun RevisionScreen(
 
         }
     )
-
-//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//        HandleLifecycle(calendarViewModel, wordViewModel)
-//    }
 }
 
 @Composable
@@ -175,7 +171,7 @@ private fun Content(
                         word!!.lastRevisionTime = System.currentTimeMillis()
                         word!!.synced = false
                         wordViewModel.editWord(word!!.id, word!!)
-                        setReviewNotification(ctx, word!!.word.orEmpty(),  nextRevisionDay(word!!.revisionCount))
+                        scheduleNotification(ctx, word!!.revisionCount, word?.word.orEmpty())
                     }
                     rejectedList.add(word!!)
                 } else {

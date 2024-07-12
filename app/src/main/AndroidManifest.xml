@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
 
     <application
@@ -42,7 +44,7 @@
             android:theme="@style/Theme.Vocabs">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -94,14 +96,20 @@
             android:enabled="true"
             android:stopWithTask="false" />
 
-        <receiver
-            android:name=".services.NotificationPublisher"
+        <service
+            android:name=".services.ReminderService"
             android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.ntg.vocabs.ACTION_SHOW_NOTIFICATION" />
-            </intent-filter>
-        </receiver>
+            android:exported="false"
+            android:process=":ReminderServiceProcess" />
+
+        <receiver
+            android:name=".services.AlarmReceiver"
+            android:enabled="true"
+            android:label="AlarmReceiver" />
+
+        <receiver
+            android:name=".services.NotificationRcv"
+            android:enabled="true"/>
 
         <provider
             android:name="androidx.startup.InitializationProvider"

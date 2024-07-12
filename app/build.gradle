@@ -23,7 +23,7 @@ android {
         applicationId "com.ntg.vocabs"
         minSdk 25
         targetSdk 33
-        versionCode 13
+        versionCode 14
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -34,6 +34,7 @@ android {
         buildConfigField("String", "DICTIONARY_API_KEY", DICTIONARY_API_KEY)
         buildConfigField("String", "VOCAB_API_KEY", VOCAB_API_KEY)
         buildConfigField("String", "VOCAB_PATH_DB", VOCAB_PATH_DB)
+        buildConfigField("String", "geminiApiKey", geminiApiKey)
 
     }
 
@@ -202,6 +203,8 @@ dependencies {
     implementation 'com.revenuecat.purchases:purchases:7.10.1'
     implementation 'com.revenuecat.purchases:purchases-ui:7.10.1'
 
+    //AI
+//    implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 
 
 }
