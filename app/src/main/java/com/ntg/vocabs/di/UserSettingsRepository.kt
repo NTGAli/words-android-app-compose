@@ -17,5 +17,6 @@ interface DataRepository {
     suspend fun clearAllUserData()
     suspend fun isUserPurchased(isPurchased: Boolean)
     suspend fun isAllowThirdDictionary(allow: Boolean)
+    suspend fun allowNotificationReminder(allow: Boolean)
 
 }

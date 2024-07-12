@@ -206,6 +206,10 @@ class LoginViewModel @Inject constructor(
         dataRepository.setUserEmail(email)
     }
 
+    fun setReminderNotification(allow: Boolean) = viewModelScope.launch {
+        dataRepository.allowNotificationReminder(allow)
+    }
+
     fun setBackupOption(option: String) = viewModelScope.launch {
         dataRepository.setBackupOption(option)
     }

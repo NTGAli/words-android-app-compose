@@ -560,6 +560,12 @@ class WordViewModel @Inject constructor(
         return _recentLocations
     }
 
+    fun setNotificationReminder(allow: Boolean){
+        viewModelScope.launch {
+            dataRepository.allowNotificationReminder(allow)
+        }
+    }
+
     fun isBookmarked(isBookmarked: Boolean, id: Int) =
         viewModelScope.launch { wordDao.isBookmark(isBookmarked, id) }
 

@@ -189,6 +189,7 @@ private fun Content(
                     loginViewModel.checkBackup(true)
                     loginViewModel.setUsername(userData?.username.orEmpty())
                     loginViewModel.setUserEmail(userData?.email.orEmpty())
+                    loginViewModel.setReminderNotification(true)
                     loading.value = false
                     if (!skipBtn){
                         navController.navigate(Screens.PaywallScreen.name)

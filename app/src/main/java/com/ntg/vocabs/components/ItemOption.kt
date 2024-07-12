@@ -21,6 +21,7 @@ import com.ntg.vocabs.R
 import com.ntg.vocabs.ui.theme.Success500
 import com.ntg.vocabs.ui.theme.fontRegular12
 import com.ntg.vocabs.ui.theme.fontRegular14
+import com.ntg.vocabs.util.orTrue
 
 @Composable
 fun ItemOption(
@@ -31,6 +32,8 @@ fun ItemOption(
     divider: Boolean = true,
     endIcon: Painter? = null,
     visibleWithAnimation: MutableState<Boolean> = remember { mutableStateOf(false) },
+    checkBox: Boolean? = null,
+    switchBox: Boolean? = null,
     loading: MutableState<Boolean> = remember { mutableStateOf(false) },
     onClick: () -> Unit
 ) {
@@ -122,7 +125,22 @@ fun ItemOption(
                         )
                     }
 
+                } else if (checkBox != null){
+                    Checkbox(
+                        modifier = modifier.padding(end = 8.dp),
+                        checked = checkBox,
+                        onCheckedChange = {
+                            onClick.invoke()
+                        })
+                }else if (switchBox != null){
+                    Switch(
+                        modifier = modifier.padding(end = 8.dp),
+                        checked = switchBox.orTrue(),
+                        onCheckedChange = {
+                            onClick.invoke()
+                        })
                 }
+
             }
 
 

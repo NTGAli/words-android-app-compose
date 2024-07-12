@@ -37,6 +37,7 @@ import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.CustomButton
 import com.ntg.vocabs.components.DescriptionType
 import com.ntg.vocabs.components.NeedProDialog
+import com.ntg.vocabs.components.NotificationPermissionNeed
 import com.ntg.vocabs.components.ReviewItem
 import com.ntg.vocabs.model.components.ButtonSize
 import com.ntg.vocabs.model.components.ButtonStyle
@@ -124,35 +125,11 @@ private fun Content(
 
         if (!notificationPermission){
             item {
-                Row(
-                    modifier = Modifier
+                NotificationPermissionNeed(
+                    Modifier
                         .padding(top = 24.dp)
                         .padding(horizontal = 16.dp)
-                        .background(color = Warning300, shape = RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Text(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
-                        text = stringResource(
-                            R.string.notification_permission_off
-                        ),
-                        style = fontRegular14(Warning900)
-                    )
-
-                    CustomButton(
-                        modifier = Modifier.padding(end = 8.dp),
-                        text = stringResource(id = R.string.grant_permission), size = ButtonSize.XS, style = ButtonStyle.Outline, type = ButtonType.Warning){
-                        val settingsIntent: Intent =
-                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                .putExtra(Settings.EXTRA_APP_PACKAGE, ctx.packageName)
-                        ctx.startActivity(settingsIntent)
-                    }
-                }
+                )
             }
         }
 

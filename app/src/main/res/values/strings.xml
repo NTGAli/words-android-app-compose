@@ -271,5 +271,7 @@
     <string name="ai_generating">AI generaing</string>
     <string name="prompt_left_format">%s prompt left</string>
     <string name="chack">Check</string>
+    <string name="notification">Notification</string>
+    <string name="show_reminder_review_notification">Show revision reminder</string>
 
 </resources>

@@ -2,7 +2,6 @@ package com.ntg.vocabs.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-//import com.ntg.mywords.UserDataAndSetting
 import com.ntg.vocabs.UserDataAndSetting
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -79,6 +78,12 @@ class DefaultDataRepository @Inject constructor(
     override suspend fun isAllowThirdDictionary(allow: Boolean) {
         recentLocationsDataStore.updateData {
             it.toBuilder().setAllowThirdDictionary(allow).build()
+        }
+    }
+
+    override suspend fun allowNotificationReminder(allow: Boolean) {
+        recentLocationsDataStore.updateData {
+            it.toBuilder().setNotificationReminder(allow).build()
         }
     }
 }

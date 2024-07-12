@@ -154,9 +154,14 @@ fun AddEditWordScreen(
         mutableStateOf<String?>(null)
     }
 
+    var allowReminder by remember {
+        mutableStateOf(false)
+    }
+
     loginViewModel.getUserData().collectAsState(initial = null).value.let { dataSettings ->
         if (dataSettings?.email != null) {
             email = dataSettings.email
+            allowReminder = dataSettings.notificationReminder
         }
     }
 
@@ -195,8 +200,7 @@ fun AddEditWordScreen(
                     ex.add(example)
                     wordData.example = ex.toList()
                 }
-//                setRemainderAlarm(wordData.word.orEmpty(), wordData.type.orEmpty(), generateUniqueFiveDigitId(), context)
-                submitWord(wordData, wordViewModel, context, wordId != -1, email, navController)
+                submitWord(wordData, wordViewModel, context, wordId != -1, email, navController, allowReminder)
 
             }
         }
@@ -231,7 +235,8 @@ private fun submitWord(
     context: Context,
     isEdit: Boolean,
     email: String?,
-    navController: NavController
+    navController: NavController,
+    allowReminder: Boolean
 ) {
     val result = notEmptyOrNull(wordData.word, context.getString(R.string.err_word_required))
         .then { notEmptyOrNull(wordData.type, context.getString(R.string.err_type_required)) }
@@ -251,7 +256,9 @@ private fun submitWord(
             } else {
                 wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
-                scheduleNotification(context, 0, wordData.word.orEmpty())
+                if (allowReminder){
+                    scheduleNotification(context, 0, wordData.word.orEmpty())
+                }
             }
 
             navController.popBackStack()

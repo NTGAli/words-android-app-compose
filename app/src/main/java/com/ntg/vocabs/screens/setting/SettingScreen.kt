@@ -1,5 +1,6 @@
 package com.ntg.vocabs.screens.setting
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -23,7 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -33,6 +38,7 @@ import com.ntg.vocabs.R
 import com.ntg.vocabs.api.NetworkResult
 import com.ntg.vocabs.components.Appbar
 import com.ntg.vocabs.components.ItemOption
+import com.ntg.vocabs.components.NotificationPermissionNeed
 import com.ntg.vocabs.model.req.BackupUserData
 import com.ntg.vocabs.nav.Screens
 import com.ntg.vocabs.screens.getGoogleSignInClient
@@ -88,6 +94,7 @@ fun SettingScreen(
 
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -101,6 +108,10 @@ private fun Content(
     val store = UserStore(LocalContext.current)
     val openBackupDialog = remember { mutableStateOf(false) }
     val openRestoreDialog = remember { mutableStateOf(false) }
+    val allowReminder by wordViewModel.getUserData().collectAsStateWithLifecycle(initialValue = null)
+
+    val notificationPermission =
+        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS).status.isGranted
 
     val restoreFromServer = remember {
         mutableStateOf(false)
@@ -255,6 +266,22 @@ private fun Content(
                 divider = false
             ) {
                 navController.navigate(Screens.ThemeScreen.name)
+            }
+
+            SettingTitle(title = stringResource(id = R.string.notification))
+            if (notificationPermission){
+                ItemOption(
+                    text = stringResource(id = R.string.show_reminder_review_notification),
+                    divider = false,
+                    switchBox = allowReminder?.notificationReminder.orTrue()
+                ) {
+                    wordViewModel.setNotificationReminder(!allowReminder?.notificationReminder.orTrue())
+                    timber("setNotificationReminder ${allowReminder?.notificationReminder}")
+                }
+            }else{
+                NotificationPermissionNeed(Modifier
+                    .padding(top = 4.dp)
+                    .padding(horizontal = 16.dp))
             }
 
             SettingTitle(title = stringResource(id = R.string.support_us))

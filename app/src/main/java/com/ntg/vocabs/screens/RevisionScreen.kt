@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ntg.vocabs.R
 import com.ntg.vocabs.components.Appbar
@@ -33,6 +34,7 @@ import com.ntg.vocabs.ui.theme.*
 import com.ntg.vocabs.util.getStateRevision
 import com.ntg.vocabs.util.nextRevisionDay
 import com.ntg.vocabs.util.orFalse
+import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.orZero
 import com.ntg.vocabs.util.setReviewNotification
 import com.ntg.vocabs.util.timber
@@ -56,6 +58,9 @@ fun RevisionScreen(
     var left by remember {
         mutableIntStateOf(0)
     }
+
+    val allowReminder by wordViewModel.getUserData().collectAsStateWithLifecycle(initialValue = null)
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -68,7 +73,8 @@ fun RevisionScreen(
         },
         content = { innerPadding ->
 
-            Content(paddingValues = innerPadding, wordViewModel, navController, isRandom){
+            Content(paddingValues = innerPadding, wordViewModel, navController, isRandom,
+                allowReminder?.notificationReminder.orTrue()){
                 left = it
             }
 
@@ -82,6 +88,7 @@ private fun Content(
     wordViewModel: WordViewModel,
     navController: NavController,
     isRandom: Boolean,
+    allowReminder: Boolean,
     onChange:(Int)-> Unit,
 ) {
 
@@ -171,7 +178,9 @@ private fun Content(
                         word!!.lastRevisionTime = System.currentTimeMillis()
                         word!!.synced = false
                         wordViewModel.editWord(word!!.id, word!!)
-                        scheduleNotification(ctx, word!!.revisionCount, word?.word.orEmpty())
+                        if (allowReminder){
+                            scheduleNotification(ctx, word!!.revisionCount, word?.word.orEmpty())
+                        }
                     }
                     rejectedList.add(word!!)
                 } else {
