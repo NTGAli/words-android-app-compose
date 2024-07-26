@@ -1563,11 +1563,13 @@ fun scheduleNotification(applicationContext: Context, revisionCount: Int, word: 
     val intent = Intent(applicationContext, NotificationRcv::class.java)
     val title = applicationContext.getString(R.string.review)
     val message = applicationContext.getString(R.string.lets_review_format, word)
+    val notificationId = generateUniqueFiveDigitId()
     intent.putExtra("titleExtra", title)
     intent.putExtra("messageExtra", message)
+    intent.putExtra(notificationID, notificationId)
     val pendingIntent = PendingIntent.getBroadcast(
         applicationContext,
-        notificationID,
+        notificationId,
         intent,
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     )
