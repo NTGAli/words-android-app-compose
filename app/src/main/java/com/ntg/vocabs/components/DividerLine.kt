@@ -21,7 +21,7 @@ fun DividerLine(
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
 
-        Divider(color = MaterialTheme.colorScheme.outlineVariant)
+        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
         Text(modifier = Modifier
             .padding(start = if (align == TextDividerAlign.START) 16.dp else 0.dp)
             .align(if (align == TextDividerAlign.CENTER) Alignment.Center else Alignment.CenterStart)

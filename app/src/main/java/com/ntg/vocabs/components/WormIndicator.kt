@@ -47,7 +47,7 @@ fun WormIndicator(
                     modifier = Modifier
                         .size(6.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.outlineVariant,
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = CircleShape
                         )
                 )

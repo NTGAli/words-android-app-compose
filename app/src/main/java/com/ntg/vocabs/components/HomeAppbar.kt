@@ -55,7 +55,7 @@ fun HomeAppbar(
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .background(MaterialTheme.colorScheme.surface)
                         .clickable {
                             searchCallback.invoke()
                         },
@@ -141,7 +141,10 @@ fun HomeAppbar(
                     )
                 }
                 Spacer(modifier = Modifier.padding(8.dp))
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                MaterialTheme.colorScheme.background
+            )
         )
 
         if (scrollBehavior?.state?.contentOffset.orZero() < -25f) {

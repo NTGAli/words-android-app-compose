@@ -1,13 +1,13 @@
 package com.ntg.vocabs.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -39,9 +39,10 @@ fun ShapeTileWidget(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(imageBackground)
-            .border(width = 1.dp, color = imageTint, shape = RoundedCornerShape(8.dp))
-            .aspectRatio(aspectRatio)
+            .background(MaterialTheme.colorScheme.surface)
+//            .border(width = 1.dp, color = imageTint, shape = RoundedCornerShape(8.dp))
+//            .aspectRatio(aspectRatio)
+
             .clickable(
                 onClick = onClick,
                 indication = rememberRipple(
@@ -49,44 +50,34 @@ fun ShapeTileWidget(
                 ),
                 interactionSource = remember { MutableInteractionSource() }
             )
+            .padding(vertical = 8.dp)
 
     ) {
         Row(modifier = Modifier
             .align(Alignment.Center)
             .padding(horizontal = 8.dp)) {
-
-            Box(
+            Icon(
                 modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(imageBackground),
-                contentAlignment = Alignment.Center
-
-            ) {
-
-                Icon(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxSize(),
-                    painter = painter,
-                    contentDescription = "img",
-                    tint = imageTint ?: Color.Black
+                    .padding(4.dp)
+                    .size(24.dp)
+                    .fillMaxSize()
+                    .background(imageBackground, shape = RoundedCornerShape(8.dp))
+                    .padding(4.dp)
+                ,
+                painter = painter,
+                contentDescription = "img",
+                tint = imageTint ?: Color.Black
 //                colorFilter= MaterialTheme.colorScheme.onPrimary,
-                )
-            }
+            )
 
-            Box(modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center) {
-
-                Column {
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally), text = title, style = if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) fontBold12(md_theme_light_onPrimaryContainer) else fontBold14(md_theme_light_onPrimaryContainer))
-                    Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = subTitle, style = if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) fontRegular12(md_theme_light_onPrimaryContainer) else fontRegular14(md_theme_light_onPrimaryContainer))
-                }
-
-
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(start = 8.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(modifier = Modifier, text = title, style = if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) fontBold12(MaterialTheme.colorScheme.onBackground) else fontBold14(MaterialTheme.colorScheme.onBackground))
+                Text(modifier = Modifier,text = subTitle, style = if(windowInfo.screenWidthInfo is WindowInfo.WindowType.Compact) fontRegular12(MaterialTheme.colorScheme.outlineVariant) else fontRegular14(MaterialTheme.colorScheme.outlineVariant))
             }
 
 

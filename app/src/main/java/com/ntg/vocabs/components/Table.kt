@@ -39,7 +39,7 @@ fun Table(
             .border(
                 width = 2.dp,
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.surfaceVariant
             )
     ) {
 
@@ -75,7 +75,7 @@ fun RowScope.TableCell(
     isTitle: Boolean = false
 ) {
     SelectionContainer(modifier = Modifier
-        .border(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant)
         .weight(weight)
         .padding(8.dp)) {
         Text(

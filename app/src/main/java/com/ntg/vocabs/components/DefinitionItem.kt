@@ -15,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontMedium14
+import com.ntg.vocabs.ui.theme.fontMedium16
+import com.ntg.vocabs.ui.theme.fontRegular14
 
 @Composable
 fun DefinitionItem(
@@ -40,12 +42,12 @@ fun DefinitionItem(
         Text(
             modifier = Modifier.padding(horizontal = 16.dp).padding(top = 12.dp, bottom = 12.dp),
             text = definition,
-            style = fontMedium14(MaterialTheme.colorScheme.onSurfaceVariant)
+            style = fontMedium16(MaterialTheme.colorScheme.onSurfaceVariant)
         )
 
         example.forEach {
             if (it.isNotEmpty()){
-                Text(modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 4.dp),text = it, style = fontMedium12(MaterialTheme.colorScheme.outline))
+                Text(modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 4.dp),text = it, style = fontRegular14(MaterialTheme.colorScheme.outline))
             }
         }
 

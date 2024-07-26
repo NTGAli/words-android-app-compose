@@ -40,7 +40,7 @@ fun BackupReportItem(
             .border(
                 width = 2.dp,
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.surfaceVariant
             )
             .wrapContentHeight()
     ) {

@@ -55,7 +55,7 @@ fun ButtonIcon(
             .border(
                 width = 2.dp,
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.surfaceVariant
             )
             .fillMaxWidth()
             .clickable(enabled = enable) {

@@ -74,7 +74,7 @@ fun CustomButton(
                 ButtonStyle.TextOnly -> {
                     background = Color.Transparent
                     borderColor = Color.Transparent
-                    textColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    textColor = MaterialTheme.colorScheme.primary
                 }
             }
 
