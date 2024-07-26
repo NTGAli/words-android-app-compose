@@ -32,6 +32,7 @@ import com.ntg.vocabs.components.TLButton
 import com.ntg.vocabs.components.TextChange
 import com.ntg.vocabs.components.TypewriterText
 import com.ntg.vocabs.components.WormIndicator
+import com.ntg.vocabs.screens.LottiePlayer
 import com.ntg.vocabs.ui.theme.Danger500
 import com.ntg.vocabs.ui.theme.fontMedium14
 import com.ntg.vocabs.ui.theme.fontMedium24
@@ -45,12 +46,12 @@ fun IntroScreen(
 ) {
 
     val icons = listOf(
-        painterResource(id = R.drawable.v_72),
-        painterResource(R.drawable.infinity_1),
-        painterResource(R.drawable.time_1),
-        painterResource(R.drawable.no_ads),
-        painterResource(R.drawable.survey_1),
-        painterResource(R.drawable.cloud),
+        R.raw.v_anim,
+        R.raw.infinity,
+        R.raw.track_anim,
+        R.raw.ad_anim,
+        R.raw.review_anim,
+        R.raw.backup_anim,
     )
 
     val titles = listOf(
@@ -98,11 +99,12 @@ fun IntroScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    Icon(
-                        modifier = Modifier.padding(top = 160.dp),
-                        painter = icons[index], contentDescription = null,
-                        tint = if (index != 3) MaterialTheme.colorScheme.primary else Danger500
-                    )
+                        LottiePlayer(
+                            modifier = Modifier
+                                .padding(top = 16.dp)
+                                .padding(horizontal = 32.dp),
+                            animation = icons[index]
+                        )
 
                 }
 
@@ -116,16 +118,13 @@ fun IntroScreen(
                     .fillMaxWidth()
                     .align(Alignment.TopCenter), horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-
-
                 TypewriterText(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally),
                     texts = listOf(
                         titles[pagerState.currentPage]
                     ),
-                    singleText = true
+                    singleText = true,
                 )
 
                 Text(

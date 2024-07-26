@@ -336,7 +336,13 @@ private fun Content(
         item {
             if (wordsList.isEmpty()) {
 
-                LottieExample()
+                LottiePlayer(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 32.dp),
+                    animation = R.raw.hi_anime,
+                    size = 200
+                )
 
 //                TypewriterText(
 //                    modifier = Modifier
@@ -407,18 +413,20 @@ fun FullScreenDialog(showDialog: Boolean, onClose: () -> Unit) {
 }
 
 @Composable
-fun LottieExample() {
+fun LottiePlayer(
+    modifier: Modifier,
+    animation: Int, size: Int = 250) {
 
-    var isPlaying by remember {
+    val isPlaying by remember {
         mutableStateOf(true)
     }
-    var speed by remember {
-        mutableStateOf(1f)
+    val speed by remember {
+        mutableFloatStateOf(1f)
     }
 
     val composition by rememberLottieComposition(
         LottieCompositionSpec
-            .RawRes(R.raw.ghost_animation)
+            .RawRes(animation)
     )
 
     val progress by animateLottieCompositionAsState(
@@ -431,16 +439,14 @@ fun LottieExample() {
     )
 
     Column(
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 32.dp),
+        modifier,
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         LottieAnimation(
             composition,
             progress,
-            modifier = Modifier.size(250.dp)
+            modifier = Modifier.size(size.dp)
         )
     }
 }
