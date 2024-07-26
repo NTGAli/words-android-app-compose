@@ -1,5 +1,6 @@
 package com.ntg.vocabs.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -127,10 +128,10 @@ fun Appbar(
                         )
                     }
                 },
-//                colors = TopAppBarDefaults.topAppBarColors(
-////                        MaterialTheme.colorScheme.background
-//                )
-//                ,
+                colors = TopAppBarDefaults.topAppBarColors(
+                        MaterialTheme.colorScheme.background
+                )
+                ,
 //                scrollBehavior = scrollBehavior,
                 windowInsets = TopAppBarDefaults.windowInsets
             )

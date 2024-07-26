@@ -96,7 +96,8 @@ fun SearchScreen(
                 if (language == "English" || language == "German") {
                     TabRow(
                         selectedTabIndex = tabIndex,
-                        contentColor = MaterialTheme.colorScheme.primary
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.background
                     ) {
                         tabData.forEachIndexed { index, title ->
                             Tab(
@@ -137,7 +138,7 @@ fun SearchScreen(
                             AllWordScreen(
                                 navController = navHostController,
                                 wordViewModel = wordViewModel,
-                                query = query.value
+                                q = query.value
                             )
                         } else if (tabData[index] == stringResource(id = R.string.verbs)) {
                             AllGermanVerbsScreen(
