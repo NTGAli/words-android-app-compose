@@ -141,7 +141,8 @@ fun AddEditWordScreen(
     navController: NavController,
     wordViewModel: WordViewModel,
     loginViewModel: LoginViewModel,
-    wordId: Int? = null
+    wordId: Int? = -1,
+    showAppbar: Boolean = true
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val context = LocalContext.current
@@ -168,11 +169,13 @@ fun AddEditWordScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            Appbar(
-                title = stringResource(R.string.add_new_word),
-                scrollBehavior = scrollBehavior,
-                navigationOnClick = { navController.popBackStack() }
-            )
+            if (showAppbar){
+                Appbar(
+                    title = stringResource(R.string.edit_word),
+                    scrollBehavior = scrollBehavior,
+                    navigationOnClick = { navController.popBackStack() }
+                )
+            }
         },
         content = { innerPadding ->
 
@@ -184,6 +187,7 @@ fun AddEditWordScreen(
                 wordViewModel = wordViewModel,
                 loginViewModel = loginViewModel,
                 email,
+                showAppbar,
                 wordData = {
                     wordData = it
                 },
@@ -286,6 +290,7 @@ private fun Content(
     wordViewModel: WordViewModel,
     loginViewModel: LoginViewModel,
     email: String?,
+    showAppbar: Boolean,
     wordData: (Word) -> Unit,
     exampleField: (String) -> Unit
 ) {
@@ -1022,6 +1027,12 @@ private fun Content(
             bottom = paddingValues.calculateBottomPadding()
         )
     ) {
+
+        item {
+            if (!showAppbar){
+                Spacer(modifier = Modifier.padding(8.dp))
+            }
+        }
 
         item {
             EditText(
