@@ -471,6 +471,27 @@ fun AppNavHost(
                 wordViewModel = wordViewModel
             )
         }
+
+        composable(
+            Screens.InsertWordScreen.name
+        ) {
+            InsertWordScreen(
+                navController = navController,
+                wordViewModel = wordViewModel,
+                loginViewModel = loginViewModel
+            )
+        }
+
+        composable(
+            Screens.AllWordsScreen.name
+        ) {
+            AllWordScreen(
+                navController = navController,
+                wordViewModel = wordViewModel,
+                q = "",
+                showSearchbar = true
+            )
+        }
     }
 
 }

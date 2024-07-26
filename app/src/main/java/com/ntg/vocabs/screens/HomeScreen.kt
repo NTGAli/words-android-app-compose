@@ -32,6 +32,7 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -142,7 +143,7 @@ fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(Screens.AddEditScreen.name)
+                    navController.navigate(Screens.AllWordsScreen.name)
                 },
                 containerColor = Primary200
             ) {
@@ -347,13 +348,12 @@ private fun Content(
 //                )
                 CustomButton(
                     modifier = Modifier
-//                        .offset(y = -(24).dp)
                         .fillMaxWidth(),
                     text = "add first word for this list",
                     style = ButtonStyle.TextOnly,
                     type = ButtonType.Primary
                 ) {
-                    navController.navigate(Screens.AddEditScreen.name)
+                    navController.navigate(Screens.AllWordsScreen.name)
                 }
             }
 

@@ -48,8 +48,8 @@ enum class Screens {
     PaywallScreen,
     GoogleLoginScreen,
     TermsAndConditionsScreen,
-    SuccessPurchaseScreen
-    ,
+    SuccessPurchaseScreen,
+    InsertWordScreen,
     ReviewAiScreen
 
 

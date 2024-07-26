@@ -27,7 +27,6 @@ import com.ntg.vocabs.ui.theme.Primary200
 import com.ntg.vocabs.util.getIconStateRevision
 import com.ntg.vocabs.util.orFalse
 import com.ntg.vocabs.util.orZero
-import com.ntg.vocabs.util.timber
 import com.ntg.vocabs.vm.LoginViewModel
 import com.ntg.vocabs.vm.WordViewModel
 
@@ -108,12 +107,7 @@ private fun Content(
                 isBookmarked = word.bookmarked.orFalse(),
                 unavailableBackup = if (!isPurchased && wordsList.orEmpty().filter { !it.synced.orFalse() }.size < 50) !word.synced.orFalse() else false
             ) { title, id, _ ->
-
-                timber("kawljdlkajwdlkjawlkdj $id")
-
                 navController.navigate(Screens.WordDetailScreen.name + "?wordId=$id")
-//                navController.navigate(Screens.AddEditScreen.name+"?wordId=$id")
-
             }
         }
 

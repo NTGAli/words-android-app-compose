@@ -273,5 +273,11 @@
     <string name="chack">Check</string>
     <string name="notification">Notification</string>
     <string name="show_reminder_review_notification">Show revision reminder</string>
+    <string name="manually">Manually</string>
+    <string name="dictionary">Dictionary</string>
+    <string name="edit_word">Edit word</string>
+    <string name="search">search</string>
+    <string name="not_found_question">Word not found?</string>
+    <string name="insert_manully">Add it manually</string>
 
 </resources>
