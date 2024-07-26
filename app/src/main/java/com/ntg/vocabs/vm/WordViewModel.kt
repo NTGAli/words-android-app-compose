@@ -1,13 +1,12 @@
 package com.ntg.vocabs.vm
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
@@ -26,6 +25,7 @@ import com.ntg.vocabs.db.dao.TimeSpentDao
 import com.ntg.vocabs.db.dao.VocabListDao
 import com.ntg.vocabs.db.dao.WordDao
 import com.ntg.vocabs.di.DataRepository
+import com.ntg.vocabs.model.PaginationState
 import com.ntg.vocabs.model.WeeklyWordCount
 import com.ntg.vocabs.model.data.GermanDataVerb
 import com.ntg.vocabs.model.db.EnglishVerbs
@@ -52,6 +52,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import org.json.JSONArray
@@ -78,6 +82,11 @@ class WordViewModel @Inject constructor(
     private val vocabApi: ApiService,
     private val dataRepository: DataRepository
 ) : ViewModel() {
+
+    companion object {
+        const val PAGE_SIZE = 400
+        const val INITIAL_PAGE = 0
+    }
 
     private var isExist = false
     private var myWords: LiveData<List<Word>> = MutableLiveData()
@@ -123,6 +132,7 @@ class WordViewModel @Inject constructor(
     private var processingNouns = false
     private var processingArticles = false
     var scrollPos: Int = 0
+    var currentPage = 0
 
     fun searchOnWords(query: String, listId: Int) {
         viewModelScope.launch {
@@ -373,14 +383,71 @@ class WordViewModel @Inject constructor(
         return pronouns
     }
 
-    fun englishWords(query: String): Flow<PagingData<EnglishWords>> {
-        return Pager(
-            config = PagingConfig(pageSize = 100),
-            pagingSourceFactory = {
-                englishWordDao.search(query)
+//    fun englishWords(query: String): Flow<PagingData<EnglishWords>> {
+//        return Pager(
+//            config = PagingConfig(pageSize = 100),
+//            pagingSourceFactory = {
+//                englishWordDao.search(query)
+//            }
+//        ).flow
+//            .cachedIn(viewModelScope)
+//    }
+
+    private val _notesList =
+        MutableStateFlow<MutableList<EnglishWords>>(mutableListOf())
+    val notesList: StateFlow<List<EnglishWords>>
+        get() = _notesList.asStateFlow()
+
+    private val _pagingState =
+        MutableStateFlow(PaginationState.LOADING)
+    val pagingState: StateFlow<PaginationState>
+        get() = _pagingState.asStateFlow()
+
+    private var page = INITIAL_PAGE
+    var canPaginate by mutableStateOf(false)
+
+    fun englishWords(query: String) {
+        if (page == INITIAL_PAGE || (canPaginate) && _pagingState.value == PaginationState.REQUEST_INACTIVE) {
+            _pagingState.update { if (page == INITIAL_PAGE) PaginationState.LOADING else PaginationState.PAGINATING }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = englishWordDao.search(query, PAGE_SIZE, page * PAGE_SIZE)
+                timber("awdakwjdhwkd :::: ${result.size}")
+                canPaginate = result.size == PAGE_SIZE
+
+                if (page == INITIAL_PAGE) {
+                    if (result.isEmpty()) {
+                        _pagingState.update { PaginationState.EMPTY }
+                        return@launch
+                    }else{
+//                        _pagingState.update { PaginationState.FETCHED }
+                        _notesList.value.clear()
+                        _notesList.value.addAll(result)
+                    }
+                } else {
+                    _notesList.value.addAll(result)
+                }
+
+                _pagingState.update { PaginationState.REQUEST_INACTIVE }
+
+                if (canPaginate) {
+                    page++
+                }
+
+                if (!canPaginate) {
+                    _pagingState.update { PaginationState.PAGINATION_EXHAUST }
+                }
+            } catch (e: Exception) {
+                _pagingState.update { if (page == INITIAL_PAGE) PaginationState.ERROR else PaginationState.PAGINATION_EXHAUST }
             }
-        ).flow
-            .cachedIn(viewModelScope)
+        }
+    }
+
+    fun clearPaging() {
+        page = INITIAL_PAGE
+        _pagingState.update { PaginationState.LOADING }
+        canPaginate = false
     }
 
     fun getDataWord(word: String): MutableLiveData<NetworkResult<List<WordDataItem>>> {
