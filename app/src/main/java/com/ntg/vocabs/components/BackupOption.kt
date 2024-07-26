@@ -16,11 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ntg.vocabs.ui.theme.fontMedium12
 import com.ntg.vocabs.ui.theme.fontMedium14
-import com.ntg.vocabs.ui.theme.fontMedium16
 
 @Composable
 fun BackupOption(
@@ -35,7 +33,7 @@ fun BackupOption(
         .border(
             width = 2.dp,
             shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.outlineVariant
+            color = MaterialTheme.colorScheme.surfaceVariant
         )
         .clickable {
             onClick.invoke()
