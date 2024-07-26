@@ -12,6 +12,7 @@ import com.ntg.vocabs.model.db.EnglishWords
 import com.ntg.vocabs.model.db.GermanNouns
 import com.ntg.vocabs.model.db.GermanVerbs
 import com.ntg.vocabs.model.db.Sounds
+import com.ntg.vocabs.util.orTrue
 import com.ntg.vocabs.util.timber
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -92,7 +93,9 @@ class AutoInsertWorker @AssistedInject constructor(
                     val jsonObject: JSONObject = jsonArray.getJSONObject(i)
                     val word = jsonObject.getString("word")
                     val type = jsonObject.getString("type")
-                    list.add(EnglishWords(0, word, type))
+                    if (word.firstOrNull()?.isLowerCase().orTrue()){
+                        list.add(EnglishWords(0, word, type))
+                    }
                 }
                 appDB.getEnglishWordsDao().insertAll(list)
                 timber("ENGLISH_WORD ::: END")
