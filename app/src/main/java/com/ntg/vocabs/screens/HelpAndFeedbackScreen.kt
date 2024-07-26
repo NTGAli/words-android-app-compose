@@ -133,7 +133,7 @@ private fun Content(paddingValues: PaddingValues, navController: NavHostControll
         item {
             Divider(
                 modifier = Modifier.padding(vertical = 16.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.surfaceVariant
             )
 
             SimpleBtn(

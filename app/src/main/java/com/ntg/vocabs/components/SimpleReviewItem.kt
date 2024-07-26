@@ -34,7 +34,7 @@ fun SimpleReviewItem(
             }
             .border(
                 width = 1.dp,
-                color = if (isCorrect != null) {if (isCorrect) Success500 else MaterialTheme.colorScheme.error} else MaterialTheme.colorScheme.outlineVariant,
+                color = if (isCorrect != null) {if (isCorrect) Success500 else MaterialTheme.colorScheme.error} else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             ),
         verticalArrangement = Arrangement.Center
