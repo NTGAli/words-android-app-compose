@@ -146,7 +146,9 @@ fun OnlineWordDetailsScreen(
                 )
         },
         content = { innerPadding ->
-            Content(wordViewModel, innerPadding, navController, word, type, selectedDictionary) {
+            Content(wordViewModel, innerPadding, navController, word, type, selectedDictionary, error = {
+                selectedDictionary = listOfDictionary[2]
+            }) {
                 onlineWord = it
             }
         },
@@ -258,6 +260,7 @@ private fun Content(
     word: String,
     type: String,
     selectedDictionary: String,
+    error:() -> Unit,
     insert: (Word) -> Unit
 ) {
 
@@ -336,6 +339,7 @@ private fun Content(
                         when (it) {
                             is NetworkResult.Error -> {
                                 timber("getDataWordFromFreeDictionary ::: ER ${it.message}")
+                                error.invoke()
                             }
 
                             is NetworkResult.Loading -> {
@@ -393,7 +397,8 @@ private fun Content(
                     when (it) {
                         is NetworkResult.Error -> {
                             timber("WORD_DATA :: ERR ${it.message}")
-                            context.toast(context.getString(R.string.error_occurred))
+//                            context.toast(context.getString(R.string.error_occurred))
+                            error.invoke()
                         }
 
                         is NetworkResult.Loading -> {
@@ -445,7 +450,7 @@ private fun Content(
                 wordViewModel.getWord(word, type).observe(lifecycleOwner) {
                     when (it) {
                         is NetworkResult.Error -> {
-
+                            loading = false
                         }
 
                         is NetworkResult.Loading -> {
