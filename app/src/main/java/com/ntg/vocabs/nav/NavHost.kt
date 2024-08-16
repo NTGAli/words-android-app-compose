@@ -70,7 +70,7 @@ fun AppNavHost(
             HomeScreen(navController, wordViewModel, loginViewModel, backupViewModel, messageBoxViewModel)
         }
 
-        composable(Screens.AllWordsScreen.name + "?openSearch={openSearch}" + "&query={query}",
+        composable(Screens.AllUserWordsScreen.name + "?openSearch={openSearch}" + "&query={query}",
             arguments = listOf(navArgument("openSearch")
             {
                 type = NavType.BoolType
@@ -82,7 +82,7 @@ fun AppNavHost(
                     defaultValue = ""
                 }
             )) {
-            AllWordsScreen(
+            AllUserWordsScreen(
                 navController,
                 wordViewModel,
                 loginViewModel,
