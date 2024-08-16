@@ -302,6 +302,7 @@ private fun Content(
                 type = ButtonType.Primary,
                 size = ButtonSize.LG
             ) {
+                loginViewModel.setReminderNotification(true)
                 loginViewModel.setSkipLogin(true)
             }
         }

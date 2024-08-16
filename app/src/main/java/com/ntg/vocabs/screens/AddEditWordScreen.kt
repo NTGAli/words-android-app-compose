@@ -260,9 +260,9 @@ private fun submitWord(
             } else {
                 wordViewModel.addNewWord(wordData.apply { id = generateUniqueFiveDigitId() })
                 timber("getUnSyncedWords ::::: $email")
-                if (allowReminder){
+//                if (allowReminder){
                     scheduleNotification(context, 0, wordData.word.orEmpty())
-                }
+//                }
             }
 
             navController.popBackStack()

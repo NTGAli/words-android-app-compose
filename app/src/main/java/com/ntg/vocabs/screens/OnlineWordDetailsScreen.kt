@@ -176,6 +176,7 @@ fun OnlineWordDetailsScreen(
                         wordViewModel.addNewWord(onlineWord!!.apply {
                             id = generateUniqueFiveDigitId()
                         })
+                        scheduleNotification(context, 0, onlineWord?.word.orEmpty())
                         navController.popBackStack()
                     }
                 }
