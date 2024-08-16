@@ -128,10 +128,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.workDataOf
 import com.ntg.vocabs.services.NotificationRcv
 import com.ntg.vocabs.services.notificationID
 import com.ntg.vocabs.util.getNextNDaysUnix
 import com.ntg.vocabs.util.nextRevisionDay
+import com.ntg.vocabs.util.worker.ReminderWorker
 import java.util.Calendar
 import java.util.Date
 
@@ -1571,27 +1574,36 @@ private fun saveImageInFolder(bitmap: Bitmap?, context: Context, name: String): 
 
 @SuppressLint("ScheduleExactAlarm")
 fun scheduleNotification(applicationContext: Context, revisionCount: Int, word: String) {
-    val intent = Intent(applicationContext, NotificationRcv::class.java)
-    val title = applicationContext.getString(R.string.review)
-    val message = applicationContext.getString(R.string.lets_review_format, word)
-    val notificationId = generateUniqueFiveDigitId()
-    intent.putExtra("titleExtra", title)
-    intent.putExtra("messageExtra", message)
-    intent.putExtra(notificationID, notificationId)
-    val pendingIntent = PendingIntent.getBroadcast(
-        applicationContext,
-        notificationId,
-        intent,
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-    )
 
-    val alarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val notificationId = generateUniqueFiveDigitId().toString()
+    val workRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
+        .setInputData(workDataOf("word" to word, "notifId" to notificationId))
+        .setInitialDelay(nextRevisionDay(revisionCount).toLong(), TimeUnit.DAYS)
+        .build()
 
-    val time = getNextNDaysUnix(nextRevisionDay(revisionCount)) * 1000
-    alarmManager.setExactAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP,
-        time,
-        pendingIntent
-    )
+    WorkManager.getInstance(applicationContext).enqueue(workRequest)
+
+//    val intent = Intent(applicationContext, NotificationRcv::class.java)
+//    val title = applicationContext.getString(R.string.review)
+//    val message = applicationContext.getString(R.string.lets_review_format, word)
+//    val notificationId = generateUniqueFiveDigitId()
+//    intent.putExtra("titleExtra", title)
+//    intent.putExtra("messageExtra", message)
+//    intent.putExtra(notificationID, notificationId)
+//    val pendingIntent = PendingIntent.getBroadcast(
+//        applicationContext,
+//        notificationId,
+//        intent,
+//        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+//    )
+//
+//    val alarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//
+//    val time = getNextNDaysUnix(nextRevisionDay(revisionCount)) + 5000
+//    alarmManager.setExactAndAllowWhileIdle(
+//        AlarmManager.RTC_WAKEUP,
+//        time,
+//        pendingIntent
+//    )
 }
 
