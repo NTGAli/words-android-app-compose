@@ -1587,7 +1587,7 @@ fun scheduleNotification(applicationContext: Context, revisionCount: Int, word: 
 
     val alarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    val time = getNextNDaysUnix(nextRevisionDay(revisionCount))
+    val time = getNextNDaysUnix(nextRevisionDay(revisionCount)) * 1000
     alarmManager.setExactAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP,
         time,

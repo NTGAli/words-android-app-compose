@@ -53,6 +53,7 @@ import com.ntg.vocabs.components.LoadingView
 import com.ntg.vocabs.components.NeedProDialog
 import com.ntg.vocabs.components.SampleItem
 import com.ntg.vocabs.model.components.ButtonSize
+import com.ntg.vocabs.model.components.ButtonStyle
 import com.ntg.vocabs.model.components.TextWithContext
 import com.ntg.vocabs.model.db.EnglishVerbs
 import com.ntg.vocabs.model.db.VerbForms
@@ -145,7 +146,7 @@ fun OnlineWordDetailsScreen(
                 )
         },
         content = { innerPadding ->
-            Content(wordViewModel, innerPadding, word, type, selectedDictionary) {
+            Content(wordViewModel, innerPadding, navController, word, type, selectedDictionary) {
                 onlineWord = it
             }
         },
@@ -253,6 +254,7 @@ fun OnlineWordDetailsScreen(
 private fun Content(
     wordViewModel: WordViewModel,
     paddingValues: PaddingValues,
+    navController: NavController,
     word: String,
     type: String,
     selectedDictionary: String,
@@ -617,6 +619,18 @@ private fun Content(
                 defSelected = it
             }
 
+        }
+
+        item {
+            CustomButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                text = stringResource(id = R.string.insert_manully),
+                style = ButtonStyle.TextOnly
+            ) {
+                navController.navigate(Screens.AddEditScreen.name)
+            }
         }
 
         item {

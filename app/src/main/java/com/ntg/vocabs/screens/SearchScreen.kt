@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -97,7 +98,10 @@ fun SearchScreen(
                     TabRow(
                         selectedTabIndex = tabIndex,
                         contentColor = MaterialTheme.colorScheme.primary,
-                        containerColor = MaterialTheme.colorScheme.background
+                        containerColor = MaterialTheme.colorScheme.background,
+                        divider = {
+                            Divider(color = MaterialTheme.colorScheme.surfaceVariant)
+                        }
                     ) {
                         tabData.forEachIndexed { index, title ->
                             Tab(
