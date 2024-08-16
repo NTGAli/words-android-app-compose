@@ -167,8 +167,8 @@ class AppModule {
     @Singleton
     fun provideHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .readTimeout(10, TimeUnit.SECONDS)
-            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(6, TimeUnit.SECONDS)
+            .connectTimeout(6, TimeUnit.SECONDS)
             .addInterceptor(LoggingInterceptor().httpLoggingInterceptor())
             .addInterceptor(AuthorizeInterceptor())
             .build()
