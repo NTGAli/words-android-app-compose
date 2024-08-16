@@ -506,7 +506,7 @@ fun PhoneScreenMode(
                 imageTint = Primary500,
                 imageBackground = Primary100
             ) {
-                navController.navigate(Screens.AllWordsScreen.name)
+                navController.navigate(Screens.AllUserWordsScreen.name)
             }
         }
 
@@ -623,7 +623,7 @@ fun TabletMode(
             imageTint = Primary500,
             imageBackground = Primary100
         ) {
-            navController.navigate(Screens.AllWordsScreen.name)
+            navController.navigate(Screens.AllUserWordsScreen.name)
         }
 
         ShapeTileWidget(

@@ -7,6 +7,7 @@ enum class Screens {
     AddEditScreen,
     WordDetailScreen,
     AllWordsScreen,
+    AllUserWordsScreen,
     RevisionScreen,
     RecentWordScreen,
     TimeScreen,

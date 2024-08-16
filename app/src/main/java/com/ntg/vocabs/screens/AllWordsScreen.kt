@@ -28,7 +28,7 @@ import com.ntg.vocabs.vm.WordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllWordsScreen(navController: NavController, wordViewModel: WordViewModel,loginViewModel: LoginViewModel, openSearch: Boolean, query: String) {
+fun AllUserWordsScreen(navController: NavController, wordViewModel: WordViewModel, loginViewModel: LoginViewModel, openSearch: Boolean, query: String) {
 
     val listId = wordViewModel.currentList().observeAsState().value?.id
     val numberOfAllWords = wordViewModel.getWordsBaseListId(listId.orZero()).observeAsState().value.orEmpty().size
